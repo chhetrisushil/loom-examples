@@ -14,25 +14,25 @@
     "clean": "rm -rf dist .data tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@loom/app": "workspace:*",
-    "@loom/core": "workspace:*",
-    "@loom/dispatcher": "workspace:*",
-    "@loom/effect-runtime": "workspace:*",
-    "@loom/event-runtime": "workspace:*",
-    "@loom/middleware": "workspace:*",
-    "@loom/projection-runtime": "workspace:*",
-    "@loom/snapshot-runtime": "workspace:*",
-    "@loom/worker-runtime-local": "workspace:*",
-    "@loom/workflow-runtime": "workspace:*",
-    "zod": "^3.23.8",
-    "@loom/plugin-sqlite": "workspace:*"
+    "@loom/app": "*",
+    "@loom/core": "*",
+    "@loom/dispatcher": "*",
+    "@loom/effect-runtime": "*",
+    "@loom/event-runtime": "*",
+    "@loom/middleware": "*",
+    "@loom/projection-runtime": "*",
+    "@loom/snapshot-runtime": "*",
+    "@loom/worker-runtime-local": "*",
+    "@loom/workflow-runtime": "*",
+    "zod": "catalog:",
+    "@loom/plugin-sqlite": "*"
   },
   "devDependencies": {
-    "@loom/cli": "workspace:*",
-    "@loom/testing": "workspace:*",
-    "@types/node": "^22.0.0",
-    "tsx": "^4.19.2",
+    "@loom/cli": "*",
+    "@loom/testing": "*",
+    "@types/node": "catalog:",
+    "tsx": "catalog:",
     "typescript": "^5.6.3",
-    "vitest": "^2.1.8"
+    "vitest": "catalog:"
   }
 }

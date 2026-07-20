@@ -10,22 +10,22 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@loom/core": "workspace:*",
-    "@loom/effect-runtime": "workspace:*",
-    "@loom/event-runtime": "workspace:*",
-    "@loom/middleware": "workspace:*",
-    "@loom/plugin-content": "workspace:*",
-    "@loom/plugin-durable-state": "workspace:*",
-    "@loom/replay-vm": "workspace:*",
-    "@loom/snapshot-runtime": "workspace:*",
-    "@loom/workflow-runtime": "workspace:*",
-    "zod": "^3.23.8"
+    "@loom/core": "*",
+    "@loom/effect-runtime": "*",
+    "@loom/event-runtime": "*",
+    "@loom/middleware": "*",
+    "@loom/plugin-content": "*",
+    "@loom/plugin-durable-state": "*",
+    "@loom/replay-vm": "*",
+    "@loom/snapshot-runtime": "*",
+    "@loom/workflow-runtime": "*",
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@loom/dst": "workspace:*",
-    "@types/node": "^22.0.0",
-    "tsx": "^4.19.2",
+    "@loom/dst": "*",
+    "@types/node": "catalog:",
+    "tsx": "catalog:",
     "typescript": "^5.6.3",
-    "vitest": "^2.1.8"
+    "vitest": "catalog:"
   }
 }

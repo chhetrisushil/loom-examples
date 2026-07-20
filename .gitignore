@@ -1,0 +1,20 @@
+node_modules/
+dist/
+.turbo/
+coverage/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+.DS_Store
+*.local
+.env
+tsconfig.tsbuildinfo
+**/*.js.map
+**/*.d.ts.map
+
+# Generated docs (rebuild with scripts/build-architecture-pdf.sh)
+docs/pdf/*.pdf
+
+# local model files for @loom/appgen-model (never commit — multi-GB)
+.models/

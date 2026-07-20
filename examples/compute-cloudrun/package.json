@@ -10,23 +10,23 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@loom/core": "workspace:*",
-    "@loom/dispatcher": "workspace:*",
-    "@loom/effect-runtime": "workspace:*",
-    "@loom/event-runtime": "workspace:*",
-    "@loom/plugin-cloudrun": "workspace:*",
-    "@loom/snapshot-runtime": "workspace:*",
-    "@loom/worker-runtime": "workspace:*",
-    "@loom/worker-runtime-local": "workspace:*",
-    "@loom/plugin-worker-remote": "workspace:*",
-    "@loom/plugin-worker-server": "workspace:*",
-    "@loom/workflow-runtime": "workspace:*",
-    "zod": "^3.23.8"
+    "@loom/core": "*",
+    "@loom/dispatcher": "*",
+    "@loom/effect-runtime": "*",
+    "@loom/event-runtime": "*",
+    "@loom/plugin-cloudrun": "*",
+    "@loom/snapshot-runtime": "*",
+    "@loom/worker-runtime": "*",
+    "@loom/worker-runtime-local": "*",
+    "@loom/plugin-worker-remote": "*",
+    "@loom/plugin-worker-server": "*",
+    "@loom/workflow-runtime": "*",
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
-    "tsx": "^4.19.2",
+    "@types/node": "catalog:",
+    "tsx": "catalog:",
     "typescript": "^5.6.3",
-    "vitest": "^2.1.8"
+    "vitest": "catalog:"
   }
 }

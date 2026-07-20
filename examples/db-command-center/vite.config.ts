@@ -1,5 +1,29 @@
+import { createRequire } from "node:module";
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
+
+// React MUST be a singleton. @loom/plugin-renderer-react is consumed via a link:
+// to the sibling ../loom checkout, whose built hooks import React from ../loom's
+// own node_modules — while this app's react-dom would resolve React here. Two
+// copies ⇒ a null hooks dispatcher ("Cannot read properties of null (reading
+// 'useState')") the moment a renderer-react hook mounts under react-dom.
+//
+// Converge EVERYTHING on the copy the linked package already uses: resolve each
+// react/react-dom specifier FROM renderer-react's location and alias to it, so
+// the app's react-dom and the linked hooks share one React. Portable — derived
+// from the linked package, no hardcoded paths.
+const require = createRequire(import.meta.url);
+const fromRenderer = createRequire(require.resolve("@loom/plugin-renderer-react"));
+// Most-specific specifiers FIRST — vite matches a bare `react` alias against
+// `react/jsx-runtime` by prefix and would clobber it otherwise.
+const reactSingleton = [
+  "react/jsx-dev-runtime",
+  "react/jsx-runtime",
+  "react-dom/client",
+  "react-dom/test-utils",
+  "react-dom",
+  "react",
+].map((id) => ({ find: id, replacement: fromRenderer.resolve(id) }));
 
 // The @loom/* workspace packages ship CommonJS. Vite pre-bundles them in dev via
 // optimizeDeps, but `vite build` (build:ui) hands them to Rollup, whose CommonJS
@@ -20,7 +44,11 @@ import { defineConfig } from "vite";
 // http server is only reached via `import type`, so it never enters the bundle.
 export default defineConfig({
   plugins: [react()],
-  resolve: { conditions: ["require", "default"] },
+  // React must be a singleton. The @loom/plugin-renderer-react hooks are consumed
+  // via a link: to the sibling ../loom checkout, which has its OWN node_modules —
+  // so without dedupe the linked hook resolves React from ../loom while the app's
+  // react-dom resolves it here, giving two copies and a null hooks dispatcher.
+  resolve: { conditions: ["require", "default"], alias: reactSingleton },
   optimizeDeps: {
     include: [
       "@loom/app",
