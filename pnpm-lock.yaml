@@ -352,6 +352,43 @@ importers:
         specifier: ^6.0.0
         version: 6.4.3(@types/node@22.20.1)(sass@1.90.0)(tsx@4.23.1)
 
+  examples/child-orchestration:
+    dependencies:
+      '@loom/core':
+        specifier: link:../../../loom/packages/core
+        version: link:../../../loom/packages/core
+      '@loom/effect-runtime':
+        specifier: link:../../../loom/packages/effect-runtime
+        version: link:../../../loom/packages/effect-runtime
+      '@loom/event-runtime':
+        specifier: link:../../../loom/packages/event-runtime
+        version: link:../../../loom/packages/event-runtime
+      '@loom/orchestration':
+        specifier: link:../../../loom/packages/orchestration
+        version: link:../../../loom/packages/orchestration
+      '@loom/snapshot-runtime':
+        specifier: link:../../../loom/packages/snapshot-runtime
+        version: link:../../../loom/packages/snapshot-runtime
+      '@loom/workflow-runtime':
+        specifier: link:../../../loom/packages/workflow-runtime
+        version: link:../../../loom/packages/workflow-runtime
+      zod:
+        specifier: 'catalog:'
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.1
+      tsx:
+        specifier: 'catalog:'
+        version: 4.23.1
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 2.1.9(@types/node@22.20.1)(jsdom@25.0.1)(sass@1.90.0)
+
   examples/cloud-command-center:
     dependencies:
       '@loom/a2ui':
