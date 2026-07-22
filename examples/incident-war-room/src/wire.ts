@@ -38,7 +38,7 @@ export interface PromoteRequest {
 // Frames pushed to the client over the SSE stream.
 // - "snapshot": a serializeProjections(...) string for the mission+telemetry
 //   surfaces, sent once on connect so a (re)joining client seeds instantly.
-// - "patch": a single A2UI_PATCH EventEnvelope to fold into the client's
+// - "patch": a single SURFACE_PATCH EventEnvelope to fold into the client's
 //   projection runtime for a granular, near-real-time update.
 export type ServerFrame =
   | { kind: "snapshot"; snapshot: string }

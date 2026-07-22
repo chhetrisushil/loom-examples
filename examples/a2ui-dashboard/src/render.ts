@@ -1,4 +1,4 @@
-import type { A2UISurfaceState } from "@loom/a2ui";
+import type { SurfaceState } from "@loom/agent-surface";
 
 // A tiny HEADLESS renderer: turns a folded A2UI surface into a terminal panel. A
 // real client (React BlueprintRenderer, Web Components, …) binds the same surface
@@ -11,7 +11,7 @@ function gauge(value: number, alert: boolean): string {
   return `${bar} ${value}%${alert ? "  ⚠" : ""}`;
 }
 
-export function renderPanel(agentId: string, surface: A2UISurfaceState): string {
+export function renderPanel(agentId: string, surface: SurfaceState): string {
   const title = String(surface.title ?? agentId);
   const host = String(surface.host ?? "—");
   const value = typeof surface.value === "number" ? surface.value : 0;

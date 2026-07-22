@@ -19,7 +19,7 @@
       "id": "01KWX1YY1STZJX5XGKMK9KAKK8-1",
       "workflowId": "release-approval",
       "executionId": "01KWX1YY1STZJX5XGKMK9KAKK8",
-      "eventType": "A2UI_PATCH",
+      "eventType": "SURFACE_PATCH",
       "sequence": 1,
       "timestamp": 1783386568761,
       "payload": {
@@ -67,7 +67,7 @@
       "id": "01KWX1YY1STZJX5XGKMK9KAKK8-4",
       "workflowId": "release-approval",
       "executionId": "01KWX1YY1STZJX5XGKMK9KAKK8",
-      "eventType": "A2UI_PATCH",
+      "eventType": "SURFACE_PATCH",
       "sequence": 4,
       "timestamp": 1783386568762,
       "payload": {
@@ -130,7 +130,7 @@
       "id": "01KWX1YY1STZJX5XGKMK9KAKK8-8",
       "workflowId": "release-approval",
       "executionId": "01KWX1YY1STZJX5XGKMK9KAKK8",
-      "eventType": "A2UI_PATCH",
+      "eventType": "SURFACE_PATCH",
       "sequence": 8,
       "timestamp": 1783386568762,
       "payload": {
@@ -187,7 +187,7 @@
       "id": "01KWX1YY1STZJX5XGKMK9KAKK8-12",
       "workflowId": "release-approval",
       "executionId": "01KWX1YY1STZJX5XGKMK9KAKK8",
-      "eventType": "A2UI_PATCH",
+      "eventType": "SURFACE_PATCH",
       "sequence": 12,
       "timestamp": 1783386568762,
       "payload": {
@@ -205,7 +205,7 @@
       "id": "01KWX1YY1STZJX5XGKMK9KAKK8-13",
       "workflowId": "release-approval",
       "executionId": "01KWX1YY1STZJX5XGKMK9KAKK8",
-      "eventType": "A2UI_PATCH",
+      "eventType": "SURFACE_PATCH",
       "sequence": 13,
       "timestamp": 1783386568762,
       "payload": {
@@ -227,7 +227,7 @@
       "id": "01KWX1YY1STZJX5XGKMK9KAKK8-14",
       "workflowId": "release-approval",
       "executionId": "01KWX1YY1STZJX5XGKMK9KAKK8",
-      "eventType": "A2UI_PATCH",
+      "eventType": "SURFACE_PATCH",
       "sequence": 14,
       "timestamp": 1783386568762,
       "payload": {
@@ -245,7 +245,7 @@
       "id": "01KWX1YY1STZJX5XGKMK9KAKK8-15",
       "workflowId": "release-approval",
       "executionId": "01KWX1YY1STZJX5XGKMK9KAKK8",
-      "eventType": "A2UI_PATCH",
+      "eventType": "SURFACE_PATCH",
       "sequence": 15,
       "timestamp": 1783386568762,
       "payload": {
@@ -291,7 +291,7 @@
       "id": "01KWX1YY1STZJX5XGKMK9KAKK8-18",
       "workflowId": "release-approval",
       "executionId": "01KWX1YY1STZJX5XGKMK9KAKK8",
-      "eventType": "A2UI_PATCH",
+      "eventType": "SURFACE_PATCH",
       "sequence": 18,
       "timestamp": 1783386568762,
       "payload": {

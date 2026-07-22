@@ -1,4 +1,4 @@
-import { a2uiSurfaceProjection } from "@loom/a2ui";
+import { agentSurfaceProjection } from "@loom/agent-surface";
 import type { WidgetAction } from "@loom/blueprint-runtime";
 import { InMemoryProjectionRuntime } from "@loom/projection-runtime";
 import { MissionControlBlueprint } from "../blueprints/MissionControlBlueprint";
@@ -19,8 +19,8 @@ type Tab = "mission" | "observability";
 
 // ── Client-side projection runtime (fed entirely by the server stream) ────────
 const projectionRuntime = new InMemoryProjectionRuntime();
-projectionRuntime.register(a2uiSurfaceProjection("mission"));
-projectionRuntime.register(a2uiSurfaceProjection("telemetry"));
+projectionRuntime.register(agentSurfaceProjection("mission"));
+projectionRuntime.register(agentSurfaceProjection("telemetry"));
 defineWidgetElements();
 
 let activeTab: Tab = "mission";

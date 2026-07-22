@@ -1,4 +1,4 @@
-import { createA2UIEmitter } from "@loom/a2ui";
+import { createSurfaceEmitter } from "@loom/agent-surface";
 import { type EffectRuntime, LlmEffect } from "@loom/effect-runtime";
 import type { LlmProvider } from "@loom/llm";
 import { MockLlmProvider } from "./MockLlmProvider";
@@ -13,7 +13,7 @@ import { MockLlmProvider } from "./MockLlmProvider";
 export const llmProvider: LlmProvider = new MockLlmProvider();
 
 // Registers the AI triage effect with a concrete LlmProvider. The effect streams
-// tokens to the UI through the A2UI protocol — createA2UIEmitter turns ctx.emit
+// tokens to the UI through the A2UI protocol — createSurfaceEmitter turns ctx.emit
 // into patch operations — and returns the final analysis text so the step is
 // durably memoized on resume.
 export function registerAiTriageEffect(
@@ -27,7 +27,7 @@ export function registerAiTriageEffect(
 
       // Any effect that can emit events can drive the UI. Here the LLM effect
       // pushes A2UI patches into the "ui" surface as tokens arrive.
-      const ui = createA2UIEmitter((eventType, payload) => ctx.emit(eventType, payload));
+      const ui = createSurfaceEmitter((eventType, payload) => ctx.emit(eventType, payload));
 
       const request = {
         system:

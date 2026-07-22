@@ -18,7 +18,7 @@
   },
   "pnpm": {
     "overrides": {
-      "@loom/a2ui": "link:../loom/packages/a2ui",
+      "@loom/agent-surface": "link:../loom/packages/agent-surface",
       "@loom/agent": "link:../loom/packages/agent",
       "@loom/app": "link:../loom/packages/app",
       "@loom/blueprint-runtime": "link:../loom/packages/blueprint-runtime",

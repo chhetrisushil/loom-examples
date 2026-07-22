@@ -47,12 +47,12 @@ export function createApp(opts: { dataDir: string; missionId?: string }): Server
     surfaces: SURFACES,
     catalog,
     // Batteries-included A2A/A2UI wiring from the `agent$` definitions. `a2a: true` derives +
-    // registers each agent's AgentCard (replacing the hand-built card map), and `a2ui: true`
+    // registers each agent's AgentCard (replacing the hand-built card map), and `agentSurface: true`
     // registers an A2UI surface per agent (`surfaceId = agent.id`) so each agent is addressable
     // as its own surface. Both are opt-in; with them off you wire cards/surfaces by hand as before.
     agents: FLEET,
     a2a: true,
-    a2ui: true,
+    agentSurface: true,
     capabilityAgents: CAPABILITY_AGENT,
   });
 

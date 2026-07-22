@@ -1,4 +1,4 @@
-import type { A2UIEmitter } from "@loom/a2ui";
+import type { SurfaceEmitter } from "@loom/agent-surface";
 import type { BranchRegistry } from "@loom/event-runtime";
 import { parallelLimit } from "@loom/scheduler";
 import type { WorkflowRuntime } from "@loom/workflow-runtime";
@@ -39,7 +39,7 @@ import {
 export interface BranchOrchestratorDeps {
   runtime: WorkflowRuntime;
   branchRegistry: BranchRegistry;
-  branch: A2UIEmitter;
+  branch: SurfaceEmitter;
 }
 
 export class BranchOrchestrator {

@@ -16,7 +16,7 @@ export default defineConfig({
     include: [
       "@loom/app",
       "@loom/plugin-a2a/cards",
-      "@loom/a2ui",
+      "@loom/agent-surface",
       "@loom/agent",
       "@loom/blueprint-runtime",
       "@loom/capability",

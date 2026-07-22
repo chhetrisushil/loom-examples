@@ -6,8 +6,8 @@ import { z } from "zod";
 //
 // Three independent monitoring agents. Each is a first-class `agent$` with ONE
 // responsibility — and, crucially for this example, each drives its OWN live UI
-// panel. `defineConfig({ a2ui: true })` registers one A2UI surface per agent
-// (`surfaceId = agent.id`), so the agent renders into `createA2UIEmitter(emit,
+// panel. `defineConfig({ agentSurface: true })` registers one A2UI surface per agent
+// (`surfaceId = agent.id`), so the agent renders into `createSurfaceEmitter(emit,
 // agent.id)` with no hand-wired surface registration. The dashboard is just the
 // union of the per-agent surfaces.
 

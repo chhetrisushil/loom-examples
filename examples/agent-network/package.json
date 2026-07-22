@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@loom/plugin-a2a": "*",
-    "@loom/a2ui": "*",
+    "@loom/agent-surface": "*",
     "@loom/agent": "*",
     "@loom/app": "*",
     "@loom/blueprint-runtime": "*",
