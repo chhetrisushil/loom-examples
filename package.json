@@ -39,6 +39,7 @@
       "@loom/orchestrator": "link:../loom/packages/orchestrator",
       "@loom/planner": "link:../loom/packages/planner",
       "@loom/plugin-a2a": "link:../loom/plugins/a2a",
+      "@loom/plugin-a2ui": "link:../loom/plugins/a2ui",
       "@loom/plugin-cloudrun": "link:../loom/plugins/cloudrun",
       "@loom/plugin-content": "link:../loom/plugins/content",
       "@loom/plugin-durable-state": "link:../loom/plugins/durable-state",
