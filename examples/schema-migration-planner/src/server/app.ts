@@ -1,4 +1,4 @@
-import { defineConfig } from "@loom/app";
+import { BroadcastingProjectionRuntime, defineConfig } from "@loom/app";
 import type { EventEnvelope } from "@loom/core";
 import type { BranchRegistry } from "@loom/event-runtime";
 import { sqliteStorage } from "@loom/plugin-sqlite";
@@ -9,7 +9,6 @@ import { buildCatalog } from "../capabilities/catalog";
 import { MigrationExecutionFlow } from "../capabilities/flows";
 import { Orchestrator } from "../orchestrator/Orchestrator";
 import { MISSION_ID, type ServerFrame } from "../wire";
-import { BroadcastingProjectionRuntime } from "./BroadcastingProjectionRuntime";
 
 const SURFACES = ["mission", "telemetry", "branch"];
 
