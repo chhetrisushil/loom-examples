@@ -1,5 +1,5 @@
-import { createA2UIEmitter } from "@loom/a2ui";
-import type { A2UIEmitter } from "@loom/a2ui";
+import { createSurfaceEmitter } from "@loom/agent-surface";
+import type { SurfaceEmitter } from "@loom/agent-surface";
 import type { ApprovalDecision, InProcessA2ABus } from "@loom/app";
 import type { CapabilityCatalog } from "@loom/capability";
 import type { EventEnvelope } from "@loom/core";
@@ -55,9 +55,9 @@ const MUTATING = new Set(["apply-remediation", "scale-read-replicas"]);
 export class Orchestrator {
   private readonly planner: PlannerRuntime;
   private readonly intent: IntentRuntime;
-  private readonly mission: A2UIEmitter;
-  private readonly telemetry: A2UIEmitter;
-  private readonly branch: A2UIEmitter;
+  private readonly mission: SurfaceEmitter;
+  private readonly telemetry: SurfaceEmitter;
+  private readonly branch: SurfaceEmitter;
   private readonly branchOrch: BranchOrchestrator;
   // The remediation-phase branch bookkeeping (replica domain only).
   private branchTaskId: string | null = null;
@@ -84,9 +84,9 @@ export class Orchestrator {
   constructor(private readonly deps: OrchestratorDeps) {
     this.planner = new PlannerRuntime({ catalog: deps.catalog, provider: llm });
     this.intent = new IntentRuntime({ catalog: deps.catalog, provider: llm });
-    this.mission = createA2UIEmitter((t, p) => this.emit(t, p), "mission");
-    this.telemetry = createA2UIEmitter((t, p) => this.emit(t, p), "telemetry");
-    this.branch = createA2UIEmitter((t, p) => this.emit(t, p), "branch");
+    this.mission = createSurfaceEmitter((t, p) => this.emit(t, p), "mission");
+    this.telemetry = createSurfaceEmitter((t, p) => this.emit(t, p), "telemetry");
+    this.branch = createSurfaceEmitter((t, p) => this.emit(t, p), "branch");
     this.branchOrch = new BranchOrchestrator({
       runtime: deps.missionRuntime,
       branchRegistry: deps.branchRegistry,

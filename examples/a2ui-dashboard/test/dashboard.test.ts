@@ -1,4 +1,4 @@
-import type { A2UISurfaceState } from "@loom/a2ui";
+import type { SurfaceState } from "@loom/agent-surface";
 import { describe, expect, it } from "vitest";
 import { buildApp } from "../src/app";
 import { PANELS } from "../src/flows";
@@ -6,14 +6,14 @@ import { PANELS } from "../src/flows";
 const flowFor = (agentId: string) => PANELS.find((p) => p.agentId === agentId)!.flow;
 
 describe("a2ui-dashboard", () => {
-  it("a2ui:true registers one surface per agent, driven by its own flow", async () => {
+  it("agentSurface:true registers one surface per agent, driven by its own flow", async () => {
     const app = buildApp();
-    // The surface exists ONLY because `a2ui: true` registered it for the agent$ —
+    // The surface exists ONLY because `agentSurface: true` registered it for the agent$ —
     // getState throws for an unregistered surface, so this also proves the wiring.
     const handle = await app.runtime.start(flowFor("cpu-agent"), { host: "web-2" });
     await handle.waitForCompletion();
 
-    const cpu = app.projectionRuntime.getState<A2UISurfaceState>("cpu-agent", handle.executionId);
+    const cpu = app.projectionRuntime.getState<SurfaceState>("cpu-agent", handle.executionId);
     expect(cpu.title).toBe("CPU");
     expect(cpu.host).toBe("web-2");
     expect(cpu.value).toBe(88);
@@ -26,7 +26,7 @@ describe("a2ui-dashboard", () => {
     const app = buildApp();
     const handle = await app.runtime.start(flowFor("disk-agent"), { host: "web-1" });
     await handle.waitForCompletion();
-    const disk = app.projectionRuntime.getState<A2UISurfaceState>("disk-agent", handle.executionId);
+    const disk = app.projectionRuntime.getState<SurfaceState>("disk-agent", handle.executionId);
     expect(disk.value).toBe(30);
     expect(disk.status).toBe("ok");
     await app.close();
@@ -40,14 +40,14 @@ describe("a2ui-dashboard", () => {
     await mem.waitForCompletion();
 
     // The memory surface (its own execution) never sees the CPU agent's title/value.
-    const memSurface = app.projectionRuntime.getState<A2UISurfaceState>(
+    const memSurface = app.projectionRuntime.getState<SurfaceState>(
       "memory-agent",
       mem.executionId
     );
     expect(memSurface.title).toBe("Memory");
     expect(memSurface.value).toBe(73);
     // And the CPU surface is independently intact.
-    const cpuSurface = app.projectionRuntime.getState<A2UISurfaceState>(
+    const cpuSurface = app.projectionRuntime.getState<SurfaceState>(
       "cpu-agent",
       cpu.executionId
     );

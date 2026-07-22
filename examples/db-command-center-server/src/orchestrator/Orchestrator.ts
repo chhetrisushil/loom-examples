@@ -1,5 +1,5 @@
-import { createA2UIEmitter } from "@loom/a2ui";
-import type { A2UIEmitter } from "@loom/a2ui";
+import { createSurfaceEmitter } from "@loom/agent-surface";
+import type { SurfaceEmitter } from "@loom/agent-surface";
 import type { InProcessA2ABus } from "@loom/app";
 import type { ApprovalDecision } from "@loom/app";
 import type { CapabilityCatalog } from "@loom/capability";
@@ -51,8 +51,8 @@ const MUTATING = new Set(["apply-remediation", "scale-read-replicas"]);
 export class Orchestrator {
   private readonly planner: PlannerRuntime;
   private readonly intent: IntentRuntime;
-  private readonly mission: A2UIEmitter;
-  private readonly telemetry: A2UIEmitter;
+  private readonly mission: SurfaceEmitter;
+  private readonly telemetry: SurfaceEmitter;
   private seq = 0;
   // A per-run nonce so each mission run gets globally-unique flow execution ids.
   // The mission id is fixed (one active mission), so without this a re-run reuses
@@ -76,8 +76,8 @@ export class Orchestrator {
   constructor(private readonly deps: OrchestratorDeps) {
     this.planner = new PlannerRuntime({ catalog: deps.catalog, provider: llm });
     this.intent = new IntentRuntime({ catalog: deps.catalog, provider: llm });
-    this.mission = createA2UIEmitter((t, p) => this.emit(t, p), "mission");
-    this.telemetry = createA2UIEmitter((t, p) => this.emit(t, p), "telemetry");
+    this.mission = createSurfaceEmitter((t, p) => this.emit(t, p), "mission");
+    this.telemetry = createSurfaceEmitter((t, p) => this.emit(t, p), "telemetry");
   }
 
   // ── Public control surface (called by the React app) ────────────────────────

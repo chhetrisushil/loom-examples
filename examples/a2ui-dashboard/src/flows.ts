@@ -1,4 +1,4 @@
-import { createA2UIEmitter } from "@loom/a2ui";
+import { createSurfaceEmitter } from "@loom/agent-surface";
 import { flow$ } from "@loom/core";
 import type { FlowRunner, RegisteredFlow } from "@loom/workflow-runtime";
 import { z } from "zod";
@@ -6,10 +6,10 @@ import { sampleCpu, sampleDisk, sampleMemory } from "./metrics";
 
 // One capability flow per agent. Each flow IS the agent's behavior: it samples its
 // metric and streams the result into ITS OWN A2UI surface via
-// `createA2UIEmitter(ctx.emit, <agentId>)`. Because A2UI updates travel as ordinary
+// `createSurfaceEmitter(ctx.emit, <agentId>)`. Because A2UI updates travel as ordinary
 // Loom events, every panel is durable, ordered, and fully reconstructable from the
-// log — the surface state is just a projection folded by `a2uiSurfaceProjection`
-// (auto-registered by `a2ui: true`).
+// log — the surface state is just a projection folded by `agentSurfaceProjection`
+// (auto-registered by `agentSurface: true`).
 
 const io = {
   inputSchema: z.object({ host: z.string() }),
@@ -33,9 +33,9 @@ function panelFlow(
     ctx,
     input
   ) => {
-    // The surface id IS the agent id — the surface `a2ui: true` registered for this agent.
+    // The surface id IS the agent id — the surface `agentSurface: true` registered for this agent.
     // (Bind `emit` to the context — it's a method that reads `this`, so pass a bound wrapper.)
-    const ui = createA2UIEmitter((type, payload) => ctx.emit(type, payload), agentId);
+    const ui = createSurfaceEmitter((type, payload) => ctx.emit(type, payload), agentId);
     ui.set("title", title);
     ui.set("host", input.host);
     ui.set("status", "checking");

@@ -14,7 +14,7 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@loom/a2ui": "*",
+    "@loom/agent-surface": "*",
     "@loom/agent": "*",
     "@loom/app": "*",
     "@loom/blueprint-runtime": "*",

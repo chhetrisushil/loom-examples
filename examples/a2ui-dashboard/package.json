@@ -1,7 +1,7 @@
 {
-  "name": "@loom/a2ui-dashboard",
+  "name": "@loom/agent-surface-dashboard",
   "version": "0.0.1",
-  "description": "A live ops dashboard where each agent drives its OWN A2UI surface — the canonical showcase of defineConfig({ a2ui: true }): one addressable surface per agent$, populated by createA2UIEmitter(emit, agent.id), folded durably from the event log, rendered headlessly.",
+  "description": "A live ops dashboard where each agent drives its OWN agent surface — the canonical showcase of defineConfig({ agentSurface: true }): one addressable surface per agent$, populated by createSurfaceEmitter(emit, agent.id), folded durably from the event log, rendered headlessly.",
   "private": true,
   "scripts": {
     "build": "tsc --build",
@@ -10,7 +10,7 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@loom/a2ui": "*",
+    "@loom/agent-surface": "*",
     "@loom/app": "*",
     "@loom/core": "*",
     "@loom/workflow-runtime": "*",

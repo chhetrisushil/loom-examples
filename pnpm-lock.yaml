@@ -20,7 +20,7 @@ catalogs:
       version: 3.25.76
 
 overrides:
-  '@loom/a2ui': link:../loom/packages/a2ui
+  '@loom/agent-surface': link:../loom/packages/agent-surface
   '@loom/agent': link:../loom/packages/agent
   '@loom/app': link:../loom/packages/app
   '@loom/blueprint-runtime': link:../loom/packages/blueprint-runtime
@@ -122,9 +122,9 @@ importers:
 
   examples/a2ui-dashboard:
     dependencies:
-      '@loom/a2ui':
-        specifier: link:../../../loom/packages/a2ui
-        version: link:../../../loom/packages/a2ui
+      '@loom/agent-surface':
+        specifier: link:../../../loom/packages/agent-surface
+        version: link:../../../loom/packages/agent-surface
       '@loom/app':
         specifier: link:../../../loom/packages/app
         version: link:../../../loom/packages/app
@@ -153,12 +153,12 @@ importers:
 
   examples/agent-network:
     dependencies:
-      '@loom/a2ui':
-        specifier: link:../../../loom/packages/a2ui
-        version: link:../../../loom/packages/a2ui
       '@loom/agent':
         specifier: link:../../../loom/packages/agent
         version: link:../../../loom/packages/agent
+      '@loom/agent-surface':
+        specifier: link:../../../loom/packages/agent-surface
+        version: link:../../../loom/packages/agent-surface
       '@loom/app':
         specifier: link:../../../loom/packages/app
         version: link:../../../loom/packages/app
@@ -391,12 +391,12 @@ importers:
 
   examples/cloud-command-center:
     dependencies:
-      '@loom/a2ui':
-        specifier: link:../../../loom/packages/a2ui
-        version: link:../../../loom/packages/a2ui
       '@loom/agent':
         specifier: link:../../../loom/packages/agent
         version: link:../../../loom/packages/agent
+      '@loom/agent-surface':
+        specifier: link:../../../loom/packages/agent-surface
+        version: link:../../../loom/packages/agent-surface
       '@loom/app':
         specifier: link:../../../loom/packages/app
         version: link:../../../loom/packages/app
@@ -531,12 +531,12 @@ importers:
 
   examples/db-command-center:
     dependencies:
-      '@loom/a2ui':
-        specifier: link:../../../loom/packages/a2ui
-        version: link:../../../loom/packages/a2ui
       '@loom/agent':
         specifier: link:../../../loom/packages/agent
         version: link:../../../loom/packages/agent
+      '@loom/agent-surface':
+        specifier: link:../../../loom/packages/agent-surface
+        version: link:../../../loom/packages/agent-surface
       '@loom/app':
         specifier: link:../../../loom/packages/app
         version: link:../../../loom/packages/app
@@ -634,12 +634,12 @@ importers:
 
   examples/db-command-center-server:
     dependencies:
-      '@loom/a2ui':
-        specifier: link:../../../loom/packages/a2ui
-        version: link:../../../loom/packages/a2ui
       '@loom/agent':
         specifier: link:../../../loom/packages/agent
         version: link:../../../loom/packages/agent
+      '@loom/agent-surface':
+        specifier: link:../../../loom/packages/agent-surface
+        version: link:../../../loom/packages/agent-surface
       '@loom/app':
         specifier: link:../../../loom/packages/app
         version: link:../../../loom/packages/app
@@ -719,12 +719,12 @@ importers:
 
   examples/db-command-center-wc:
     dependencies:
-      '@loom/a2ui':
-        specifier: link:../../../loom/packages/a2ui
-        version: link:../../../loom/packages/a2ui
       '@loom/agent':
         specifier: link:../../../loom/packages/agent
         version: link:../../../loom/packages/agent
+      '@loom/agent-surface':
+        specifier: link:../../../loom/packages/agent-surface
+        version: link:../../../loom/packages/agent-surface
       '@loom/app':
         specifier: link:../../../loom/packages/app
         version: link:../../../loom/packages/app
@@ -932,12 +932,12 @@ importers:
 
   examples/incident-war-room:
     dependencies:
-      '@loom/a2ui':
-        specifier: link:../../../loom/packages/a2ui
-        version: link:../../../loom/packages/a2ui
       '@loom/agent':
         specifier: link:../../../loom/packages/agent
         version: link:../../../loom/packages/agent
+      '@loom/agent-surface':
+        specifier: link:../../../loom/packages/agent-surface
+        version: link:../../../loom/packages/agent-surface
       '@loom/app':
         specifier: link:../../../loom/packages/app
         version: link:../../../loom/packages/app
@@ -1078,12 +1078,12 @@ importers:
 
   examples/schema-migration-planner:
     dependencies:
-      '@loom/a2ui':
-        specifier: link:../../../loom/packages/a2ui
-        version: link:../../../loom/packages/a2ui
       '@loom/agent':
         specifier: link:../../../loom/packages/agent
         version: link:../../../loom/packages/agent
+      '@loom/agent-surface':
+        specifier: link:../../../loom/packages/agent-surface
+        version: link:../../../loom/packages/agent-surface
       '@loom/app':
         specifier: link:../../../loom/packages/app
         version: link:../../../loom/packages/app
