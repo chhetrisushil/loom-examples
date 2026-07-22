@@ -1,0 +1,26 @@
+{
+  "name": "@loom/a2ui-egress",
+  "version": "0.0.1",
+  "description": "Projects a Loom agent surface onto the Google A2UI (Agent-to-UI) wire protocol v1.0 via @loom/plugin-a2ui — the canonical showcase of the A2UISurfaceBridge egress adapter: fold SURFACE_PATCH deltas into absolute createSurface/updateDataModel messages, and drive a human-approval gate through an inbound A2UI action. Headless.",
+  "private": true,
+  "scripts": {
+    "build": "tsc --build",
+    "start": "tsx src/main.ts",
+    "test": "vitest run",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@loom/agent-surface": "*",
+    "@loom/app": "*",
+    "@loom/core": "*",
+    "@loom/plugin-a2ui": "*",
+    "@loom/workflow-runtime": "*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "^5.6.3",
+    "vitest": "catalog:"
+  }
+}
