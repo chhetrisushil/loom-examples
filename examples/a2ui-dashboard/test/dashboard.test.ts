@@ -47,10 +47,7 @@ describe("a2ui-dashboard", () => {
     expect(memSurface.title).toBe("Memory");
     expect(memSurface.value).toBe(73);
     // And the CPU surface is independently intact.
-    const cpuSurface = app.projectionRuntime.getState<SurfaceState>(
-      "cpu-agent",
-      cpu.executionId
-    );
+    const cpuSurface = app.projectionRuntime.getState<SurfaceState>("cpu-agent", cpu.executionId);
     expect(cpuSurface.title).toBe("CPU");
     await app.close();
   });
