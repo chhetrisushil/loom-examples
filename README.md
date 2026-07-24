@@ -41,6 +41,7 @@ pnpm --filter @loom/db-observability start   # run one end-to-end
 | `a2a-mesh`, `agent-network` | Agent-to-agent mesh / networking |
 | `a2ui-dashboard`, `angular-command-center` | UI / renderer surface variants |
 | `a2ui-egress` | Project a surface onto the Google A2UI wire protocol (`@loom/plugin-a2ui`) |
+| `a2ui-callfunction` | A2UI `callFunction` bidirectional RPC — two grains + crash→in-doubt recovery |
 | `appgen-brownfield`, `appgen-models` | AI-driven app generation |
 
 See `loom/docs/examples.md` for the long-form catalogue with the APIs/ADRs each
