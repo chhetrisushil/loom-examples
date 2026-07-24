@@ -121,6 +121,40 @@ importers:
         specifier: ^5.6.3
         version: 5.9.3
 
+  examples/a2ui-callfunction:
+    dependencies:
+      '@loom/agent-surface':
+        specifier: link:../../../loom/packages/agent-surface
+        version: link:../../../loom/packages/agent-surface
+      '@loom/app':
+        specifier: link:../../../loom/packages/app
+        version: link:../../../loom/packages/app
+      '@loom/core':
+        specifier: link:../../../loom/packages/core
+        version: link:../../../loom/packages/core
+      '@loom/plugin-a2ui':
+        specifier: link:../../../loom/plugins/a2ui
+        version: link:../../../loom/plugins/a2ui
+      '@loom/workflow-runtime':
+        specifier: link:../../../loom/packages/workflow-runtime
+        version: link:../../../loom/packages/workflow-runtime
+      zod:
+        specifier: 'catalog:'
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.1
+      tsx:
+        specifier: 'catalog:'
+        version: 4.23.1
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 2.1.9(@types/node@22.20.1)(jsdom@25.0.1)(sass@1.90.0)
+
   examples/a2ui-dashboard:
     dependencies:
       '@loom/agent-surface':
