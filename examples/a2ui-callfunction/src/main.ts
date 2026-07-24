@@ -65,11 +65,12 @@ async function main(): Promise<void> {
   const cf = (request as { callFunction: CallFunctionPayload }).callFunction;
   console.log(`  → callFunction  ${cf.name}()  callId=${cf.callId}`);
 
-  // The client answers; the bridge normalizes the reply for THIS surface, and the
-  // app turns it into the resume that satisfies the gate.
+  // The client answers; the bridge normalizes the reply for THIS surface AND
+  // rejects any reply whose callId isn't the one we just issued (forgery/replay
+  // guard). The app then turns it into the resume that satisfies the gate.
   const clientReply = { version: A2UI_VERSION, functionResponse: answerClientFunction(cf) };
-  const answer = bridge.ingestFunctionResponse(clientReply);
-  if (answer === null) throw new Error("functionResponse was not accepted for this surface");
+  const answer = bridge.ingestFunctionResponse(clientReply, cf.callId);
+  if (answer === null) throw new Error("functionResponse rejected — wrong surface or callId");
   console.log(`  ← functionResponse  result=${JSON.stringify(answer.result)}  → resume gate`);
 
   // ── Grain B runs inline on resume (delegated effect via the transport) ────────
