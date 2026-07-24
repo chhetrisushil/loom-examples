@@ -35,7 +35,7 @@ describe("a2ui-callfunction example", () => {
       };
       expect(surface.pendingCall).toMatchObject({
         name: "getLocale",
-        callId: `${executionId}:getLocale`, // deterministic (never random)
+        callId: `${executionId}:getLocale#1`, // deterministic AND call-site-unique
       });
       expect(client.calls()).toBe(0); // grain-B effect has NOT fired yet
 

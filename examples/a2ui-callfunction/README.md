@@ -43,6 +43,21 @@ pnpm --filter @loom/a2ui-callfunction test    # assertions incl. the crash → i
    client**. An operator verdict (`completed-with-result`) then completes the
    execution — still without re-firing the client.
 
+## Two things the `callId` must carry
+
+Neither is a replay/determinism risk (replay stays a pure fold), but both are
+correctness obligations — see loom ADR 0070:
+
+- **Call-site-unique, not just deterministic (grain A).** A suspend gate has no
+  step id, so a callId derived from the function name (`${executionId}:getLocale`)
+  would collide if the same function were called twice. This example tags the
+  call site (`${executionId}:getLocale#1`), mirroring the step-identity rule.
+  Grain B is immune — `ctx.idempotencyKey` (`executionId:stepId`) is unique per
+  `ctx.execute`.
+- **Dedup on the client for side effects (grain B).** Effects are at-least-once,
+  so a retry / crash-recovery may re-issue the same `callId`; a mutating client
+  function must dedup on it. A pure read (grain A `getLocale`) needs no dedup.
+
 ## Files
 
 - `src/flow.ts` — the checkout flow: grain-A suspend-gate + grain-B `ctx.execute`.

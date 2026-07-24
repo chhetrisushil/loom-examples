@@ -66,8 +66,13 @@ const runner: FlowRunner<CheckoutInput, CheckoutOutput> = async (ctx, input) => 
   ctx.ui.merge("summary", { total: priced.total });
 
   // ── Grain A — read a client value through a suspend/resume gate ──────────────
-  // Deterministic callId (never random) so a crash-recovered re-issue reuses it.
-  const localeCallId = `${ctx.executionId}:getLocale`;
+  // The callId must be both deterministic (never random, so a crash-recovered
+  // re-issue reuses it) AND call-site-unique — a suspend gate has no step id to
+  // key on, so two calls of the same function would collide their request/response
+  // correlation. We tag this single call site with `#1` (mirroring the
+  // step-identity rule, ADR 0061). Grain B below gets uniqueness for free via
+  // ctx.idempotencyKey (= executionId:stepId).
+  const localeCallId = `${ctx.executionId}:getLocale#1`;
   ctx.ui.set("status", "awaiting-locale");
   // Announce the pending call so the driver knows what to ask the client.
   ctx.ui.set("pendingCall", { callId: localeCallId, name: "getLocale", args: {} });
