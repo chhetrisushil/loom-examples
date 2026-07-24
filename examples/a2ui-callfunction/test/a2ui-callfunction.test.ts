@@ -78,16 +78,22 @@ describe("a2ui-callfunction example", () => {
       },
     });
 
-    // Resolve once confirm-submit's STEP_STARTED is durable.
+    // Resolve once confirm-submit's STEP_STARTED is durable. Capture the
+    // unsubscribe so we don't leak the subscriber on the (never-closed) appA.
+    let unsubA: (() => void) | undefined;
     const confirmStarted = new Promise<void>((resolve) => {
-      void appA.stores.eventStore.subscribe(executionId, (e: EventEnvelope) => {
-        if (
-          e.eventType === "STEP_STARTED" &&
-          (e.payload as { stepId?: string }).stepId === "confirm-submit"
-        ) {
-          resolve();
-        }
-      });
+      appA.stores.eventStore
+        .subscribe(executionId, (e: EventEnvelope) => {
+          if (
+            e.eventType === "STEP_STARTED" &&
+            (e.payload as { stepId?: string }).stepId === "confirm-submit"
+          ) {
+            resolve();
+          }
+        })
+        .then((u) => {
+          unsubA = u;
+        });
     });
 
     const handle = await appA.runtime.start(RegisteredCheckoutFlow, input, { executionId });
@@ -99,6 +105,7 @@ describe("a2ui-callfunction example", () => {
       payload: { result: { locale: "en-GB" } },
     });
     await confirmStarted; // confirm-submit is now `running`, its client call hung
+    unsubA?.(); // done observing — drop the subscriber
     expect(callsA).toBe(1);
 
     // ── Crash: abandon appA (do NOT close — keep the shared stores) and boot a
