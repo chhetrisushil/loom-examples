@@ -1,0 +1,26 @@
+{
+  "name": "@loom/a2ui-callfunction",
+  "version": "0.0.1",
+  "description": "A2UI bidirectional RPC (callFunction) with @loom/plugin-a2ui — drives a client-side function from a Loom flow two ways: a read via a suspend/resume gate (grain A) and a side-effecting call via a delegated effect (grain B), the latter proving a crash mid-call parks at EFFECT_INDOUBT for an operator verdict rather than blindly re-firing. Headless, offline.",
+  "private": true,
+  "scripts": {
+    "build": "tsc --build",
+    "start": "tsx src/main.ts",
+    "test": "vitest run",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@loom/agent-surface": "*",
+    "@loom/app": "*",
+    "@loom/core": "*",
+    "@loom/plugin-a2ui": "*",
+    "@loom/workflow-runtime": "*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "^5.6.3",
+    "vitest": "catalog:"
+  }
+}
