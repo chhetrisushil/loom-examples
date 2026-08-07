@@ -1,0 +1,31 @@
+{
+  "name": "@loom/mcp-app-release-approval",
+  "version": "0.0.1",
+  "description": "Serves a Loom agent surface as an MCP App (SEP-1865) via @loom/plugin-mcp-app: one static content-pinned surface-host template, an ambient app-visibility cursor that substitutes for the extension's missing server push, and decision provenance (seenSequence/isStale) across a long-held approval gate. The View is the REAL template, executed in jsdom against a real MCP server over HTTP.",
+  "private": true,
+  "scripts": {
+    "build": "tsc --build",
+    "start": "tsx src/main.ts",
+    "test": "vitest run",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@loom/agent-surface": "*",
+    "@loom/app": "*",
+    "@loom/core": "*",
+    "@loom/event-runtime": "*",
+    "@loom/plugin-a2ui": "*",
+    "@loom/plugin-mcp": "*",
+    "@loom/plugin-mcp-app": "*",
+    "@loom/workflow-runtime": "*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^30.0.0",
+    "@types/node": "catalog:",
+    "jsdom": "^25.0.1",
+    "tsx": "catalog:",
+    "typescript": "^5.6.3",
+    "vitest": "catalog:"
+  }
+}
