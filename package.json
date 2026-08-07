@@ -18,8 +18,8 @@
   },
   "pnpm": {
     "overrides": {
-      "@loom/agent-surface": "link:../loom/packages/agent-surface",
       "@loom/agent": "link:../loom/packages/agent",
+      "@loom/agent-surface": "link:../loom/packages/agent-surface",
       "@loom/app": "link:../loom/packages/app",
       "@loom/blueprint-runtime": "link:../loom/packages/blueprint-runtime",
       "@loom/capability": "link:../loom/packages/capability",
@@ -44,6 +44,7 @@
       "@loom/plugin-content": "link:../loom/plugins/content",
       "@loom/plugin-durable-state": "link:../loom/plugins/durable-state",
       "@loom/plugin-mcp": "link:../loom/plugins/mcp",
+      "@loom/plugin-mcp-app": "link:../loom/plugins/mcp-app",
       "@loom/plugin-renderer-react": "link:../loom/plugins/renderer-react",
       "@loom/plugin-renderer-terminal": "link:../loom/plugins/renderer-terminal",
       "@loom/plugin-sandbox": "link:../loom/plugins/sandbox",
