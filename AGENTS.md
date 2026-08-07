@@ -50,6 +50,20 @@ pnpm --filter @loom/db-observability start   # run one example end-to-end
 - Example `tsconfig.json` must **not** carry TypeScript project `references` to
   `../../packages/*` — those exist only inside the loom monorepo. Extend
   `../../tsconfig.base.json` and let types resolve from `node_modules`.
+- **Exercise the real artifact, not a paraphrase of it.** An example is the last
+  line of defence against a plugin that is internally consistent and externally
+  wrong, so import what ships and run it. `mcp-app-release-approval` fetches the
+  published `ui://` template over HTTP and executes it in jsdom rather than
+  inlining a copy — which is how it found two bugs the plugin's own tests were
+  green through: the template never called the cursor tool it was documented to
+  poll, and its `List` branch read a prop the A2UI helper never emits. Assertions
+  about a *source string* prove an artifact mentions the right things, never that
+  it does them.
+- **Don't vendor a loom class into an example.** A local copy rots silently when
+  the linked `../loom` interface moves: vitest/esbuild happily runs the stale
+  copy and only `pnpm build` (tsc) catches it. Import from `@loom/app` and the
+  plugin barrels instead. If you must copy, run `pnpm build` — not just
+  `pnpm test` — before believing it works.
 
 ## Gotcha: React must be a singleton
 
