@@ -167,10 +167,15 @@ const ScaleReplicasStep = step$({
 });
 
 // The resume payload delivered when ctx.suspend returns (operator or policy).
-interface ApprovalDecision {
-  approved: boolean;
-  approvedBy: string;
-}
+//
+// A SCHEMA rather than an interface: the flows below list it in `resumeSchemas`, so a resume
+// carrying the wrong shape is refused BEFORE it reaches the durable log (ADR 0077), and the
+// static type is inferred from the same declaration instead of asserted alongside it.
+const ApprovalDecisionSchema = z.object({
+  approved: z.boolean(),
+  approvedBy: z.string(),
+});
+type ApprovalDecision = z.infer<typeof ApprovalDecisionSchema>;
 
 // ── Flow assembly ─────────────────────────────────────────────────────────────
 
@@ -267,6 +272,7 @@ export const ApplyRemediationFlow: RegisteredFlow<
       newCpuPct: z.number().optional(),
     }),
     steps: [RestartPoolStep],
+    resumeSchemas: { ApprovalGranted: ApprovalDecisionSchema },
   }),
   runner: applyRemediationRunner,
 };
@@ -308,6 +314,7 @@ export const ScaleReplicasFlow: RegisteredFlow<
       newLagMs: z.number().optional(),
     }),
     steps: [ScaleReplicasStep],
+    resumeSchemas: { ApprovalGranted: ApprovalDecisionSchema },
   }),
   runner: scaleReplicasRunner,
 };

@@ -12,6 +12,14 @@ const outputSchema = z.object({ resolved: z.boolean(), summary: z.string() });
 export type InvestigateInput = z.infer<typeof inputSchema>;
 export type InvestigateOutput = z.infer<typeof outputSchema>;
 
+// The approval gate's resume contract. `approvedBy` is optional because callers legitimately
+// send the bare verdict; the flow does not read the payload at all, so the schema's job here is
+// to keep a malformed approval out of the durable log rather than to type a value (ADR 0077).
+const ApprovalDecision = z.object({
+  approved: z.boolean(),
+  approvedBy: z.string().optional(),
+});
+
 export const InvestigateIncidentDefinition = flow$({
   id: "investigate-incident",
   name: "Investigate Incident",
@@ -20,6 +28,7 @@ export const InvestigateIncidentDefinition = flow$({
   inputSchema,
   outputSchema,
   steps: [FetchMetricsStep, FetchLogsStep, AiTriageStep, ApplyRemediationStep],
+  resumeSchemas: { ApprovalGranted: ApprovalDecision },
 });
 
 export const investigateIncidentRunner: FlowRunner<InvestigateInput, InvestigateOutput> = async (

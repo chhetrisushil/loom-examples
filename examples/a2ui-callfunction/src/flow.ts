@@ -50,6 +50,15 @@ export const PriceStep = step$({
   handler: handler$(async (input: { amount: number }) => ({ total: input.amount })),
 });
 
+// The gate's resume contract. Two legitimate shapes reach it: the full A2UI
+// `FunctionResponsePayload` (surfaceId/callId/name/result) that the bridge returns, and a bare
+// `{ result }` from a driver that only needs to answer. So the contract names what the flow
+// actually reads and `.passthrough()` keeps the rest — without it, `z.object` would STRIP the
+// envelope fields from the durable log (ADR 0077).
+const FunctionResult = z
+  .object({ result: z.object({ locale: z.string().optional() }).passthrough().optional() })
+  .passthrough();
+
 export const CheckoutFlow = flow$({
   id: "a2ui-checkout",
   name: "A2UI Checkout",
@@ -57,6 +66,7 @@ export const CheckoutFlow = flow$({
   inputSchema: checkoutInput,
   outputSchema: checkoutOutput,
   steps: [PriceStep],
+  resumeSchemas: { A2UIFunctionResult: FunctionResult },
 });
 
 const runner: FlowRunner<CheckoutInput, CheckoutOutput> = async (ctx, input) => {
@@ -79,7 +89,7 @@ const runner: FlowRunner<CheckoutInput, CheckoutOutput> = async (ctx, input) => 
   const localePayload = (await ctx.suspend({
     on: "A2UIFunctionResult",
     correlationKey: localeCallId,
-  })) as unknown as { result?: { locale?: string } };
+  })) as z.infer<typeof FunctionResult>;
   const locale = localePayload.result?.locale ?? "en-US";
   ctx.ui.remove("pendingCall");
   ctx.ui.merge("summary", { locale });

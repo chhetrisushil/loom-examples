@@ -76,6 +76,34 @@ copy — two Reacts, null dispatcher. Fix (see
 specifier to the copy **renderer-react already uses** (resolved from the linked
 package), so the whole test shares one React.
 
+## Convention: every `ctx.suspend` gate declares its resume contract
+
+Any flow with a `ctx.suspend({ on })` gate MUST declare that gate's payload shape in
+`resumeSchemas` on its `flow$` definition (loom ADR 0077):
+
+```ts
+const ApprovalDecision = z.object({ approved: z.boolean(), approvedBy: z.string() });
+
+flow$({
+  // …
+  resumeSchemas: { ApprovalGranted: ApprovalDecision },
+});
+```
+
+The runtime parses the payload **before** appending it, so a wrongly-shaped resume is refused
+rather than becoming a permanent fold input. Derive the runner's type from the same schema
+(`z.infer<typeof ApprovalDecision>`) so the static type cannot drift from what is enforced.
+
+Two things to get right:
+
+- **Model what the caller actually sends, not what the gate name suggests.** Several examples
+  here send payloads that do not match their gate's name — `angular-command-center` sends
+  `{ approvedBy, approvedAt }` with no `approved` field at all. Grep the `runtime.resume` call
+  sites before writing the schema.
+- **`z.object` STRIPS unknown keys**, and the parsed value is what gets recorded. If a payload
+  legitimately carries an open envelope (see `a2ui-callfunction`), model the extra fields or
+  use `.passthrough()`, or they will be silently dropped from the durable log.
+
 ## Conventions
 
 - Package manager: `pnpm@9.14.4` (pinned via `packageManager`; use `corepack`).

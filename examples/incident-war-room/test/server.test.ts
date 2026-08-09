@@ -33,6 +33,43 @@ describe("incident war room (durable, headless)", () => {
       intervalMs: 25,
     });
 
+  it("refuses a wrongly-shaped resume at the gate, before it reaches the log", async () => {
+    // The gate declares its contract via `resumeSchemas` (ADR 0077). Without it, this payload
+    // would be appended verbatim and the runner's cast would hand the flow a `strategy` of
+    // `undefined` — a silent wrong answer, permanently in the log.
+    void app.orchestrator.run(REPLICA_GOAL);
+    await reachPhase("awaiting-branches");
+
+    const parentId = app.orchestrator.branchSurface().parentExecutionId;
+    expect(parentId).toBeTruthy();
+    const before = await app.missionRuntime.loadState(parentId as string);
+
+    await expect(
+      app.missionRuntime.resume(parentId as string, {
+        eventType: "RemediationDecision",
+        payload: { approved: true, approvedBy: "operator" }, // missing strategy + simulate
+      })
+    ).rejects.toThrow(/resumeSchemas/);
+
+    // Refused BEFORE the append: the execution is untouched and still resumable.
+    const after = await app.missionRuntime.loadState(parentId as string);
+    expect(after?.sequence).toBe(before?.sequence);
+    expect(after?.status).toBe("suspended");
+
+    // And a well-formed payload at the same gate still lands.
+    await expect(
+      app.missionRuntime.resume(parentId as string, {
+        eventType: "RemediationDecision",
+        payload: {
+          approved: true,
+          strategy: "scale-replicas",
+          simulate: true,
+          approvedBy: "operator",
+        },
+      })
+    ).resolves.toBeDefined();
+  });
+
   it("forks the gate into candidate branches, simulates each, promotes a winner (no merge)", async () => {
     void app.orchestrator.run(REPLICA_GOAL);
 

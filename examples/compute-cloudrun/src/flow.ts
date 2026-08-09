@@ -50,6 +50,11 @@ export interface RebuildOutput {
   approvedBy?: string;
 }
 
+// The gate's resume payload contract. Declared once as a schema: listed in `resumeSchemas`
+// below so a wrongly-shaped resume is refused before it reaches the durable log (ADR 0077),
+// and used here to type the value the gate returns — one declaration, not a claim plus a check.
+const ApprovalDecision = z.object({ approved: z.boolean(), approvedBy: z.string() });
+
 const rebuildRunner: FlowRunner<RebuildInput, RebuildOutput> = async (ctx, input) => {
   const analysis = (await ctx.run(analyzeStep, input)) as { bloatPct: number };
   const result = (await ctx.run(rebuildStep, {
@@ -82,7 +87,7 @@ const gatedRunner: FlowRunner<RebuildInput, RebuildOutput> = async (ctx, input) 
     on: "ApprovalGranted",
     correlationKey: input.table,
     timeout: 24 * 60 * 60 * 1000,
-  })) as { approved: boolean; approvedBy: string };
+  })) as z.infer<typeof ApprovalDecision>;
   if (!decision.approved) {
     return {
       table: input.table,
@@ -115,6 +120,7 @@ export const RebuildIndexGatedFlow = {
     inputSchema: tableInput,
     outputSchema: z.object({}),
     steps: [analyzeStep, rebuildStep],
+    resumeSchemas: { ApprovalGranted: ApprovalDecision },
   }),
   runner: gatedRunner,
 } as RegisteredFlow;

@@ -176,6 +176,10 @@ const signoffInput = z.object({
   risk: z.enum(["low", "medium", "high"]),
   rationale: z.string(),
 });
+// The sign-off gate's resume contract — declared once and enforced at the boundary
+// (ADR 0077), so a malformed approval is refused instead of appended.
+const ApprovalDecision = z.object({ approved: z.boolean(), approvedBy: z.string() });
+
 const signoffRunner: FlowRunner<
   { service: string; release: string; risk: RiskLevel; rationale: string },
   SignoffResult
@@ -190,7 +194,7 @@ const signoffRunner: FlowRunner<
     on: "ApprovalGranted",
     correlationKey: `${input.service}@${input.release}`,
     timeout: 24 * 60 * 60 * 1000,
-  })) as { approved: boolean; approvedBy: string };
+  })) as z.infer<typeof ApprovalDecision>;
 
   if (!decision.approved) {
     report(ctx.executionId, `Release blocked by ${decision.approvedBy}.`);
@@ -217,6 +221,7 @@ export const SignoffReleaseFlow = {
     inputSchema: signoffInput,
     outputSchema: z.object({}),
     steps: [],
+    resumeSchemas: { ApprovalGranted: ApprovalDecision },
   }),
   runner: signoffRunner,
 } as RegisteredFlow;

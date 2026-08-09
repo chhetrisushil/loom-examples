@@ -54,6 +54,20 @@ export const ReimburseStep = step$({
 
 // ── Flow definition ─────────────────────────────────────────────────────────
 
+// The gate's resume contract. The inbound leg turns a client A2UI `action` into this resume,
+// so the payload carries BOTH the app's own field and the bridge-normalized action. Modelling
+// the action explicitly matters here: a `z.object` strips unknown keys, so a schema that
+// omitted `a2ui` would silently drop it from the durable log (ADR 0077).
+const ExpenseApproval = z.object({
+  approvedBy: z.string(),
+  a2ui: z.object({
+    surfaceId: z.string(),
+    action: z.string(),
+    dataModel: z.unknown().optional(),
+    context: z.record(z.unknown()).optional(),
+  }),
+});
+
 export const ExpenseFlow = flow$({
   id: "expense-approval",
   name: "Expense Approval",
@@ -61,6 +75,7 @@ export const ExpenseFlow = flow$({
   inputSchema: expenseInput,
   outputSchema: expenseOutput,
   steps: [FetchExpenseStep, TotalExpenseStep, ReimburseStep],
+  resumeSchemas: { ExpenseApproved: ExpenseApproval },
 });
 
 // ── Runner ────────────────────────────────────────────────────────────────────

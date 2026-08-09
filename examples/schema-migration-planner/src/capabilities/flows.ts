@@ -7,6 +7,7 @@ import type { Diagnosis, MigrationAssessment } from "../domain";
 import { progressHub } from "../runtime/progressHub";
 import {
   type MigrationDecision,
+  MigrationDecisionSchema,
   type StrategyId,
   type StrategyOutcome,
   projectOutcome,
@@ -146,10 +147,15 @@ export const AssessMigrationFlow: RegisteredFlow<
 };
 
 // The resume payload delivered when a simple apply's ctx.suspend returns.
-interface ApprovalDecision {
-  approved: boolean;
-  approvedBy: string;
-}
+//
+// A SCHEMA rather than an interface: the flow lists it in `resumeSchemas`, so a wrongly-shaped
+// resume is refused BEFORE it reaches the durable log (ADR 0077), and the static type is
+// inferred from the same declaration.
+const ApprovalDecisionSchema = z.object({
+  approved: z.boolean(),
+  approvedBy: z.string(),
+});
+type ApprovalDecision = z.infer<typeof ApprovalDecisionSchema>;
 
 // ── apply-migration (simple, metadata-only) — durable HITL checkpoint ─────────
 const ApplyMigrationStep = step$({
@@ -198,6 +204,7 @@ export const ApplyMigrationFlow: RegisteredFlow<
       lockSeconds: z.number().optional(),
     }),
     steps: [ApplyMigrationStep],
+    resumeSchemas: { ApprovalGranted: ApprovalDecisionSchema },
   }),
   runner: applyMigrationRunner,
 };
@@ -330,6 +337,9 @@ export const MigrationExecutionFlow: RegisteredFlow<{ target: string }, Migratio
       summary: z.string(),
     }),
     steps: [MigrationStep],
+    // A DIFFERENT gate, a different shape: this one carries the branch (strategy) and whether
+    // the apply is a shadow-schema simulation. Per-gate contracts make that expressible.
+    resumeSchemas: { MigrationDecision: MigrationDecisionSchema },
   }),
   runner: migrationExecutionRunner,
 };

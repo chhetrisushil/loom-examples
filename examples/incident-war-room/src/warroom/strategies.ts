@@ -1,3 +1,4 @@
+import { z } from "zod";
 import type { RiskLevel } from "../domain";
 
 // ── Candidate remediation strategies ──────────────────────────────────────────
@@ -11,7 +12,8 @@ import type { RiskLevel } from "../domain";
 // offline. In a real deployment `projectOutcome` would call a dry-run planner
 // (e.g. `terraform plan`, a capacity model, a shadow apply) instead.
 
-export type StrategyId = "scale-replicas" | "failover-primary" | "throttle-writes";
+export const StrategyIdSchema = z.enum(["scale-replicas", "failover-primary", "throttle-writes"]);
+export type StrategyId = z.infer<typeof StrategyIdSchema>;
 
 export interface Strategy {
   id: StrategyId;
@@ -116,9 +118,14 @@ export function projectOutcome(
 // The resume payload delivered to the suspended remediation flow at the gate —
 // carries which branch (strategy) this execution is exploring and whether it is
 // a dry-run simulation or the real, committed apply.
-export interface RemediationDecision {
-  approved: boolean;
-  strategy: StrategyId;
-  simulate: boolean;
-  approvedBy: string;
-}
+//
+// Declared as a SCHEMA, not an interface: the flow lists it in `resumeSchemas`, so the gate
+// parses it before the payload is appended (ADR 0077), and the static type is derived from
+// the same declaration. One source of truth — the type cannot drift from what is enforced.
+export const RemediationDecisionSchema = z.object({
+  approved: z.boolean(),
+  strategy: StrategyIdSchema,
+  simulate: z.boolean(),
+  approvedBy: z.string(),
+});
+export type RemediationDecision = z.infer<typeof RemediationDecisionSchema>;

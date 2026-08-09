@@ -1,3 +1,4 @@
+import { z } from "zod";
 import type { RiskLevel } from "../domain";
 
 // ── Candidate migration strategies ────────────────────────────────────────────
@@ -13,7 +14,8 @@ import type { RiskLevel } from "../domain";
 // offline. In a real deployment `projectOutcome` would run the migration against a
 // shadow schema (or a dry-run planner like gh-ost's `--dry-run`) instead.
 
-export type StrategyId = "online-ddl" | "shadow-copy" | "dual-write";
+export const StrategyIdSchema = z.enum(["online-ddl", "shadow-copy", "dual-write"]);
+export type StrategyId = z.infer<typeof StrategyIdSchema>;
 
 export interface Strategy {
   id: StrategyId;
@@ -125,9 +127,14 @@ export function projectOutcome(
 // The resume payload delivered to the suspended migration flow at the gate —
 // carries which branch (strategy) this execution is running and whether it is a
 // dry-run simulation (against a shadow schema) or the real, committed apply.
-export interface MigrationDecision {
-  approved: boolean;
-  strategy: StrategyId;
-  simulate: boolean;
-  approvedBy: string;
-}
+//
+// A SCHEMA, not an interface: the flow lists it in `resumeSchemas`, so the gate parses it
+// before the payload is appended (ADR 0077), and the static type is inferred from the same
+// declaration — the type cannot drift from what is enforced.
+export const MigrationDecisionSchema = z.object({
+  approved: z.boolean(),
+  strategy: StrategyIdSchema,
+  simulate: z.boolean(),
+  approvedBy: z.string(),
+});
+export type MigrationDecision = z.infer<typeof MigrationDecisionSchema>;

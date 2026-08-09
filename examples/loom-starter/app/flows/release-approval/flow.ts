@@ -51,6 +51,11 @@ const applyStep = step$({
 });
 
 // ── Runner: plain async orchestration ─────────────────────────────────────────
+// The gate's resume payload contract. Declared once as a schema: listed in `resumeSchemas`
+// below so a wrongly-shaped resume is refused before it reaches the durable log (ADR 0077),
+// and used here to type the value the gate returns — one declaration, not a claim plus a check.
+const ApprovalDecision = z.object({ approved: z.boolean(), approvedBy: z.string() });
+
 const runner: FlowRunner<In, Out> = async (ctx, input) => {
   ctx.ui.set("phase", "assessing");
   const risk = await ctx.run(assessStep, input);
@@ -76,7 +81,7 @@ const runner: FlowRunner<In, Out> = async (ctx, input) => {
     on: "ApprovalGranted",
     correlationKey: input.service,
     timeout: 24 * 60 * 60 * 1000,
-  })) as { approved: boolean; approvedBy: string };
+  })) as z.infer<typeof ApprovalDecision>;
 
   if (!decision.approved) {
     ctx.ui.set("phase", "rejected");
@@ -100,6 +105,7 @@ export const releaseApprovalFlow = {
     inputSchema: ReleaseInput,
     outputSchema: ReleaseOutput,
     steps: [assessStep, notifyStep, applyStep],
+    resumeSchemas: { ApprovalGranted: ApprovalDecision },
   }),
   runner,
 } as RegisteredFlow;
