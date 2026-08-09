@@ -78,6 +78,14 @@ export const ApplyRemediationStep = step$({
 
 // ── Flow ──────────────────────────────────────────────────────────────────────
 
+// The approval gate's resume contract — modelled on what the UI actually sends
+// (`{ approvedBy, approvedAt }`), not on the shape the name suggests. Declaring the payload is
+// how that mismatch stops being invisible (ADR 0077).
+const ApprovalGrantedPayload = z.object({
+  approvedBy: z.string(),
+  approvedAt: z.number(),
+});
+
 export const InvestigateIncidentDefinition = flow$({
   id: "investigate-incident",
   name: "Investigate Incident",
@@ -85,6 +93,7 @@ export const InvestigateIncidentDefinition = flow$({
   inputSchema,
   outputSchema,
   steps: [FetchMetricsStep, FetchLogsStep, ApplyRemediationStep],
+  resumeSchemas: { ApprovalGranted: ApprovalGrantedPayload },
 });
 
 const runner: FlowRunner<IncidentInput, IncidentOutput> = async (ctx, input) => {

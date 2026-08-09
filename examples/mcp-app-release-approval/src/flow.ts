@@ -37,15 +37,21 @@ export const RELEASE_SIGNAL = "ReleaseSignal";
  * of the log, not of the runner. The flow receives the verdict plus both numbers
  * as evidence and keeps the *policy* — which is the split that matters.
  */
-export type ReleaseSignal =
-  | { kind: "check-failed"; check: string }
-  | {
-      kind: "approval";
-      approver: string;
-      stale: boolean;
-      seenSequence?: number;
-      headSequence: number;
-    };
+// Declared as a SCHEMA and inferred back into the type. The MCP tool handler that produces
+// this signal receives `args: unknown` from an untrusted client, so this is the one gate in
+// the repo with a real external boundary in front of it — `resumeSchemas` (ADR 0077) parses
+// the payload before it reaches the durable log, and the union's discriminant is checked too.
+export const ReleaseSignalSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("check-failed"), check: z.string() }),
+  z.object({
+    kind: z.literal("approval"),
+    approver: z.string(),
+    stale: z.boolean(),
+    seenSequence: z.number().optional(),
+    headSequence: z.number(),
+  }),
+]);
+export type ReleaseSignal = z.infer<typeof ReleaseSignalSchema>;
 
 export const ShipStep = step$({
   id: "ship",
@@ -69,6 +75,7 @@ export const ReleaseFlow = flow$({
   inputSchema: releaseInput,
   outputSchema: releaseOutput,
   steps: [ScanChecksStep, ShipStep],
+  resumeSchemas: { [RELEASE_SIGNAL]: ReleaseSignalSchema },
 });
 
 const runner: FlowRunner<ReleaseInput, ReleaseOutput> = async (ctx, input) => {
