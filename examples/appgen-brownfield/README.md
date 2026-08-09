@@ -4,8 +4,8 @@ A walkthrough of using `loom appgen` on an app that **already exists** — descr
 letting appgen apply it surgically. This is documentation, not a runnable package (no `package.json`),
 so it adds no build/test target; copy the commands into a real Loom app to try them.
 
-See [`docs/usage-cli.md`](../../docs/usage-cli.md#loom-appgen-intent--from-file--from-spec-file--dir--flags)
-for the full flag reference and [ADR 0042](../../docs/adr/0042-ai-native-brownfield-appgen.md) for the design.
+See `loom/docs/usage-cli.md`
+for the full flag reference and ADR 0042 (`loom/docs/adr/0042-ai-native-brownfield-appgen.md`) for the design.
 
 ## 0. Start from a generated app
 
@@ -93,4 +93,4 @@ loom appgen "Add a summarize step to the planner." --dir ./planner --model ./mod
 
 If the model is missing, too weak, or produces an invalid plan, appgen falls back to the deterministic
 parser — you always get a valid plan. See the
-[`@loom/appgen-model` README](../../packages/appgen-model/README.md).
+`@loom/appgen-model` README (`loom/tools/appgen-model/README.md`).

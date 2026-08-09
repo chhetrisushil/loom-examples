@@ -59,7 +59,7 @@ first-class artifact (`BranchRegistry` lineage), not a lost draft.
 | `@loom/scheduler` `parallelLimit` | fan-out speculative simulations, deterministic input-ordered results |
 | Durable suspend/resume (HITL) | `remediate-lag` flow gate in `src/capabilities/flows.ts` |
 | Snapshots + replay VM | `fork()` seeds a snapshot at the gate; branches resume from an empty tail |
-| A2A agent mesh + `agent$` | `src/agents/*`, `src/a2a/InProcessA2ABus.ts` |
+| A2A agent mesh + `agent$` | `src/agents/*`, `InProcessA2ABus` from `@loom/app` |
 | Intent → Planner → Capability | `src/orchestrator/Orchestrator.ts` |
 | Projections + A2UI + Blueprint | `mission`, `telemetry`, **`branch`** surfaces |
 | BYOR / BYOC (Web Components) | `BranchGraph` / `BranchDiff` / `BranchControls` in `src/dom/elements.ts` |
@@ -80,7 +80,7 @@ first-class artifact (`BranchRegistry` lineage), not a lost draft.
 The durable stores are wired in `src/server/app.ts` (`SqliteEventStore` / `SqliteSnapshotStore` /
 `SqliteBranchRegistry`, under `./.data/`). The store interfaces are async-first, so any backend drops in —
 a Postgres reference (schema + `LISTEN/NOTIFY`) lives in
-[`docs/examples/postgres-backend/`](../../docs/examples/postgres-backend/README.md).
+`loom/docs/examples/postgres-backend/README.md`.
 
 ## Verify
 

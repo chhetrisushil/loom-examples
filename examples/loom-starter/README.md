@@ -60,9 +60,9 @@ evals/               ← golden fixtures for `loom eval`
 
 `loom gen` turns the folder convention into a **static** module (build-time codegen,
 not runtime globbing) so the flow set is identical on every resume and remote
-worker — see [ADR 0011](../../docs/adr/0011-folder-convention-codegen.md).
+worker — see ADR 0011 (`loom/docs/adr/0011-folder-convention-codegen.md`).
 
 ## Learn more
 
-[Getting Started](../../docs/getting-started.md) · [Usage](../../docs/usage.md) ·
-[User Guide](../../docs/user-guide.md) · [Architecture](../../docs/architecture.md)
+Getting Started (`loom/docs/getting-started.md`) · Usage (`loom/docs/usage.md`) ·
+User Guide (`loom/docs/user-guide.md`) · Architecture (`loom/docs/architecture.md`)
