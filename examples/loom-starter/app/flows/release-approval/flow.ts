@@ -55,6 +55,7 @@ const applyStep = step$({
 // below so a wrongly-shaped resume is refused before it reaches the durable log (ADR 0077),
 // and used here to type the value the gate returns — one declaration, not a claim plus a check.
 const ApprovalDecision = z.object({ approved: z.boolean(), approvedBy: z.string() });
+type ApprovalDecision = z.infer<typeof ApprovalDecision>;
 
 const runner: FlowRunner<In, Out> = async (ctx, input) => {
   ctx.ui.set("phase", "assessing");
@@ -77,11 +78,11 @@ const runner: FlowRunner<In, Out> = async (ctx, input) => {
   ctx.ui.set("phase", "awaiting-approval");
 
   // Durable checkpoint — persists, hands control back to the caller until resumed.
-  const decision = (await ctx.suspend({
+  const decision = await ctx.suspend<ApprovalDecision>({
     on: "ApprovalGranted",
     correlationKey: input.service,
     timeout: 24 * 60 * 60 * 1000,
-  })) as z.infer<typeof ApprovalDecision>;
+  });
 
   if (!decision.approved) {
     ctx.ui.set("phase", "rejected");

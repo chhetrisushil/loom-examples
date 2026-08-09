@@ -179,6 +179,7 @@ const signoffInput = z.object({
 // The sign-off gate's resume contract — declared once and enforced at the boundary
 // (ADR 0077), so a malformed approval is refused instead of appended.
 const ApprovalDecision = z.object({ approved: z.boolean(), approvedBy: z.string() });
+type ApprovalDecision = z.infer<typeof ApprovalDecision>;
 
 const signoffRunner: FlowRunner<
   { service: string; release: string; risk: RiskLevel; rationale: string },
@@ -190,11 +191,11 @@ const signoffRunner: FlowRunner<
   );
 
   // Durable checkpoint: the flow persists and hands control back until resumed.
-  const decision = (await ctx.suspend({
+  const decision = await ctx.suspend<ApprovalDecision>({
     on: "ApprovalGranted",
     correlationKey: `${input.service}@${input.release}`,
     timeout: 24 * 60 * 60 * 1000,
-  })) as z.infer<typeof ApprovalDecision>;
+  });
 
   if (!decision.approved) {
     report(ctx.executionId, `Release blocked by ${decision.approvedBy}.`);

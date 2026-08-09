@@ -95,10 +95,10 @@ const runner: FlowRunner<ReleaseInput, ReleaseOutput> = async (ctx, input) => {
   // The gate loop. `ctx.suspend` is positional for replay (ADR 0057), so looping
   // over it is replay-safe — each pass folds the resume event recorded for it.
   for (;;) {
-    const signal = (await ctx.suspend({
+    const signal = await ctx.suspend<ReleaseSignal>({
       on: RELEASE_SIGNAL,
       correlationKey: input.releaseId,
-    })) as ReleaseSignal;
+    });
 
     if (signal.kind === "check-failed") {
       // CI reported while the human was deliberating. The surface moves; anyone

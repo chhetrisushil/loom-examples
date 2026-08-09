@@ -176,11 +176,11 @@ const applyMigrationRunner: FlowRunner<
   { applied: boolean; summary: string; lockSeconds?: number | undefined }
 > = async (ctx, input) => {
   report(ctx.executionId, `Prepared: add nullable column on ${input.target}. Awaiting sign-off…`);
-  const decision = (await ctx.suspend({
+  const decision = await ctx.suspend<ApprovalDecision>({
     on: "ApprovalGranted",
     correlationKey: input.target,
     timeout: 24 * 60 * 60 * 1000,
-  })) as unknown as ApprovalDecision;
+  });
   if (!decision.approved) {
     report(ctx.executionId, `Migration rejected by ${decision.approvedBy}.`);
     return { applied: false, summary: `Rejected by ${decision.approvedBy}.` };
@@ -310,11 +310,11 @@ const migrationExecutionRunner: FlowRunner<{ target: string }, MigrationResult> 
     ctx.executionId,
     `Prepared migration for ${input.target}. Awaiting a strategy decision at the gate…`
   );
-  const decision = (await ctx.suspend({
+  const decision = await ctx.suspend<MigrationDecision>({
     on: "MigrationDecision",
     correlationKey: input.target,
     timeout: 24 * 60 * 60 * 1000,
-  })) as unknown as MigrationDecision;
+  });
   if (!decision.approved) {
     report(ctx.executionId, `Migration abandoned by ${decision.approvedBy}.`);
     return { applied: false, summary: `Abandoned by ${decision.approvedBy}.` };

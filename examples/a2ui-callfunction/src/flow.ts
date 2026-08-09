@@ -58,6 +58,7 @@ export const PriceStep = step$({
 const FunctionResult = z
   .object({ result: z.object({ locale: z.string().optional() }).passthrough().optional() })
   .passthrough();
+type FunctionResult = z.infer<typeof FunctionResult>;
 
 export const CheckoutFlow = flow$({
   id: "a2ui-checkout",
@@ -86,10 +87,10 @@ const runner: FlowRunner<CheckoutInput, CheckoutOutput> = async (ctx, input) => 
   ctx.ui.set("status", "awaiting-locale");
   // Announce the pending call so the driver knows what to ask the client.
   ctx.ui.set("pendingCall", { callId: localeCallId, name: "getLocale", args: {} });
-  const localePayload = (await ctx.suspend({
+  const localePayload = await ctx.suspend<FunctionResult>({
     on: "A2UIFunctionResult",
     correlationKey: localeCallId,
-  })) as z.infer<typeof FunctionResult>;
+  });
   const locale = localePayload.result?.locale ?? "en-US";
   ctx.ui.remove("pendingCall");
   ctx.ui.merge("summary", { locale });

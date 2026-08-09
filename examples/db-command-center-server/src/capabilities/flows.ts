@@ -244,11 +244,11 @@ const applyRemediationRunner: FlowRunner<
     ctx.executionId,
     `Prepared: recycle connection pool on ${input.target}. Awaiting sign-off…`
   );
-  const decision = (await ctx.suspend({
+  const decision = await ctx.suspend<ApprovalDecision>({
     on: "ApprovalGranted",
     correlationKey: input.target,
     timeout: 24 * 60 * 60 * 1000,
-  })) as unknown as ApprovalDecision;
+  });
   if (!decision.approved) {
     report(ctx.executionId, `Remediation rejected by ${decision.approvedBy}.`);
     return { applied: false, summary: `Rejected by ${decision.approvedBy}.` };
@@ -286,11 +286,11 @@ const scaleReplicasRunner: FlowRunner<
     ctx.executionId,
     `Prepared: add ${input.addReplicas} read replica(s) to ${input.target}. Awaiting sign-off…`
   );
-  const decision = (await ctx.suspend({
+  const decision = await ctx.suspend<ApprovalDecision>({
     on: "ApprovalGranted",
     correlationKey: input.target,
     timeout: 24 * 60 * 60 * 1000,
-  })) as unknown as ApprovalDecision;
+  });
   if (!decision.approved) {
     report(ctx.executionId, `Scaling rejected by ${decision.approvedBy}.`);
     return { applied: false, summary: `Rejected by ${decision.approvedBy}.` };
