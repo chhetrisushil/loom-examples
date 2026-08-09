@@ -38,6 +38,7 @@ pnpm --filter @loom/db-observability start   # run one end-to-end
 | `db-command-center` (+ `-server`, `-wc`) | intent → planner → A2A agentic app + UI surfaces |
 | `cloud-command-center` | Command-center with the `@loom/compiler` `loomPlugin()` |
 | `db-sentinel` | Perpetual-agent / sentinel pattern |
+| `child-orchestration` | Parent/child executions — `spawn` + durable await, built from `ctx.decide` + `ctx.suspend` |
 | `a2a-mesh`, `agent-network` | Agent-to-agent mesh / networking |
 | `a2ui-dashboard`, `angular-command-center` | UI / renderer surface variants |
 | `a2ui-egress` | Project a surface onto the Google A2UI wire protocol (`@loom/plugin-a2ui`) |

@@ -31,5 +31,5 @@ loop, MCP wiring, A2A endpoints, capabilities, planner, and memory are unchanged
 - `src/ScriptedLlmProvider.ts` — the offline model stand-in (the one thing you swap to go live).
 - `src/fakeMcpServer.ts` — an in-process MCP server so tool discovery runs without external processes.
 
-See [`docs/user-guide.md`](../../docs/user-guide.md) for the concepts and [`agent-swarm`](../agent-swarm)
+See `loom/docs/user-guide.md` for the concepts and [`agent-swarm`](../agent-swarm)
 for a fleet dynamically wired from intent with `policy$` enforcement.

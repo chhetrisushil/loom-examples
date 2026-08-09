@@ -4,8 +4,8 @@ The **same** agentic DB command center as `examples/db-command-center-wc`, but s
 **server + client** app: the durable, agentic runtime runs on a **Node server** (SQLite event/snapshot
 stores); a thin **Web Components client** renders and drives it over **HTTP + SSE**.
 
-This is the production topology from [`docs/architecture.md` → "Deployment & Execution
-Model"](../../docs/architecture.md): Loom's **isomorphic core** executing server-side for durability,
+This is the production topology from `docs/architecture.md` → "Deployment & Execution
+Model" (`loom/docs/architecture.md`): Loom's **isomorphic core** executing server-side for durability,
 its **multi-surface rendering** on the client, bridged by the **resumability seam**
 (`serializeProjections` → `seedState`) plus a live patch stream.
 
@@ -44,7 +44,7 @@ const runtime = new WorkflowRuntime({
 });
 ```
 
-The runtime `await`s the store; the synchronous `ctx.emit`/`ctx.ui` API is unchanged. A runnable Postgres reference (schema + `LISTEN/NOTIFY`) lives in [`docs/examples/postgres-backend/`](../../docs/examples/postgres-backend/README.md).
+The runtime `await`s the store; the synchronous `ctx.emit`/`ctx.ui` API is unchanged. A runnable Postgres reference (schema + `LISTEN/NOTIFY`) lives in `loom/docs/examples/postgres-backend/README.md`.
 
 ## Wire protocol (`src/wire.ts`)
 

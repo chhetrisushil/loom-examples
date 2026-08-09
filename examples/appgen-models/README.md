@@ -5,8 +5,8 @@ Gemini, or a local model — or use the deterministic parser with no model at al
 documentation, not a runnable package (no `package.json`), so it adds no build/test target; copy the
 commands into a real Loom app to try them.
 
-See [`docs/usage-cli.md`](../../docs/usage-cli.md#loom-appgen-intent--from-file--from-spec-file--dir--flags)
-for the full flag reference, [ADR 0050](../../docs/adr/0050-appgen-model-provider-agnostic.md) for why
+See `loom/docs/usage-cli.md`
+for the full flag reference, ADR 0050 (`loom/docs/adr/0050-appgen-model-provider-agnostic.md`) for why
 `--model` is provider-agnostic, and [`appgen-brownfield`](../appgen-brownfield) for surgical edits to an
 existing app.
 

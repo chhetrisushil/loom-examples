@@ -83,16 +83,23 @@ Any flow with a `ctx.suspend({ on })` gate MUST declare that gate's payload shap
 
 ```ts
 const ApprovalDecision = z.object({ approved: z.boolean(), approvedBy: z.string() });
+type ApprovalDecision = z.infer<typeof ApprovalDecision>;
 
 flow$({
   // …
-  resumeSchemas: { ApprovalGranted: ApprovalDecision },
+  resumeSchemas: { ApprovalGranted: ApprovalDecision },   // the check
 });
+
+const decision = await ctx.suspend<ApprovalDecision>({ on: "ApprovalGranted" });  // the claim
 ```
 
 The runtime parses the payload **before** appending it, so a wrongly-shaped resume is refused
-rather than becoming a permanent fold input. Derive the runner's type from the same schema
-(`z.infer<typeof ApprovalDecision>`) so the static type cannot drift from what is enforced.
+rather than becoming a permanent fold input.
+
+**Both halves, from one declaration.** `ctx.suspend<T>` types the call site — no `as unknown as`
+— but the type argument is erased at runtime, so it is a *claim*, not a check. `resumeSchemas` is
+what actually enforces it. Never write one without the other: the generic alone guarantees
+nothing, and the schema alone leaves the runner untyped.
 
 Two things to get right:
 
