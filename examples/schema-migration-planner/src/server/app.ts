@@ -1,9 +1,8 @@
-import { BroadcastingProjectionRuntime, defineConfig } from "@loom/app";
+import { BroadcastingProjectionRuntime, InProcessA2ABus, defineConfig } from "@loom/app";
 import type { EventEnvelope } from "@loom/core";
 import type { BranchRegistry } from "@loom/event-runtime";
 import { sqliteStorage } from "@loom/plugin-sqlite";
 import type { RegisteredFlow, WorkflowRuntime } from "@loom/workflow-runtime";
-import { InProcessA2ABus } from "../a2a/InProcessA2ABus";
 import { AGENT_CARDS, CAPABILITY_AGENT, FLEET } from "../agents/definitions";
 import { buildCatalog } from "../capabilities/catalog";
 import { MigrationExecutionFlow } from "../capabilities/flows";

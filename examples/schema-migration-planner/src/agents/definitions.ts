@@ -12,7 +12,7 @@ import { EstimateMigrationTool, InspectTableTool, RunMigrationTool } from "./too
 // derived from the agent$ definition via toAgentCard (below) — version,
 // capabilities, and the skill catalog live right here on the agent. In this
 // browser app the agents run behind an in-process A2A transport
-// (src/a2a/InProcessA2ABus); the derived card is byte-for-byte what an A2AServer
+// (@loom/app's InProcessA2ABus); the derived card is byte-for-byte what an A2AServer
 // would serve at /.well-known/agent.json.
 
 export const SchemaInspectorAgent: AgentDefinition = agent$({
