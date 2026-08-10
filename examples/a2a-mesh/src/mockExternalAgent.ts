@@ -29,6 +29,12 @@ const card = {
 };
 
 export function startMockExternalAgent(): Promise<MockExternalAgent> {
+  // Bounded: this is a long-lived HTTP server and every POST /tasks/send added an entry
+  // that nothing removed. A mock, so the stakes are small — but it is the same unbounded
+  // growth the real `InProcessA2ABus` was capped for, and a demo left running is exactly
+  // where it would show. Ids come from a monotonic counter, not `tasks.size`, so eviction
+  // cannot make them repeat.
+  const MAX_TASKS = 500;
   const tasks = new Map<string, { promptText: string }>();
   let counter = 0;
 
@@ -57,6 +63,11 @@ export function startMockExternalAgent(): Promise<MockExternalAgent> {
         const promptText = (task.message?.parts ?? []).map((p) => p.text ?? "").join("\n");
         const id = `remote-${++counter}`;
         tasks.set(id, { promptText });
+        while (tasks.size > MAX_TASKS) {
+          const oldest = tasks.keys().next();
+          if (oldest.done) break;
+          tasks.delete(oldest.value);
+        }
         // A2A allows an async task lifecycle; this mock completes immediately and
         // reports the result on the first poll.
         send(202, { id });
