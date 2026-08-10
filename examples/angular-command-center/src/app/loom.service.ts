@@ -100,31 +100,34 @@ export class LoomService {
     // defineConfig assembles the stores (in-memory), EffectRuntime, projection
     // wiring (onEvent → handleEvent), telemetry, and the WorkflowRuntime, and
     // registers the flow. We keep the custom projection runtime + an extra
-    // onEvent observer to push folded state into Angular signals inside the zone.
+    // `observability.onEvent` observer to push folded state into Angular signals
+    // inside the zone.
     const app = defineConfig({
       storage: { kind: "memory" },
       projectionRuntime: this.projectionRuntime,
-      telemetry: [ConsoleTelemetryAdapter],
       flows: [InvestigateIncidentFlow as RegisteredFlow],
-      onEvent: (e: EventEnvelope) => {
-        // Run inside Angular zone so signal updates trigger change detection.
-        this.zone.run(() => {
-          const execId = this.executionId();
-          if (execId) {
-            const st = this.projectionRuntime.getState<IncidentState>("incident", execId);
-            if (st) this.incidentState.set({ ...st });
-          }
+      observability: {
+        telemetry: [ConsoleTelemetryAdapter],
+        onEvent: (e: EventEnvelope) => {
+          // Run inside Angular zone so signal updates trigger change detection.
+          this.zone.run(() => {
+            const execId = this.executionId();
+            if (execId) {
+              const st = this.projectionRuntime.getState<IncidentState>("incident", execId);
+              if (st) this.incidentState.set({ ...st });
+            }
 
-          this.eventLog.update((prev) => [
-            ...prev,
-            {
-              id: e.id,
-              time: new Date().toLocaleTimeString("en", { hour12: false }),
-              label: e.eventType,
-              payload: e.payload,
-            },
-          ]);
-        });
+            this.eventLog.update((prev) => [
+              ...prev,
+              {
+                id: e.id,
+                time: new Date().toLocaleTimeString("en", { hour12: false }),
+                label: e.eventType,
+                payload: e.payload,
+              },
+            ]);
+          });
+        },
       },
     });
 

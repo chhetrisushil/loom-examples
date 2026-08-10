@@ -35,11 +35,11 @@ export function buildApp(opts?: { storage?: StorageOpt }): SwarmApp {
     // Auto-wire the fleet onto the A2A bus straight from the agent$ definitions: `a2a: true`
     // derives + registers each AgentCard (no hand-built, drift-prone card objects), and passing
     // the definitions (not cards) is also what lets each agent's `policies` bind to the flow it
-    // runs. `policies` adds the fleet-wide read-only guardrail.
+    // runs. `security.policies` adds the fleet-wide read-only guardrail.
     agents: FLEET,
     a2a: true,
     capabilityAgents: CAPABILITY_AGENT,
-    policies: [FLEET_GUARDRAIL],
+    security: { policies: [FLEET_GUARDRAIL] },
   });
 
   // The compute seam: executeGraph fans nodes out through this dispatcher. Local
