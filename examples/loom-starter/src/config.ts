@@ -30,10 +30,12 @@ export function buildApp(opts?: { storage?: StorageOpt }): LoomApp {
     flowModules,
     // Cross-cutting effect concerns as a composable chain — every effect (each
     // step's handler) is wrapped with exponential backoff + deterministic jitter.
-    effectMiddleware: [
-      retryMiddleware({ maxRetries: 3, baseDelayMs: 50, factor: 2, jitter: true }),
-    ],
+    execution: {
+      effectMiddleware: [
+        retryMiddleware({ maxRetries: 3, baseDelayMs: 50, factor: 2, jitter: true }),
+      ],
+    },
     // Static flow-graph checks at boot (missing effects, dangling capabilities).
-    validate: "warn",
+    checks: { validate: "warn" },
   });
 }

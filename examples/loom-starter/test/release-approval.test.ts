@@ -76,7 +76,7 @@ describe("release-approval flow (new-architecture wiring)", () => {
 
     const app = createTestApp({
       flows: [flakyFlow],
-      effectMiddleware: [retryMiddleware({ maxRetries: 3, baseDelayMs: 1 })],
+      execution: { effectMiddleware: [retryMiddleware({ maxRetries: 3, baseDelayMs: 1 })] },
     });
     const done = await (await app.runtime.start(flakyFlow, {})).waitForCompletion();
     expect(done.status).toBe("completed");
