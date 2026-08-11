@@ -17,6 +17,7 @@ installed/built**, or nothing resolves:
 ```
 workspace/
 ├── loom/            ← the framework (git@…/loom).  pnpm install && pnpm build
+├── loom-plugins/    ← 3P plugins (git@…/loom-plugins). Only `learning-router` needs it.
 └── loom-examples/   ← this repo.                   pnpm install
 ```
 

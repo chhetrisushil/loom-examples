@@ -20,6 +20,7 @@
     "overrides": {
       "@loom/agent": "link:../loom/packages/agent",
       "@loom/agent-surface": "link:../loom/packages/agent-surface",
+      "@loom/analytics": "link:../loom/packages/analytics",
       "@loom/app": "link:../loom/packages/app",
       "@loom/blueprint-runtime": "link:../loom/packages/blueprint-runtime",
       "@loom/capability": "link:../loom/packages/capability",
@@ -32,6 +33,7 @@
       "@loom/event-runtime": "link:../loom/packages/event-runtime",
       "@loom/graph-executor": "link:../loom/packages/graph-executor",
       "@loom/intent": "link:../loom/packages/intent",
+      "@loom/learning": "link:../loom/packages/learning",
       "@loom/llm": "link:../loom/packages/llm",
       "@loom/memory": "link:../loom/packages/memory",
       "@loom/middleware": "link:../loom/packages/middleware",
@@ -52,6 +54,7 @@
       "@loom/plugin-worker-remote": "link:../loom/plugins/worker-remote",
       "@loom/plugin-worker-server": "link:../loom/plugins/worker-server",
       "@loom/projection-runtime": "link:../loom/packages/projection-runtime",
+      "@loom/reasoning": "link:../loom/packages/reasoning",
       "@loom/registry": "link:../loom/packages/registry",
       "@loom/replay-vm": "link:../loom/packages/replay-vm",
       "@loom/scheduler": "link:../loom/packages/scheduler",
@@ -61,7 +64,8 @@
       "@loom/testing": "link:../loom/tools/testing",
       "@loom/worker-runtime": "link:../loom/packages/worker-runtime",
       "@loom/worker-runtime-local": "link:../loom/packages/worker-runtime-local",
-      "@loom/workflow-runtime": "link:../loom/packages/workflow-runtime"
+      "@loom/workflow-runtime": "link:../loom/packages/workflow-runtime",
+      "loom-plugin-linucb": "link:../loom-plugins/plugins/loom-plugin-linucb"
     }
   }
 }

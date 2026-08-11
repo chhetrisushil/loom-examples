@@ -1,0 +1,27 @@
+{
+  "name": "@loom/learning-router",
+  "version": "0.0.1",
+  "description": "The continuous-learning loop end to end: a support-triage flow routes each ticket through a LinUCB policy via decideWithPolicy (recording context + propensity), then the offline half mines the log into trajectories, trains a candidate, evaluates it against real traffic with SNIPS, and puts it through the promotion gate. Headless.",
+  "private": true,
+  "scripts": {
+    "build": "tsc --build",
+    "start": "tsx src/main.ts",
+    "test": "vitest run",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@loom/analytics": "*",
+    "@loom/app": "*",
+    "@loom/core": "*",
+    "@loom/learning": "*",
+    "@loom/workflow-runtime": "*",
+    "loom-plugin-linucb": "*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "^5.6.3",
+    "vitest": "catalog:"
+  }
+}
