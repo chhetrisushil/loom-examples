@@ -14,6 +14,7 @@ out as siblings:
 ```
 workspace/
 ├── loom/            # git clone the framework, then:  pnpm install && pnpm build
+├── loom-plugins/    # 3P plugins — only `learning-router` needs this one
 └── loom-examples/   # this repo, then:                pnpm install
 ```
 
