@@ -216,3 +216,35 @@ describe("the journaled/ambient boundary at the surface", () => {
     ).rejects.toThrow(/no surface for execution/);
   });
 });
+
+// ── K12: the approval gate is closed by the KERNEL, not by convention ────────
+//
+// `src/server.ts` stamps the approver itself, so a View cannot forge one — but
+// that is a property of one code path. These assert the property that survives
+// somebody adding a second one.
+describe("the resume authenticator", () => {
+  it("refuses an approval that did not come from the trust boundary", async () => {
+    const h = await harness();
+    const forged: ReleaseSignal = {
+      kind: "approval",
+      approver: "not-the-view",
+      stale: false,
+      headSequence: 0,
+    };
+    await expect(
+      h.app.runtime.resume(h.executionId, { eventType: RELEASE_SIGNAL, payload: forged })
+    ).rejects.toThrow(/may not approve/);
+    await h.close();
+  });
+
+  it("leaves CI's check-failed signal alone — it carries no authority claim", async () => {
+    // `not-applicable`, not `rejected`: treating a non-approval as a failed
+    // approval would break a legitimate path.
+    const h = await harness();
+    const check: ReleaseSignal = { kind: "check-failed", check: "e2e" };
+    await expect(
+      h.app.runtime.resume(h.executionId, { eventType: RELEASE_SIGNAL, payload: check })
+    ).resolves.toBeDefined();
+    await h.close();
+  });
+});
