@@ -5,7 +5,7 @@ import type { FlowRunner, RegisteredFlow } from "@loom/workflow-runtime";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { releaseApprovalFlow } from "../app/flows/release-approval/flow";
-import { SURFACES } from "../src/config";
+import { SURFACES, buildApp } from "../src/config";
 
 describe("release-approval flow (new-architecture wiring)", () => {
   it("pauses a medium-risk change for approval, then releases on resume", async () => {
@@ -81,6 +81,47 @@ describe("release-approval flow (new-architecture wiring)", () => {
     const done = await (await app.runtime.start(flakyFlow, {})).waitForCompletion();
     expect(done.status).toBe("completed");
     expect(attempts).toBe(2); // failed once, retried, succeeded
+    await app.close();
+  });
+});
+
+// ── The composition root, not a stand-in for it ──────────────────────────────
+//
+// The tests above build their own app with `createTestApp`, which is right for
+// testing the FLOW — but it means the wiring that actually ships (`buildApp`)
+// goes unexercised. The K12 authenticator lives there, so without this the gate
+// would be closed in production config and open in everything anyone tests.
+describe("the shipped wiring", () => {
+  it("refuses an approval from someone not on the approver list", async () => {
+    const app = buildApp();
+    const handle = await app.runtime.start(releaseApprovalFlow, {
+      service: "checkout-api",
+      changeType: "hotfix",
+    });
+    await handle.waitForSuspend();
+
+    await expect(
+      app.runtime.resume(handle.executionId, {
+        eventType: "ApprovalGranted",
+        payload: { approved: true, approvedBy: "a-stranger" },
+      })
+    ).rejects.toThrow(/is not an approver/);
+    await app.close();
+  });
+
+  it("admits a listed approver and completes", async () => {
+    const app = buildApp();
+    const handle = await app.runtime.start(releaseApprovalFlow, {
+      service: "checkout-api",
+      changeType: "hotfix",
+    });
+    await handle.waitForSuspend();
+
+    const resumed = await app.runtime.resume(handle.executionId, {
+      eventType: "ApprovalGranted",
+      payload: { approved: true, approvedBy: "release-manager" },
+    });
+    expect((await resumed.waitForCompletion()).status).toBe("completed");
     await app.close();
   });
 });
