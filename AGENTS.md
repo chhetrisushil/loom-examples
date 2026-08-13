@@ -112,6 +112,29 @@ Two things to get right:
   legitimately carries an open envelope (see `a2ui-callfunction`), model the extra fields or
   use `.passthrough()`, or they will be silently dropped from the durable log.
 
+## Convention: run the pre-flight checks, and enable `verify` where it can say something
+
+`loom doctor` is the front door — it discovers each gate's input, runs what it can, and **names
+what it skipped and why** (a skipped check never reads as a pass). Build with the Loom compiler
+and `loom verify` also gets the manifest's three source analyses injected automatically
+(`loopIdentity`, `nonDeterministic`, `runnerReach`) — nothing is hand-plumbed.
+
+```bash
+pnpm --filter @loom/<example> exec loom doctor
+```
+
+In an example's own `defineConfig`, enable `checks: { verify: "error" }` when the example has
+something for the rules to check — today that is the two approval-bearing examples
+(`loom-starter`, `mcp-app-release-approval`), where `suspension-safety` immediately found a real
+K12 defect: an approval gate with no `ResumeAuthenticator`, so resume events were
+unauthenticated. Enabling it elsewhere is welcome, but enabling it where every rule is inert adds
+ceremony without evidence.
+
+**Test the SHIPPED wiring, not a rebuild of it.** `createTestApp` is right for testing a flow, but
+it bypasses the app's own composition root — so an authenticator, an authorizer or a verify mode
+declared in `buildApp()` goes untested, and the gate ends up closed in production config and open
+in every test. Drive the real `defineConfig` at least once.
+
 ## Conventions
 
 - Package manager: `pnpm@9.14.4` (pinned via `packageManager`; use `corepack`).
