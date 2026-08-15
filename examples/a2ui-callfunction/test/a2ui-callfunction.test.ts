@@ -1,5 +1,6 @@
 import type { EventEnvelope } from "@loom/core";
 import type { A2UICallFunctionTransport, FunctionResponsePayload } from "@loom/plugin-a2ui";
+import { EFFECT_INDOUBT_RESOLVED } from "@loom/workflow-runtime";
 import { describe, expect, it } from "vitest";
 import { buildApp } from "../src/app";
 import { answerClientFunction, inProcessTransport } from "../src/client";
@@ -140,8 +141,14 @@ describe("a2ui-callfunction example", () => {
 
     // ── Operator verdict: the effect DID take place on the client — adopt its
     //    result durably without re-running the tool. ──
+    //
+    // The CONSTANT, never the literal: `EFFECT_INDOUBT_RESOLVED` spells "EffectInDoubtResolved",
+    // so hard-coding the constant's NAME names a gate the kernel never parks on. That used to
+    // pass anyway — a resume was delivered whatever it was called, and the in-doubt verdict is
+    // recognised by payload SHAPE — so this test was green while asserting a resume that could
+    // not happen. It is a refusal now that a resume must name the gate it answers.
     const settled = await appB.runtime.resume(executionId, {
-      eventType: "EFFECT_INDOUBT_RESOLVED",
+      eventType: EFFECT_INDOUBT_RESOLVED,
       payload: {
         stepId: "confirm-submit",
         resolution: "completed-with-result",
