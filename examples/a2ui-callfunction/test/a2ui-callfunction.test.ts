@@ -1,11 +1,14 @@
 import type { EventEnvelope } from "@loom/core";
+import { A2UISurfaceBridge } from "@loom/plugin-a2ui";
 import type { A2UICallFunctionTransport, FunctionResponsePayload } from "@loom/plugin-a2ui";
 import { EFFECT_INDOUBT_RESOLVED } from "@loom/workflow-runtime";
 import { describe, expect, it } from "vitest";
 import { buildApp } from "../src/app";
+import { CHECKOUT_CATALOG } from "../src/catalog";
 import { answerClientFunction, inProcessTransport } from "../src/client";
 import type { CheckoutInput, CheckoutOutput } from "../src/flow";
 import { RegisteredCheckoutFlow } from "../src/flow";
+import { CHECKOUT_VIEW } from "../src/view";
 
 // Wrap a transport to count how many times the client function is actually called.
 function counting(inner: A2UICallFunctionTransport) {
@@ -162,5 +165,34 @@ describe("a2ui-callfunction example", () => {
     expect((done.variables._output as CheckoutOutput).confirmationId).toBe("cf-operator");
 
     await appA.close(); // tears down the shared stores
+  });
+});
+
+// ── The catalogue is wired, not merely authored ───────────────────────────────
+//
+// This example declared CHECKOUT_CATALOG with `getLocale` and `confirmSubmit`
+// under `functions`, exported it, and never passed it to the bridge — so the
+// declaration enforced nothing and the bridge stamped a catalogId it could not
+// check a call against. The suite above passed throughout, because it drives the
+// flow and the transport and never touches the egress seam where the check lives.
+//
+// These two tests are that missing coverage.
+
+describe("the A2UI catalogue is actually wired to the bridge", () => {
+  const bridge = () =>
+    new A2UISurfaceBridge({
+      executionId: "cart-check",
+      components: CHECKOUT_VIEW,
+      catalog: CHECKOUT_CATALOG,
+    });
+
+  it("emits a callFunction for every function the flow invokes", () => {
+    for (const name of ["getLocale", "confirmSubmit"]) {
+      expect(() => bridge().callFunction(name, {}, { callId: `cart-check:${name}` })).not.toThrow();
+    }
+  });
+
+  it("refuses a function the catalogue does not declare", () => {
+    expect(() => bridge().callFunction("refund", {}, { callId: "c1" })).toThrow(/not declared/);
   });
 });
