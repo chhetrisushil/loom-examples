@@ -3,6 +3,7 @@ import type { EventEnvelope } from "@loom/core";
 import { A2UISurfaceBridge, A2UI_VERSION } from "@loom/plugin-a2ui";
 import type { A2UICallFunctionTransport, CallFunctionPayload } from "@loom/plugin-a2ui";
 import { buildApp } from "./app";
+import { CHECKOUT_CATALOG } from "./catalog";
 import { answerClientFunction } from "./client";
 import type { CheckoutInput } from "./flow";
 import { RegisteredCheckoutFlow } from "./flow";
@@ -35,6 +36,12 @@ async function main(): Promise<void> {
   const bridge = new A2UISurfaceBridge({
     executionId,
     components: CHECKOUT_VIEW,
+    // The catalogue, not just its id. This example authored CHECKOUT_CATALOG with
+    // `getLocale` and `confirmSubmit` under `functions` and then never handed it
+    // to the bridge — so the declaration sat there enforcing nothing, and the
+    // bridge stamped a catalogId it could not check a single call against.
+    // Supplying it is what makes `callFunction` a checked claim.
+    catalog: CHECKOUT_CATALOG,
     surfaceProperties: { agentDisplayName: "Checkout" },
   });
 
