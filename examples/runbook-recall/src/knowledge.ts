@@ -26,18 +26,26 @@ export interface Corpus {
   store: SqliteMemoryStore;
 }
 
+/**
+ * The corpus's identity and shape, in one place, because it is opened from TWO entry
+ * points that must agree: here (a store, before any app exists) and `app.knowledge`
+ * (from the app, for ingestion and for `loom knowledge`). Two chunkers over one corpus
+ * would chunk it differently on alternate ingests, and the only symptom is retrieval
+ * quality — so the options are a constant, not a call-site decision.
+ */
+export const CORPUS_OPTIONS = {
+  tier: CORPUS_TIER,
+  chunker: packParagraphs(260),
+  // The provenance label the fence shows the model. Default is
+  // `knowledge:<scope>:<docId>`; this corpus calls itself what its readers call it.
+  origin: (doc: { id: string }) => `runbook:${doc.id}`,
+} as const;
+
 export function openCorpus(dbPath: string): Corpus {
   const store = new SqliteMemoryStore(dbPath);
   // `openKnowledgeBase` builds the one-tier, never-evicting memory a corpus needs.
   // Doing it by hand is three more lines and one way to get it wrong: a bounded tier
   // would drop passages the manifest still counts (the constructor refuses one).
-  const kb = openKnowledgeBase(store, {
-    scope: CORPUS_SCOPE,
-    tier: CORPUS_TIER,
-    chunker: packParagraphs(260),
-    // The provenance label the fence shows the model. Default is
-    // `knowledge:<scope>:<docId>`; this corpus calls itself what its readers call it.
-    origin: (doc) => `runbook:${doc.id}`,
-  });
+  const kb = openKnowledgeBase(store, { scope: CORPUS_SCOPE, ...CORPUS_OPTIONS });
   return { kb, memory: kb.tieredMemory, store };
 }

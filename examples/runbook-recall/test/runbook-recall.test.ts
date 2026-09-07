@@ -11,7 +11,7 @@ import { ScriptedLlmProvider, citingAnswer } from "../src/ScriptedLlmProvider";
 import { buildApp } from "../src/app";
 import { RUNBOOKS } from "../src/corpus";
 import { type AnswerOutput, registerAnswerFlow } from "../src/flow";
-import { CORPUS_SCOPE, CORPUS_TIER, openCorpus } from "../src/knowledge";
+import { CORPUS_OPTIONS, CORPUS_SCOPE, CORPUS_TIER, openCorpus } from "../src/knowledge";
 import { buildNaiveRequest } from "../src/prompt";
 
 const POOL_QUESTION = "the checkout API times out while the pool is saturated — what now?";
@@ -34,7 +34,7 @@ describe("runbook-recall — knowledge with no knowledge feature", () => {
 
   const run = async (question: string, provider = new ScriptedLlmProvider(citingAnswer)) => {
     const flow = registerAnswerFlow(corpus.kb);
-    const app = buildApp(flow, provider);
+    const app = buildApp(flow, provider, corpus.store);
     const handle = await app.runtime.start(flow, { question });
     const state = await handle.waitForCompletion();
     return {
@@ -81,6 +81,32 @@ describe("runbook-recall — knowledge with no knowledge feature", () => {
     expect((final.variables._output as AnswerOutput).answer).toBe(first.output.answer);
   });
 
+  it("app.knowledge names the SAME corpus the flow closes over", async () => {
+    // Two entry points into one corpus: the flow's `KnowledgeBase` (opened over the store
+    // before any app exists) and the app's (opened from the configured `memoryStore`, which
+    // is how `loom knowledge sync/list/search` reaches it). They agree because the scope,
+    // the tier and the chunker are one constant — with a second chunker they would ingest
+    // the same documents into differently-shaped passages.
+    const app = buildApp(
+      registerAnswerFlow(corpus.kb),
+      new ScriptedLlmProvider(citingAnswer),
+      corpus.store
+    );
+    const fromApp = app.knowledge(CORPUS_SCOPE, CORPUS_OPTIONS);
+    expect((await fromApp.listDocs()).map((d) => d.docId).sort()).toEqual(
+      (await corpus.kb.listDocs()).map((d) => d.docId).sort()
+    );
+    // …and a document written through one is retrievable through the other.
+    await fromApp.putDoc({ id: "RB-500", title: "Autovacuum", text: "Lower the scale factor." });
+    // (RB-420 also talks about the scale factor, so this is `toContain`, not `toEqual` —
+    // the claim is visibility across the two handles, not a ranking.)
+    expect(
+      (await corpus.kb.retrieve("autovacuum scale factor", { decide: async (_id, d) => d() })).map(
+        (p) => p.docId
+      )
+    ).toContain("RB-500");
+  });
+
   it("a revised runbook supersedes its own text — the withdrawn step stops retrieving", async () => {
     // The half this example could not show before `@loom/knowledge`: it ingested once,
     // so an append-only corpus and an upsertable one behaved identically. Re-ingesting an
@@ -105,7 +131,7 @@ describe("runbook-recall — knowledge with no knowledge feature", () => {
     // recorded, it is decidable rather than a judgment call.
     const fabricating = new ScriptedLlmProvider(() => "Per RB-000: restart the primary.");
     const flow = registerAnswerFlow(corpus.kb);
-    const app = buildApp(flow, fabricating);
+    const app = buildApp(flow, fabricating, corpus.store);
     const handle = await app.runtime.start(flow, { question: POOL_QUESTION });
     await expect(handle.waitForCompletion()).rejects.toThrow(/RB-000/);
   });
@@ -147,7 +173,7 @@ describe("runbook-recall — knowledge with no knowledge feature", () => {
   it("REFUSES the naive shape: retrieved context pasted into the system prompt", async () => {
     const provider = new ScriptedLlmProvider(citingAnswer);
     const flow = registerAnswerFlow(corpus.kb);
-    const app = buildApp(flow, provider, buildNaiveRequest);
+    const app = buildApp(flow, provider, corpus.store, buildNaiveRequest);
     const handle = await app.runtime.start(flow, { question: BLOAT_QUESTION });
 
     await expect(handle.waitForCompletion()).rejects.toThrow(/Untrusted content/);

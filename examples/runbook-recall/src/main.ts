@@ -42,7 +42,7 @@ async function main(): Promise<void> {
     section("2. Ask — retrieval ranks the corpus, the model answers");
     const provider = new ScriptedLlmProvider(citingAnswer);
     const flow = registerAnswerFlow(kb);
-    const app = buildApp(flow, provider);
+    const app = buildApp(flow, provider, store);
     const question = "the checkout API times out while the pool is saturated — what now?";
     const handle = await app.runtime.start(flow, { question });
     const state = await handle.waitForCompletion();
@@ -67,7 +67,7 @@ async function main(): Promise<void> {
     await kb.sync(RUNBOOKS);
     const bloatProvider = new ScriptedLlmProvider(citingAnswer);
     const bloatFlow = registerAnswerFlow(kb);
-    const bloatApp = buildApp(bloatFlow, bloatProvider);
+    const bloatApp = buildApp(bloatFlow, bloatProvider, store);
     await (
       await bloatApp.runtime.start(bloatFlow, { question: "what should I do about table bloat?" })
     ).waitForCompletion();
@@ -81,7 +81,7 @@ async function main(): Promise<void> {
     section("5. The shape every RAG tutorial writes — refused");
     const naiveProvider = new ScriptedLlmProvider(citingAnswer);
     const naiveFlow = registerAnswerFlow(kb);
-    const naiveApp = buildApp(naiveFlow, naiveProvider, buildNaiveRequest);
+    const naiveApp = buildApp(naiveFlow, naiveProvider, store, buildNaiveRequest);
     try {
       await (
         await naiveApp.runtime.start(naiveFlow, { question: "table bloat?" })
