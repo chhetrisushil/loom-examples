@@ -1,5 +1,12 @@
-import { StatusBadge, blueprint$, grid, stack } from "@loom/blueprint-runtime";
-import type { Blueprint, Layout, Widget } from "@loom/blueprint-runtime";
+import {
+  StatusBadge,
+  blueprint$,
+  builtinCatalog,
+  grid,
+  stack,
+  validateBlueprint,
+} from "@loom/blueprint-runtime";
+import type { Blueprint, BlueprintValidation, Layout, Widget } from "@loom/blueprint-runtime";
 import type { LlmProvider } from "@loom/llm";
 import type { ProjectionRuntime } from "@loom/projection-runtime";
 import { type Classification, classifyIntent } from "./agent";
@@ -15,6 +22,16 @@ export interface DashboardResult {
   whatWidget: string; // catalogue id of the primary widget
   whyWidgets: string[]; // catalogue ids of the supporting widgets
   blueprint: Blueprint;
+  /**
+   * The composed blueprint checked against the catalogue it was composed FROM.
+   *
+   * A hand-authored dashboard is reviewed once; a generated one is assembled per
+   * question, from a selection an agent made, and nothing else looks at it before a
+   * renderer does. `validateBlueprint` never throws — it returns every finding in one
+   * pass — so the composer can report a gap rather than fail a request, which is the
+   * right shape when the UI is a best effort over live telemetry.
+   */
+  validation: BlueprintValidation;
 }
 
 // Every projection a composed dashboard may bind to (the renderer reads these).
@@ -60,6 +77,9 @@ export class DashboardComposer {
       whatWidget: model.primaryWidget,
       whyWidgets: model.whyWidgets,
       blueprint,
+      // Every widget here comes from a built-in builder, so the built-in catalogue is
+      // the contract this composition is answerable to.
+      validation: validateBlueprint(blueprint, builtinCatalog),
     };
   }
 

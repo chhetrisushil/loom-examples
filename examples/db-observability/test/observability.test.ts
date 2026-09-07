@@ -1,6 +1,8 @@
+import { blueprint$, builtinCatalog, stack, validateBlueprint } from "@loom/blueprint-runtime";
 import type { Blueprint, Layout, Widget } from "@loom/blueprint-runtime";
 import { describe, expect, it } from "vitest";
 import { buildApp } from "../src/app";
+import { catalogueEntry } from "../src/catalogue";
 
 // Collect every widget kind in a (dynamically assembled) blueprint.
 function widgetKinds(blueprint: Blueprint): string[] {
@@ -66,5 +68,52 @@ describe("db-observability", () => {
     expect(repl.classification.topic).toBe("replication");
     // Different intents → different dashboards from the one catalogue.
     expect(cpu.blueprint.id).not.toBe(repl.blueprint.id);
+  });
+});
+
+// ── The generated dashboard answers to the catalogue it was composed from ──────
+//
+// A hand-authored blueprint is reviewed once. This one is assembled per question from
+// a selection an agent made, and nothing looks at the result before a renderer does —
+// which is the case `validateBlueprint` exists for.
+describe("catalogue conformance of a generated dashboard", () => {
+  const QUESTIONS = [
+    "Why is the CPU utilization high?",
+    "What is the connection saturation level?",
+    "Is the replica lagging?",
+    "Which queries are slow?",
+  ];
+
+  it.each(QUESTIONS)("composes a catalogue-valid dashboard for %s", async (question) => {
+    const { composer } = buildApp();
+    const { validation } = await composer.answer(question);
+    expect(validation.findings).toEqual([]);
+    expect(validation.ok).toBe(true);
+    // A report over zero widgets is not a pass — the type's own doc says so, and
+    // without this the assertion above would hold for a blueprint that composed nothing.
+    expect(validation.widgets).toBeGreaterThan(4);
+  });
+
+  it("catches a topic model that reuses its primary widget as a WHY widget", () => {
+    // The mistake this guard is actually for, and one edit away: widget ids are derived
+    // from content, so building the same catalogue entry twice in one dashboard yields
+    // two nodes with one id — and the renderer keys on it, so one silently replaces the
+    // other. No shipped topic does this today; the check is what keeps it that way.
+    const duplicated = stack({
+      gap: 16,
+      children: [catalogueEntry("cpu.metric").build(), catalogueEntry("cpu.metric").build()],
+    });
+    const report = validateBlueprint(
+      blueprint$({
+        id: "reuses-its-primary",
+        title: "reuses its primary",
+        layout: duplicated,
+        projections: ["cpu"],
+      }),
+      builtinCatalog
+    );
+
+    expect(report.ok).toBe(false);
+    expect(report.findings.map((f) => f.code)).toContain("duplicate-node-id");
   });
 });

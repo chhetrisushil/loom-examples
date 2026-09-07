@@ -50,11 +50,16 @@ async function main(): Promise<void> {
 
     for (const question of QUESTIONS_BEFORE) {
       const result = await composer.answer(question);
+      const { ok, widgets, findings } = result.validation;
       console.log(
         dim(
-          `\n# "${question}" → topic=${result.classification.topic} kind=${result.classification.kind}`
+          `\n# "${question}" → topic=${result.classification.topic} kind=${result.classification.kind}` +
+            ` · ${widgets} widgets, ${ok ? "catalogue-valid" : `${findings.length} finding(s)`}`
         )
       );
+      // A generated dashboard is checked against the catalogue it was composed from,
+      // and a gap is reported rather than rendered blank.
+      for (const f of findings) console.log(dim(`  ! ${f.severity} ${f.code}: ${f.message}`));
       console.log(renderer.render(result.blueprint, executionId));
     }
 
