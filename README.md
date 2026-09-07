@@ -45,6 +45,7 @@ pnpm --filter @loom/db-observability start   # run one end-to-end
 | `a2ui-egress` | Project a surface onto the Google A2UI wire protocol (`@loom/plugin-a2ui`) |
 | `a2ui-callfunction` | A2UI `callFunction` bidirectional RPC — two grains + crash→in-doubt recovery |
 | `mcp-app-release-approval` | Serve a surface as an MCP App (SEP-1865) — pinned template, ambient cursor polling, and decision provenance across a long-held gate (`@loom/plugin-mcp-app`) |
+| `runbook-recall` | Retrieval-augmented generation with **no retrieval feature**: the `semantic` memory tier as the corpus, `MemoryStore.search` as the retriever, `ctx.decide` so the retrieval is a recorded fact (the suite deletes the corpus and replays to the same answer), and ADR 0085 taint so a passage somebody edited into the wiki cannot reach an instruction position |
 | `learning-router` | The continuous-learning loop end to end: `decideWithPolicy` → `trajectories` → SNIPS off-policy evaluation → `promotionGate`, with a 3P LinUCB policy (`@loom/learning` + `loom-plugin-linucb`) |
 | `appgen-brownfield`, `appgen-models` | AI-driven app generation |
 
