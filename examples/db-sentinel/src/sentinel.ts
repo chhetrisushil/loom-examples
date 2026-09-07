@@ -2,6 +2,7 @@ import { schedule$, step$ } from "@loom/core";
 import type { FlowDefinition } from "@loom/core";
 import { ToolEffect } from "@loom/effect-runtime";
 import type { EffectMiddleware } from "@loom/effect-runtime";
+import type { KnowledgeBase } from "@loom/knowledge";
 import { claimCheckMiddleware, isClaimCheck } from "@loom/middleware";
 import type { ClaimCheckStore } from "@loom/middleware";
 import { sentinelState } from "@loom/plugin-durable-state";
@@ -69,6 +70,12 @@ export interface SentinelDeployment {
 
 export interface SentinelDeps {
   stateStore: DurableStateStore;
+  /**
+   * The runbook corpus. OPTIONAL: a sentinel with no knowledge base still emits findings,
+   * it just emits them without guidance — the corpus is an input to the conclusion, not a
+   * dependency of the loop.
+   */
+  knowledge?: KnowledgeBase;
   contentStore: ClaimCheckStore;
   outages?: readonly OutageWindow[];
   /** Override the registered migrations (the negative test deploys v3 WITHOUT a path). */
@@ -127,6 +134,22 @@ export function makeSentinel(version: 1 | 2 | 3, deps: SentinelDeps): SentinelDe
     // 3. Conclude (P-2): findings are domain events, inline, citing evidence by ref.
     const anomaly = !digest.stale && digest.maxLagMs > input.thresholdLagMs;
     if (anomaly) {
+      // 3a. Retrieve the operational guidance that is live AT THIS WAKE, recorded through
+      //     `ctx.decide`. The corpus is edited on the operators' clock, not the agent's, so
+      //     an unrecorded retrieval would make a year-old incident review read today's
+      //     revision of the runbook and call it what the sentinel saw. `limit: 2` bounds
+      //     what enters the log — a recorded decision is permanent.
+      const passages =
+        deps.knowledge === undefined
+          ? []
+          : await deps.knowledge.retrieve(`replication lag ${digest.maxLagMs}ms`, {
+              decide: ctx.decide,
+              limit: 2,
+              // Keyed by occurrence, not by the query text: two wakes asking the same
+              // question of a corpus that changed between them are two decisions.
+              decisionKey: `runbooks:${t}`,
+            });
+
       const finding: Finding = {
         category: "replication-lag",
         severity: digest.maxLagMs > 800 ? "high" : "low",
@@ -134,6 +157,11 @@ export function makeSentinel(version: 1 | 2 | 3, deps: SentinelDeps): SentinelDe
         target: { database: "orders", metric: "replication_lag_ms" },
         evidence: isClaimCheck(read) ? [{ __loomContent: read.ref.__loomContent }] : [],
         observed: { maxLagMs: digest.maxLagMs, asOf: digest.asOf },
+        guidance: [
+          ...new Map(
+            passages.map((p) => [p.docId, { docId: p.docId, title: p.title ?? p.docId }])
+          ).values(),
+        ],
         actingVersion: version,
       };
       ctx.emit(FINDING_RECORDED, finding);

@@ -2,7 +2,7 @@
   "name": "@loom/db-sentinel",
   "version": "0.0.1",
   "private": true,
-  "description": "Perpetual-agent reference example (ADR 0051): a database sentinel as a schedule over bounded runs — durable carry state (@loom/plugin-durable-state), claim-checked telemetry (ADR 0054), findings as domain events, K10.5 pinned retention — proven by a DST-simulated 12-month acceptance suite.",
+  "description": "Perpetual-agent reference example (ADR 0051): a database sentinel as a schedule over bounded runs \u2014 durable carry state (@loom/plugin-durable-state), claim-checked telemetry (ADR 0054), findings as domain events, K10.5 pinned retention \u2014 proven by a DST-simulated 12-month acceptance suite.",
   "scripts": {
     "build": "tsc --build",
     "start": "tsx src/main.ts",
@@ -10,9 +10,12 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
+    "@loom/classify": "*",
     "@loom/core": "*",
     "@loom/effect-runtime": "*",
     "@loom/event-runtime": "*",
+    "@loom/knowledge": "*",
+    "@loom/memory": "*",
     "@loom/middleware": "*",
     "@loom/plugin-content": "*",
     "@loom/plugin-durable-state": "*",

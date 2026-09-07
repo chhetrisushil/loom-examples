@@ -1,13 +1,12 @@
-# runbook-recall — knowledge, with no knowledge feature
+# runbook-recall — knowledge, from parts that exist for other reasons
 
 An on-call assistant answers incident questions from a corpus of runbooks: chunk the
 documents, retrieve the passages that match the question, put them in the prompt, answer.
 Ordinary RAG.
 
-The point of the example is what it did **not** need. Loom ships no knowledge base, no
-document store, no retriever, no embedding provider, and no `rag:` configuration key —
-and none of them turned out to be missing. Everything a knowledge feature needs already
-exists here for other reasons:
+Almost none of it is a knowledge feature. Loom ships no `knowledge$` construct, no
+retriever, no embedding provider and no `rag:` configuration key, and everything below
+already existed for another reason:
 
 | RAG needs | loom already has | why it was there |
 |---|---|---|
@@ -17,9 +16,19 @@ exists here for other reasons:
 | safety | ADR 0085 taint | third-party content refused in instruction positions |
 | durability | `SqliteMemoryStore` | the corpus outlives the process |
 
-What *is* application code: `corpus.ts` (a document type and a twelve-line chunker) and
-`prompt.ts` (how a passage becomes a message). Both are decisions about this corpus, and
-neither belongs in a framework.
+**One row of that table used to be wrong, and this example is why it went unnoticed.**
+It originally shipped with a hand-written document type, chunker and prompt builder, and
+a comment saying none of them belonged in a framework. Half of that held. The other half
+did not: `search` ranks within ONE key, so a searchable corpus has to be one key — while
+a *document*, the thing people actually edit, is a subset of it that the store could not
+name. Re-ingesting an edited runbook left BOTH revisions in the index. Nothing here could
+show that, because it ingests once and asks once.
+[`@loom/knowledge`](../../../loom/docs/adr/0091-corpus-lifecycle-and-the-knowledge-package.md)
+now owns that mapping, and `db-sentinel` — a sentinel whose wiki is edited mid-year — is
+where it is exercised properly.
+
+What is still application code: which chunker to use (`packParagraphs(260)` here), what a
+runbook is, and what the operator's instructions say.
 
 ```bash
 pnpm --filter @loom/runbook-recall start   # narrated, offline
@@ -31,7 +40,7 @@ pnpm --filter @loom/runbook-recall test
 **1. Retrieval is a recorded decision, not a repeated query.**
 
 ```ts
-const recalled = await memory.recallRelevant(CORPUS_TIER, CORPUS_SCOPE, input.question, {
+const passages = await kb.retrieve(input.question, {
   decide: ctx.decide,   // required — see below
   limit: 3,
 });
@@ -47,7 +56,7 @@ citations.
 **2. Taint at ingest, once — not at the prompt, every time.**
 
 ```ts
-text: tainted(piece.text, `runbook:${piece.docId}`)
+new KnowledgeBase({ memory, scope: "runbooks", origin: (doc) => `runbook:${doc.id}` })
 ```
 
 The wrapper is plain JSON, so the mark rides the memory store, the recorded retrieval and
@@ -75,6 +84,18 @@ The honest limit, also asserted: nothing stops you calling `unwrapTainted` and p
 text wherever you like. What you cannot do is get there by accident — interpolating a
 tainted passage into a string yields `[object Object]`, not the passage.
 
+**4. A citation to a document that was never retrieved is decidably false.**
+
+```ts
+return { answer, cited: assertGrounded(citedIds(answer), passages).sort() };
+```
+
+The retrieval was recorded, so the set of documents the model could possibly have read is
+known exactly — which makes this the one hallucination in a RAG answer that is decidable
+rather than judged. Deriving `cited` from the passages instead, as this example used to,
+is a check that cannot fail. The suite scripts a model that cites `RB-000` and asserts the
+flow fails.
+
 ## What this example found
 
 Building it surfaced two defects in the packages it consumes, both now fixed upstream:
@@ -90,3 +111,7 @@ Building it surfaced two defects in the packages it consumes, both now fixed ups
 
 Both are the kind of thing only a second consumer finds: each package was internally
 consistent and green.
+
+And the example's own limit is the third finding, made later: proving that "knowledge
+needs no loom surface" from a corpus that is written once proves it only for corpora that
+are written once. See loom ADR 0091.
