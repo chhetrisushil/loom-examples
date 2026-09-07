@@ -1,6 +1,6 @@
-import { KnowledgeBase } from "@loom/knowledge";
-import type { KnowledgeDoc } from "@loom/knowledge";
-import { InMemoryMemoryStore, TieredMemory } from "@loom/memory";
+import { openKnowledgeBase } from "@loom/knowledge";
+import type { KnowledgeBase, KnowledgeDoc } from "@loom/knowledge";
+import { InMemoryMemoryStore } from "@loom/memory";
 
 // ── The runbook corpus: the half of a sentinel's knowledge that CHANGES ───────
 //
@@ -83,8 +83,5 @@ last checkpoint and make the lag worse.`,
  * above it changes.
  */
 export function openRunbooks(): KnowledgeBase {
-  return new KnowledgeBase({
-    memory: new TieredMemory({ tiers: { semantic: {} }, store: new InMemoryMemoryStore() }),
-    scope: RUNBOOK_SCOPE,
-  });
+  return openKnowledgeBase(new InMemoryMemoryStore(), { scope: RUNBOOK_SCOPE });
 }
