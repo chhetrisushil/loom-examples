@@ -1,11 +1,11 @@
-import { unwrapTainted } from "@loom/classify";
+import { isTainted, unwrapTainted } from "@loom/classify";
 import { virtualClock } from "@loom/dst";
 import type { KnowledgeBase } from "@loom/knowledge";
 import { describe, expect, it } from "vitest";
 import { FINDING_RECORDED, type Finding } from "../src/domain";
 import { deploySentinel, fireOccurrence, newWorld } from "../src/harness";
 import { RUNBOOKS_MIDYEAR, RUNBOOKS_V1, openRunbooks } from "../src/knowledge";
-import { occurrenceId } from "../src/sentinel";
+import { LEARNED_PREFIX, SENTINEL_SOURCE, occurrenceId } from "../src/sentinel";
 import { DAY, HOUR, SIM_START, isAnomalyTime } from "../src/substrate";
 
 // ── The corpus a perpetual agent reads is edited while it runs ────────────────
@@ -45,7 +45,7 @@ async function fireAnomaly(
 describe("db-sentinel — guidance from a corpus that changes mid-year", () => {
   it("cites the runbooks that were live at the wake", async () => {
     const knowledge = openRunbooks();
-    await knowledge.sync(RUNBOOKS_V1);
+    await knowledge.sync(RUNBOOKS_V1, { source: "wiki" });
     const [finding] = await fireAnomaly(newWorld(), knowledge, EARLY_WAKE);
     expect(finding?.guidance.map((g) => g.docId)).toContain("RB-101");
     expect(finding?.guidance[0]?.title).toBe("Replication lag");
@@ -53,13 +53,20 @@ describe("db-sentinel — guidance from a corpus that changes mid-year", () => {
 
   it("a July edit changes what later wakes retrieve, and the OLD remedy stops retrieving", async () => {
     const knowledge = openRunbooks();
-    await knowledge.sync(RUNBOOKS_V1);
+    await knowledge.sync(RUNBOOKS_V1, { source: "wiki" });
     await fireAnomaly(newWorld(), knowledge, EARLY_WAKE);
 
-    const result = await knowledge.sync(RUNBOOKS_MIDYEAR);
-    // One revision, one retirement, and one document untouched — the reason `sync` is
-    // runnable on a schedule rather than being a corpus rebuild.
-    expect(result).toEqual({ written: ["RB-101"], unchanged: ["RB-204"], removed: ["RB-777"] });
+    const result = await knowledge.sync(RUNBOOKS_MIDYEAR, { source: "wiki" });
+    // One revision, one retirement, one document untouched — the reason `sync` is runnable
+    // on a schedule rather than being a corpus rebuild — and the sentinel's own document
+    // retained, because the wiki does not own it.
+    expect({ ...result, retained: [] }).toEqual({
+      written: ["RB-101"],
+      unchanged: ["RB-204"],
+      removed: ["RB-777"],
+      retained: [],
+    });
+    expect(result.retained.every((id) => id.startsWith(LEARNED_PREFIX))).toBe(true);
 
     const passages = await knowledge.retrieve("cancel the blocking query", {
       decide: async (_k, compute) => compute(),
@@ -74,10 +81,10 @@ describe("db-sentinel — guidance from a corpus that changes mid-year", () => {
 
   it("a retired runbook stops being cited without the corpus being rebuilt", async () => {
     const knowledge = openRunbooks();
-    await knowledge.sync(RUNBOOKS_V1);
+    await knowledge.sync(RUNBOOKS_V1, { source: "wiki" });
     expect((await knowledge.listDocs()).map((d) => d.docId)).toContain("RB-777");
 
-    await knowledge.sync(RUNBOOKS_MIDYEAR);
+    await knowledge.sync(RUNBOOKS_MIDYEAR, { source: "wiki" });
     // Terms are OR-ed and there is no stopword list, so the query is deliberately made of
     // words only the retired runbook contains — "promote the standby" would still match
     // every document through "the", ranked to the bottom but present in the set.
@@ -98,7 +105,7 @@ describe("db-sentinel — guidance from a corpus that changes mid-year", () => {
     // reconstructs what the sentinel actually read.
     const world = newWorld();
     const knowledge = openRunbooks();
-    await knowledge.sync(RUNBOOKS_V1);
+    await knowledge.sync(RUNBOOKS_V1, { source: "wiki" });
 
     const clock = virtualClock(EARLY_WAKE);
     const deploy = deploySentinel(world, 1, { knowledge }, () => clock.now());
@@ -117,8 +124,11 @@ describe("db-sentinel — guidance from a corpus that changes mid-year", () => {
     // to make this test bite: `guidance` carries ids, and RB-101 survives the July edit,
     // so a LIVE retrieval would return the same ids from different text and the assertion
     // would pass either way. Emptied, a live retrieval can only return nothing.
-    await knowledge.sync(RUNBOOKS_MIDYEAR);
-    await knowledge.sync([]);
+    await knowledge.sync(RUNBOOKS_MIDYEAR, { source: "wiki" });
+    // Emptied means emptied: each writer retires its OWN documents, which is the same
+    // property stated from the other side.
+    await knowledge.sync([], { source: "wiki" });
+    await knowledge.sync([], { source: SENTINEL_SOURCE });
     expect(
       await knowledge.retrieve("replication lag", { decide: async (_k, compute) => compute() })
     ).toEqual([]);
@@ -136,6 +146,56 @@ describe("db-sentinel — guidance from a corpus that changes mid-year", () => {
     expect(replayedFindings.length).toBeGreaterThan(1);
     expect(replayedFindings.at(-1)).toEqual(replayedFindings[0]);
     expect(replayedFindings.at(-1)?.guidance.map((g) => g.docId)).toContain("RB-101");
+  });
+
+  it("writes back what it learned, and the wiki reconcile does not delete it", async () => {
+    // The second kind of knowledge: not a runbook somebody authored, but a fact the agent
+    // produced. It lives in the same corpus it reads from — which is only safe because the
+    // two halves have different writers. Without that, the next reconcile of the authored
+    // half deletes every learning, since they are not in the set the wiki produced.
+    const world = newWorld();
+    const knowledge = openRunbooks();
+    await knowledge.sync(RUNBOOKS_V1, { source: "wiki" });
+    await fireAnomaly(world, knowledge, EARLY_WAKE);
+
+    const learned = (await knowledge.listDocs()).filter((d) => d.docId.startsWith(LEARNED_PREFIX));
+    expect(learned).toHaveLength(1);
+    expect(learned[0]?.source).toBe(SENTINEL_SOURCE);
+
+    // July: the wiki is edited and re-synced. The sentinel's document is not in that set.
+    const result = await knowledge.sync(RUNBOOKS_MIDYEAR, { source: "wiki" });
+    expect(result.removed).toEqual(["RB-777"]);
+    expect(result.retained).toEqual(learned.map((d) => d.docId));
+    expect((await knowledge.listDocs()).map((d) => d.docId)).toContain(learned[0]?.docId);
+  });
+
+  it("the learning is retrievable beside the runbooks, and is TAINTED like everything else", async () => {
+    // A learning is derived from an execution that read a database — third-party content by
+    // the same rule as a wiki page, so it must not reach an instruction position either.
+    const knowledge = openRunbooks();
+    await knowledge.sync(RUNBOOKS_V1, { source: "wiki" });
+    await fireAnomaly(newWorld(), knowledge, EARLY_WAKE);
+
+    const hits = await knowledge.retrieve("replication lag on orders reached", {
+      decide: async (_k, compute) => compute(),
+      limit: 5,
+    });
+    const learned = hits.find((p) => p.docId.startsWith(LEARNED_PREFIX));
+    expect(learned).toBeDefined();
+    expect(isTainted(learned?.text)).toBe(true);
+  });
+
+  it("re-firing a wake does not write a second learning", async () => {
+    // The write is a journaled effect and the document id is derived from the observation,
+    // so a replay serves it from the log and an upsert keyed by that id cannot double it.
+    const world = newWorld();
+    const knowledge = openRunbooks();
+    await knowledge.sync(RUNBOOKS_V1, { source: "wiki" });
+    await fireAnomaly(world, knowledge, EARLY_WAKE);
+    await fireAnomaly(world, knowledge, EARLY_WAKE); // idempotent occurrence — a no-op start
+    expect(
+      (await knowledge.listDocs()).filter((d) => d.docId.startsWith(LEARNED_PREFIX))
+    ).toHaveLength(1);
   });
 
   it("still emits findings with no corpus wired at all", async () => {

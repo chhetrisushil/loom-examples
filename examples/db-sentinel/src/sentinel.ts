@@ -1,5 +1,5 @@
 import { schedule$, step$ } from "@loom/core";
-import type { FlowDefinition } from "@loom/core";
+import type { FlowDefinition, TaskDefinition } from "@loom/core";
 import { ToolEffect } from "@loom/effect-runtime";
 import type { EffectMiddleware } from "@loom/effect-runtime";
 import type { KnowledgeBase } from "@loom/knowledge";
@@ -67,6 +67,23 @@ export interface SentinelDeployment {
   middleware: EffectMiddleware[];
   register(effects: EffectRegistry): void;
 }
+
+/** The prefix every document the sentinel writes carries, so an operator can spot them. */
+export const LEARNED_PREFIX = "learned:lag-";
+/** The writer name the sentinel's own documents are stamped with (loom ADR 0091 follow-on). */
+export const SENTINEL_SOURCE = "sentinel";
+export const RECORD_TOOL = "knowledge.record";
+
+/** Writing a learning is an EFFECT: journaled once, served from the log on replay. */
+const RecordLearningTask: TaskDefinition<
+  { docId: string; title: string; text: string },
+  { docId: string }
+> = {
+  _tag: "TaskDefinition",
+  kind: "tool",
+  id: "record-learning",
+  toolId: RECORD_TOOL,
+};
 
 export interface SentinelDeps {
   stateStore: DurableStateStore;
@@ -165,6 +182,24 @@ export function makeSentinel(version: 1 | 2 | 3, deps: SentinelDeps): SentinelDe
         actingVersion: version,
       };
       ctx.emit(FINDING_RECORDED, finding);
+
+      // 3b. WRITE BACK what this wake established, as a document in the same corpus the
+      //     sentinel reads from. This is the second kind of knowledge: not a runbook
+      //     somebody authored, but a fact the agent produced — and it is only usable later
+      //     if it survives the nightly reconcile of the authored half, which is what
+      //     `source` is for. The wiki job owns the runbooks; the sentinel owns these.
+      //
+      //     Written through `ctx.execute` so the write is a journaled effect: a replay
+      //     serves it from the log instead of appending a second copy on every replay.
+      if (deps.knowledge !== undefined) {
+        await ctx.execute(RecordLearningTask, {
+          docId: `${LEARNED_PREFIX}${digest.asOf}`,
+          title: `Lag exceeded ${input.thresholdLagMs}ms on ${new Date(digest.asOf).toISOString().slice(0, 10)}`,
+          text: `Replication lag on orders reached ${digest.maxLagMs}ms. Guidance in force at the time: ${
+            finding.guidance.map((g) => g.docId).join(", ") || "none"
+          }.`,
+        });
+      }
     }
 
     // 4. Carry state out (DS-4): CAS with the revision the load returned.
@@ -203,6 +238,19 @@ export function makeSentinel(version: 1 | 2 | 3, deps: SentinelDeps): SentinelDe
     middleware,
     register(effects: EffectRegistry): void {
       effects.register(READ_TOOL, readEffect as never);
+      // NOT idempotent-by-luck: `putDoc` is an upsert keyed by the document id, and the id
+      // is derived from the observation's timestamp — so re-running a wake writes the same
+      // document rather than a second one.
+      effects.register(
+        RECORD_TOOL,
+        new ToolEffect<{ docId: string; title: string; text: string }, { docId: string }>(
+          async ({ docId, title, text }) => {
+            await deps.knowledge?.putDoc({ id: docId, title, text }, { source: SENTINEL_SOURCE });
+            return { docId };
+          },
+          { idempotent: true }
+        ) as never
+      );
       state.register(effects);
     },
   };

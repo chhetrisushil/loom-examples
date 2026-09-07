@@ -60,6 +60,23 @@ once, where an append-only corpus and an upsertable one behave identically.
 The last row matters as much as the others: knowledge is an input to the conclusion, not a
 dependency of the loop.
 
+### …and the sentinel writes back what it learned
+
+A finding says what happened. The sentinel also records it as a DOCUMENT in the same corpus it
+reads from — the second kind of knowledge: not a runbook somebody authored, but a fact the agent
+produced.
+
+That is only safe because the two halves have different **writers** (loom ADR 0091 follow-on).
+`sync` is a destructive reconcile, so without ownership the next run of the wiki job would delete
+every learning — they are not in the set the wiki produced, and never will be. The wiki syncs as
+`source: "wiki"`, the sentinel writes as `source: "sentinel"`, and the July reconcile reports the
+sentinel's documents as `retained` rather than removing them.
+
+Two details the suite pins: the write is a journaled `ctx.execute` effect keyed by the
+observation's timestamp, so **re-firing a wake does not write a second learning**; and the
+learning is **tainted like any other passage**, because a fact derived from an execution that read
+a database is third-party content by the same rule as a wiki page.
+
 ## Run
 
 ```sh
