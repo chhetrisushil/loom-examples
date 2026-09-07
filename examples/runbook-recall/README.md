@@ -96,6 +96,25 @@ rather than judged. Deriving `cited` from the passages instead, as this example 
 is a check that cannot fail. The suite scripts a model that cites `RB-000` and asserts the
 flow fails.
 
+## Two ways into one corpus
+
+The flow closes over a `KnowledgeBase` passed to it — a dependency like any other, and the
+only option while the flow is *declared* to `defineConfig` (register it afterwards and it
+misses boot-time verification). The app's `memoryStore` is that corpus's store, so
+`app.knowledge("runbooks")` reaches the same documents, which is what makes the corpus
+operable from outside the process:
+
+```bash
+npx loom knowledge list   --config dist/loom.config.js --scope runbooks
+npx loom knowledge search --config dist/loom.config.js --scope runbooks "replica lag"
+npx loom knowledge sync   --config dist/loom.config.js --scope runbooks --dir docs/ --apply
+```
+
+The scope, tier and chunker are one exported constant for exactly this reason: two chunkers
+over one corpus ingest the same documents into differently-shaped passages, and the only
+symptom is retrieval quality. The suite asserts both handles see the same documents, and that
+a document written through one retrieves through the other.
+
 ## What this example found
 
 Building it surfaced two defects in the packages it consumes, both now fixed upstream:
