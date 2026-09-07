@@ -1,0 +1,28 @@
+{
+  "name": "@loom/runbook-recall",
+  "version": "0.0.1",
+  "description": "Knowledge retrieval (RAG) built entirely from primitives loom already ships: a semantic memory tier as the corpus, MemoryStore.search as the retriever, ctx.decide to make the retrieval a recorded fact, and the ADR-0085 taint that refuses a retrieved passage in an instruction position. No knowledge base, no embedding SPI, no framework change. Headless.",
+  "private": true,
+  "scripts": {
+    "build": "tsc --build",
+    "start": "tsx src/main.ts",
+    "test": "vitest run",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@loom/app": "*",
+    "@loom/classify": "*",
+    "@loom/core": "*",
+    "@loom/llm": "*",
+    "@loom/memory": "*",
+    "@loom/plugin-sqlite": "*",
+    "@loom/workflow-runtime": "*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "^5.6.3",
+    "vitest": "catalog:"
+  }
+}

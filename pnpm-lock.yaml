@@ -26,6 +26,7 @@ overrides:
   '@loom/app': link:../loom/packages/app
   '@loom/blueprint-runtime': link:../loom/packages/blueprint-runtime
   '@loom/capability': link:../loom/packages/capability
+  '@loom/classify': link:../loom/packages/classify
   '@loom/cli': link:../loom/tools/cli
   '@loom/compiler': link:../loom/tools/compiler
   '@loom/core': link:../loom/packages/core
@@ -1226,6 +1227,46 @@ importers:
       jsdom:
         specifier: ^25.0.1
         version: 25.0.1
+      tsx:
+        specifier: 'catalog:'
+        version: 4.23.1
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 2.1.9(@types/node@22.20.1)(jsdom@25.0.1)(sass@1.90.0)
+
+  examples/runbook-recall:
+    dependencies:
+      '@loom/app':
+        specifier: link:../../../loom/packages/app
+        version: link:../../../loom/packages/app
+      '@loom/classify':
+        specifier: link:../../../loom/packages/classify
+        version: link:../../../loom/packages/classify
+      '@loom/core':
+        specifier: link:../../../loom/packages/core
+        version: link:../../../loom/packages/core
+      '@loom/llm':
+        specifier: link:../../../loom/packages/llm
+        version: link:../../../loom/packages/llm
+      '@loom/memory':
+        specifier: link:../../../loom/packages/memory
+        version: link:../../../loom/packages/memory
+      '@loom/plugin-sqlite':
+        specifier: link:../../../loom/plugins/sqlite
+        version: link:../../../loom/plugins/sqlite
+      '@loom/workflow-runtime':
+        specifier: link:../../../loom/packages/workflow-runtime
+        version: link:../../../loom/packages/workflow-runtime
+      zod:
+        specifier: 'catalog:'
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.1
       tsx:
         specifier: 'catalog:'
         version: 4.23.1
