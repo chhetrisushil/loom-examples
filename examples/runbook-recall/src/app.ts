@@ -7,9 +7,10 @@ import { buildAnswerRequest } from "./prompt";
 
 // ── Composition root ─────────────────────────────────────────────────────────
 //
-// Note what is absent: no knowledge base, no retriever, no embedding provider, no
-// `rag:` key. The corpus is a MemoryStore the flow closes over; the only wiring here
-// is the model effect, and it is the same one any LLM app registers.
+// Note what is absent: no retriever, no embedding provider, no `rag:` key, and no
+// knowledge base HERE — the `KnowledgeBase` is a value the flow closes over, exactly
+// like the memory it sits on. The only wiring is the model effect, and it is the same
+// one any LLM app registers.
 export function buildApp(
   flow: RegisteredFlow,
   provider: LlmProvider,

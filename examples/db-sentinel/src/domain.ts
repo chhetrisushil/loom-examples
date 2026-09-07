@@ -17,6 +17,15 @@ export const findingSchema = z.object({
   evidence: z.array(z.object({ __loomContent: z.string() })),
   /** The deterministic projection the sentinel branched on — inline, replayable. */
   observed: z.object({ maxLagMs: z.number(), asOf: z.number() }),
+  /**
+   * The runbooks that were live when this finding fired, retrieved from the corpus and
+   * recorded through `ctx.decide` (loom ADR 0091). Ids and titles only — the passage TEXT
+   * is in the recorded decision, which is what makes a replay reconstruct the guidance
+   * that was actually given rather than today's revision of it.
+   *
+   * Defaulted, so findings written before the corpus existed still parse.
+   */
+  guidance: z.array(z.object({ docId: z.string(), title: z.string() })).default([]),
   actingVersion: z.number().int().positive(),
 });
 export type Finding = z.infer<typeof findingSchema>;

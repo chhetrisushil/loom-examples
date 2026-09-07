@@ -38,6 +38,7 @@ overrides:
   '@loom/intent': link:../loom/packages/intent
   '@loom/learning': link:../loom/packages/learning
   '@loom/llm': link:../loom/packages/llm
+  '@loom/knowledge': link:../loom/packages/knowledge
   '@loom/memory': link:../loom/packages/memory
   '@loom/middleware': link:../loom/packages/middleware
   '@loom/orchestration': link:../loom/packages/orchestration
@@ -958,6 +959,9 @@ importers:
 
   examples/db-sentinel:
     dependencies:
+      '@loom/classify':
+        specifier: link:../../../loom/packages/classify
+        version: link:../../../loom/packages/classify
       '@loom/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
@@ -967,6 +971,12 @@ importers:
       '@loom/event-runtime':
         specifier: link:../../../loom/packages/event-runtime
         version: link:../../../loom/packages/event-runtime
+      '@loom/knowledge':
+        specifier: link:../../../loom/packages/knowledge
+        version: link:../../../loom/packages/knowledge
+      '@loom/memory':
+        specifier: link:../../../loom/packages/memory
+        version: link:../../../loom/packages/memory
       '@loom/middleware':
         specifier: link:../../../loom/packages/middleware
         version: link:../../../loom/packages/middleware
@@ -1248,6 +1258,9 @@ importers:
       '@loom/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
+      '@loom/knowledge':
+        specifier: link:../../../loom/packages/knowledge
+        version: link:../../../loom/packages/knowledge
       '@loom/llm':
         specifier: link:../../../loom/packages/llm
         version: link:../../../loom/packages/llm

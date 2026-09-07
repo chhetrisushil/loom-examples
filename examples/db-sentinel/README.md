@@ -41,17 +41,37 @@ the properties are cadence-independent), everything a pure function of virtual t
 10. Evidence is readable outside the determinism boundary via `resolveClaimCheck`
     (CC-4); erased telemetry reads `null`, replay unaffected.
 
+## The corpus a sentinel reads is edited while it runs
+
+The findings above say *what happened*. Attaching *what to do about it* means reading a
+runbook corpus — and over a simulated year that corpus is edited on the operators' clock,
+not the agent's. That makes db-sentinel the second consumer of `@loom/knowledge`
+(loom ADR 0091), and deliberately unlike the first: `runbook-recall` ingests once and asks
+once, where an append-only corpus and an upsertable one behave identically.
+
+| Property | Where |
+| --- | --- |
+| guidance is retrieved and RECORDED at the wake | `deps.knowledge.retrieve(..., { decide: ctx.decide, decisionKey: \`runbooks:${t}\` })` — keyed by occurrence, because two wakes asking the same question of a corpus that changed between them are two decisions |
+| a July revision supersedes the old procedure | `sync(RUNBOOKS_MIDYEAR)` returns `{ written: [RB-101], unchanged: [RB-204], removed: [RB-777] }`; the withdrawn "cancel the blocking query" step stops retrieving entirely |
+| a retired runbook stops being cited | RB-777 is dropped from the source and `sync` removes it — no corpus rebuild |
+| a March finding replays to MARCH's guidance | the corpus is emptied outright, the wake is replayed, and the finding is byte-identical — reconstructed from the recorded decision |
+| the corpus is optional | a sentinel with no knowledge base still emits findings, with `guidance: []` |
+
+The last row matters as much as the others: knowledge is an input to the conclusion, not a
+dependency of the loop.
+
 ## Run
 
 ```sh
-pnpm test        # the 12-month acceptance suite
+pnpm test        # the 12-month acceptance suite + the knowledge suite
 pnpm start       # 3 simulated days, printed (findings, offloads, carry state)
 ```
 
 ## Layout
 
 ```
-src/domain.ts     Finding schema + carry-state contracts v1/v2/v3 + migrations
+src/domain.ts     Finding schema (incl. recorded guidance) + carry-state contracts + migrations
+src/knowledge.ts  the runbook corpus, and its mid-year revision
 src/substrate.ts  deterministic pg_stat substrate (anomalies on the 7th; outage windows)
 src/sentinel.ts   the flow, schedule, digest declaration, per-version deployment
 src/harness.ts    shared stores + per-deploy runtimes + T1 idempotent occurrence firing

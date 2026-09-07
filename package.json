@@ -36,6 +36,7 @@
       "@loom/intent": "link:../loom/packages/intent",
       "@loom/learning": "link:../loom/packages/learning",
       "@loom/llm": "link:../loom/packages/llm",
+      "@loom/knowledge": "link:../loom/packages/knowledge",
       "@loom/memory": "link:../loom/packages/memory",
       "@loom/middleware": "link:../loom/packages/middleware",
       "@loom/orchestration": "link:../loom/packages/orchestration",

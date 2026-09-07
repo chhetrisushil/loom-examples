@@ -1,25 +1,26 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { unwrapTainted } from "@loom/classify";
 import { UntrustedContentError } from "@loom/llm";
 import { ScriptedLlmProvider, citingAnswer } from "./ScriptedLlmProvider";
 import { buildApp } from "./app";
 import { RUNBOOKS } from "./corpus";
 import { type AnswerOutput, registerAnswerFlow } from "./flow";
-import { CORPUS_SCOPE, CORPUS_TIER, ingest, openCorpus } from "./knowledge";
+import { openCorpus } from "./knowledge";
 import { buildNaiveRequest } from "./prompt";
 
 /**
- * Runbook Recall — retrieval-augmented generation with no retrieval feature.
- *
- * Every piece of "knowledge infrastructure" here is either application code (a
- * chunker, a document type) or a loom primitive that already existed for another
- * reason:
+ * Runbook Recall — retrieval-augmented generation, assembled from parts that each
+ * exist for another reason:
  *
  *   corpus        → the `semantic` memory tier (the one that never evicts)
  *   retriever     → MemoryStore.search, via SQLite's FTS5 index
  *   reproducible  → ctx.decide, so WHICH passages were used is a recorded fact
  *   safe          → ADR 0085 taint, refused in every instruction position
+ *   documents     → @loom/knowledge, which maps a DOCUMENT onto the passages it is
+ *                   searched in — so a revised runbook supersedes its old text
+ *                   instead of being indexed twice (loom ADR 0091)
  *
  * Run with:  pnpm --filter @loom/runbook-recall start
  */
@@ -30,17 +31,17 @@ function section(title: string): void {
 
 async function main(): Promise<void> {
   const dir = mkdtempSync(join(tmpdir(), "runbook-recall-"));
-  const { memory, store } = openCorpus(join(dir, "corpus.db"));
+  const { kb, store } = openCorpus(join(dir, "corpus.db"));
 
   try {
-    section("1. Ingest — chunk the runbooks into a semantic memory tier");
-    const chunks = await ingest(memory, RUNBOOKS);
-    console.log(`${RUNBOOKS.length} runbooks → ${chunks} chunks, tainted at ingest.`);
-    console.log("No knowledge base was configured. The corpus is a MemoryStore.");
+    section("1. Sync — reconcile the runbooks into a semantic memory tier");
+    const synced = await kb.sync(RUNBOOKS);
+    console.log(`${synced.written.length} runbooks written, chunked and tainted at ingest.`);
+    console.log(`Re-running it writes nothing: ${JSON.stringify(await kb.sync(RUNBOOKS))}`);
 
     section("2. Ask — retrieval ranks the corpus, the model answers");
     const provider = new ScriptedLlmProvider(citingAnswer);
-    const flow = registerAnswerFlow(memory);
+    const flow = registerAnswerFlow(kb);
     const app = buildApp(flow, provider);
     const question = "the checkout API times out while the pool is saturated — what now?";
     const handle = await app.runtime.start(flow, { question });
@@ -54,7 +55,7 @@ async function main(): Promise<void> {
     const events = await app.stores.eventStore.read(handle.executionId);
     const decision = events.find((e) => e.eventType === "DECISION_RECORDED");
     console.log(`DECISION_RECORDED: ${(decision?.payload as { decisionId: string }).decisionId}`);
-    await memory.clear(CORPUS_TIER, CORPUS_SCOPE);
+    await kb.sync([]);
     console.log("Corpus deleted. Replaying the execution anyway…");
     const recorded = await app.runtime.loadState(handle.executionId);
     if (recorded === null) throw new Error("the execution's state was not found");
@@ -63,9 +64,9 @@ async function main(): Promise<void> {
     console.log(`Replayed cited: ${again.cited.join(", ")} (identical — served from the log)`);
 
     section("4. A corpus is an injection vector — the prompt boundary knows it");
-    await ingest(memory, RUNBOOKS);
+    await kb.sync(RUNBOOKS);
     const bloatProvider = new ScriptedLlmProvider(citingAnswer);
-    const bloatFlow = registerAnswerFlow(memory);
+    const bloatFlow = registerAnswerFlow(kb);
     const bloatApp = buildApp(bloatFlow, bloatProvider);
     await (
       await bloatApp.runtime.start(bloatFlow, { question: "what should I do about table bloat?" })
@@ -79,7 +80,7 @@ async function main(): Promise<void> {
 
     section("5. The shape every RAG tutorial writes — refused");
     const naiveProvider = new ScriptedLlmProvider(citingAnswer);
-    const naiveFlow = registerAnswerFlow(memory);
+    const naiveFlow = registerAnswerFlow(kb);
     const naiveApp = buildApp(naiveFlow, naiveProvider, buildNaiveRequest);
     try {
       await (
@@ -92,8 +93,26 @@ async function main(): Promise<void> {
       console.log(`The model was never called (${naiveProvider.requests.length} requests).`);
     }
 
+    section("6. A runbook is revised — the old procedure stops retrieving");
+    await kb.sync([
+      ...RUNBOOKS.filter((d) => d.id !== "RB-317"),
+      { id: "RB-317", title: "Checkpoint spikes", text: "Checkpoint tuning is now automatic." },
+    ]);
+    const hits = await kb.retrieve("checkpoint completion target flush", {
+      decide: async (_id, decider) => decider(),
+      limit: 20,
+    });
+    // Count the passages carrying the WITHDRAWN sentence, not the hits: terms are OR-ed
+    // and there is no stopword list, so a query full of common words matches broadly and
+    // ranking sorts it out. What matters is that the old text is gone from the corpus.
+    const withdrawn = hits.filter((p) => unwrapTainted(p.text).includes("Spread the flush"));
+    console.log(`Passages still carrying the withdrawn step: ${withdrawn.length}`);
+    console.log(`The revision is what answers now: ${unwrapTainted(hits[0]?.text ?? "")}`);
+    console.log("An append-only corpus would have kept both, and cited both.");
+
     section("What loom needed for any of this");
-    console.log("Nothing. No knowledge$ construct, no embedding SPI, no rag: config key.");
+    console.log("No knowledge$ construct, no embedding SPI, no rag: config key.");
+    console.log("One 1P package for the document→passage mapping — ADR 0091.");
   } finally {
     await store.close();
     rmSync(dir, { recursive: true, force: true });
