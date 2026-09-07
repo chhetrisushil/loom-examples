@@ -1,5 +1,6 @@
-import { KnowledgeBase, packParagraphs } from "@loom/knowledge";
-import { TieredMemory } from "@loom/memory";
+import { openKnowledgeBase, packParagraphs } from "@loom/knowledge";
+import type { KnowledgeBase } from "@loom/knowledge";
+import type { TieredMemory } from "@loom/memory";
 import { SqliteMemoryStore } from "@loom/plugin-sqlite";
 
 // ── The knowledge base: a memory tier, and one small mapping over it ──────────
@@ -27,12 +28,10 @@ export interface Corpus {
 
 export function openCorpus(dbPath: string): Corpus {
   const store = new SqliteMemoryStore(dbPath);
-  // One tier, no eviction. `working`/`episodic` bounds are for a conversation; a
-  // corpus is kept until someone deletes it — and `KnowledgeBase` REFUSES a tier
-  // that evicts, because eviction would drop passages its manifest still counts.
-  const memory = new TieredMemory({ tiers: { [CORPUS_TIER]: {} }, store });
-  const kb = new KnowledgeBase({
-    memory,
+  // `openKnowledgeBase` builds the one-tier, never-evicting memory a corpus needs.
+  // Doing it by hand is three more lines and one way to get it wrong: a bounded tier
+  // would drop passages the manifest still counts (the constructor refuses one).
+  const kb = openKnowledgeBase(store, {
     scope: CORPUS_SCOPE,
     tier: CORPUS_TIER,
     chunker: packParagraphs(260),
@@ -40,5 +39,5 @@ export function openCorpus(dbPath: string): Corpus {
     // `knowledge:<scope>:<docId>`; this corpus calls itself what its readers call it.
     origin: (doc) => `runbook:${doc.id}`,
   });
-  return { kb, memory, store };
+  return { kb, memory: kb.tieredMemory, store };
 }
