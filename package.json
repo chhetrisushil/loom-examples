@@ -24,6 +24,7 @@
       "@loom/app": "link:../loom/packages/app",
       "@loom/blueprint-runtime": "link:../loom/packages/blueprint-runtime",
       "@loom/capability": "link:../loom/packages/capability",
+      "@loom/classify": "link:../loom/packages/classify",
       "@loom/cli": "link:../loom/tools/cli",
       "@loom/compiler": "link:../loom/tools/compiler",
       "@loom/core": "link:../loom/packages/core",
