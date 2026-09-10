@@ -17,6 +17,7 @@
     "@loom/core": "*",
     "@loom/effect-runtime": "*",
     "@loom/event-runtime": "*",
+    "@loom/learning": "*",
     "@loom/llm": "*",
     "@loom/orchestration": "*",
     "@loom/plugin-content": "*",

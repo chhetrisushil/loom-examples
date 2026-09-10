@@ -1,5 +1,6 @@
 import { blueprintNodeIds, preservesNodes } from "@loom/blueprint-runtime";
 import { buildApp } from "./app";
+import { ExplorationFloor } from "./exploration";
 import { SCHEMA_REPAIRED, createHydrator } from "./hydration";
 import { startTelemetryMcpServer } from "./mcpServer";
 import { createPreferenceService } from "./preferenceService";
@@ -141,21 +142,62 @@ async function main(): Promise<void> {
     for (let i = 0; i < 3; i++) await profiles.observe("acme", "cal", "open.queries.slow");
 
     const cal = { tenant: "acme", operator: "cal", topic: "cpu" };
-    const profile = await profiles.resolve(cal, "session-cal-1");
+    const session = await profiles.open(cal, "session-cal-1", {
+      available: ["connections.saturation", "queries.slow", "cpu.trend"],
+    });
+    const profile = session.profile;
     for (const flag of profile.detail) console.log(dim(`  ${explainFlag(flag)}`));
 
-    const calView = await composer.answer(shared, await prefs.resolve(cal), profile);
+    const calView = await composer.answer(
+      shared,
+      await prefs.resolve(cal),
+      profile,
+      session.surfaced
+    );
     console.log(dim("\n# cal (no stated preference; profile suggests the plan detail)"));
     console.log(renderer.render(calView.blueprint, executionId));
 
     // The profile the run used is a RECORDED DECISION, not a pointer to a store that has
     // since moved on. Expire the flag and the derived view empties — while the run that
     // already resolved still answers with what it was arranged under.
+    // ── Phase 2b: the exploration floor, and canonical mode ───────────────────
+    // Dee holds nothing, so every catalogue capability on this surface is above her
+    // assessed level. The floor is forced here so the demo is deterministic; in a session
+    // it fires for a fixed fraction, and the DRAW is what gets journaled — with the
+    // propensity, without which the arm it creates could never be scored.
+    console.log(note("\n── The exploration floor, and what an incident does to it ──"));
+    // rate 0.99 rather than 1: a floor that ALWAYS explores is not a floor, and its
+    // "declined" propensity would be zero — which is why the constructor refuses it.
+    const explorer = createProfileService(new ExplorationFloor(0.99, () => 0));
+    const dee = { tenant: "acme", operator: "dee", topic: "cpu" };
+    const explored = await explorer.open(dee, "session-dee-1", {
+      available: ["connections.saturation", "queries.slow", "cpu.trend"],
+    });
+    console.log(
+      dim(
+        `  surfaced "${explored.surfaced}" above dee's assessed level (propensity logged at the draw)`
+      )
+    );
+    // She did not use it. That is a MEASUREMENT, recorded as a zero — an absent outcome
+    // would be skipped by credit assignment, and scoring only the successes is what makes
+    // an assessed level inflate forever.
+    await explorer.scoreExploration(explored.explorationId as string, "session-dee-1-out", false);
+
+    const underIncident = await explorer.open(dee, "session-dee-2", {
+      available: ["connections.saturation", "queries.slow", "cpu.trend"],
+      canonical: { active: true, reason: "page fired on orders-prod" },
+    });
+    console.log(
+      dim(
+        `  under incident (${underIncident.canonical.reason}): profile zeroed, surfaced ${underIncident.surfaced} — an incident is not a place to run an experiment`
+      )
+    );
+
     const lapsed = await profiles.expire("acme", "cal", Date.now() + 400 * 24 * 60 * 60 * 1000);
     console.log(
       dim(
         `\n  expiry pass emitted ${lapsed} lapse event(s) → derived flags now [${(await profiles.derive("acme", "cal")).flags.join(", ")}]` +
-          `, but session-cal-1 still resolves [${(await profiles.replay("session-cal-1")).flags.join(", ")}]`
+          `, but session-cal-1 still resolves [${(await profiles.replay("session-cal-1")).profile.flags.join(", ")}]`
       )
     );
   } finally {

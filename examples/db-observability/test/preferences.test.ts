@@ -121,7 +121,9 @@ describe("a derived profile can suggest, and a stated one overrides it", () => {
     subject: "acme:ana",
     flags: ["reads_query_plans"],
     catalogueVersion: FLAG_CATALOGUE_VERSION,
-    detail: [{ id: "reads_query_plans", evidence: [1, 2, 3], lastEvidencedAt: 3 }],
+    detail: [
+      { id: "reads_query_plans", evidence: [1, 2, 3], lastEvidencedAt: 3, source: "observed" },
+    ],
   };
   const ids = ["connections.saturation", "queries.slow", "cpu.trend"];
 
