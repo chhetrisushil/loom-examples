@@ -95,6 +95,34 @@ Because `blueprint$`, `stack`, and the widget factories return plain data, the l
 `children` array is assembled conditionally at runtime — a `cpu` question yields a
 different dashboard than a `connections` one, all from the same catalogue.
 
+## Adaptation, Phase 0: the baseline
+
+No target is falsifiable without a distribution to compare against, so this phase produces
+one with adaptation **off** — which costs nothing, because the control arm is the same
+composer call with the profile zeroed. `src/metrics.ts` is a read-only lens over the log:
+nothing is stored, nothing is derived at write time, and any window can be recomputed from
+history that already exists.
+
+The numbers are trivial. The ways they lie are the content:
+
+| Metric | The failure it is shaped against |
+|---|---|
+| **Task success** — an explicit event (`mitigation.applied`, `query.saved`, `plan.exported`, `alert.resolved`) | Inferring success from a session's *end* scores abandonment as the best outcome in the product |
+| **Time to success**, over successes only | Averaging duration over everyone makes the fastest session — someone who found nothing and left — the headline |
+| **Discovery rate** — first use **ever**, not first use in the window | Ask "first use inside the window" and every habitual user becomes a discoverer whenever the window moves: the counter-metric rises while nothing changed |
+| **Escape-hatch rate** | The most direct measure of how often adaptation was wrong, so it is measured against *sessions*, not against itself |
+| **Canonical preference rate** | Whether people stayed in the canonical view once the incident was over |
+| **Incident time-to-mitigate** — segmented, never pooled | Pooling lets a regression in one arm hide inside the other's numbers |
+
+Two rules hold across all of them:
+
+- **A rate carries its denominator, and a rate over nobody is `null`, not `0`.** "Nobody
+  succeeded" and "nobody tried" are different findings, and a dashboard that renders them
+  identically will be read as the first.
+- **The guardrail fails closed.** `ttmRegressed` blocks when there is no baseline *or* no
+  measured incidents: "we could not tell" must never read as "no regression" on the one
+  metric that is allowed to stop a release.
+
 ## Adaptation, Phase 1: stated preferences
 
 The same question composed for two operators differs only in **arrangement** — density,
@@ -241,6 +269,8 @@ The composer emits a **framework-agnostic `Blueprint`** — the intent→WHAT/WH
 | `src/profile.ts` | The evidence read model, the clock-free fold, the lapse evaluator, and the `ctx.decide` resolve flow |
 | `src/profileService.ts` | Runs it: observe, derive, expire, open a session (profile + draw), declare, score, replay |
 | `src/suggest.ts` | The one thing a derived profile may do to a surface: suggest which WHY widget leads |
+| `src/metrics.ts` | Phase 0: the baseline lens — primary metrics, counter-metrics, the segmented guardrail |
+| `src/sessions.ts` | Phase 0: the session and incident events the report reads |
 | `src/exploration.ts` | Phase 2b: the exploration floor — candidate capabilities, the draw, and the propensity of the action taken |
 | `src/wiring.ts` | `buildCore` — surface-agnostic projections + composer (terminal-free) |
 | `src/app.ts` / `src/main.ts` | Terminal wiring + headless driver |
