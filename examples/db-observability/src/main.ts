@@ -1,11 +1,13 @@
 import { blueprintNodeIds, preservesNodes } from "@loom/blueprint-runtime";
 import { buildApp } from "./app";
+import { INITIAL_COHORT_STATE, assignCohort, describeTransition, nextCohortState } from "./cohorts";
 import { ExplorationFloor } from "./exploration";
 import { formatVerdict, phase3Gate } from "./gate";
 import { SCHEMA_REPAIRED, createHydrator } from "./hydration";
 import { startTelemetryMcpServer } from "./mcpServer";
 import { baselineReport, ttmRegressed } from "./metrics";
 import { createPreferenceService } from "./preferenceService";
+import { NO_PREFERENCES } from "./preferences";
 import { explainFlag } from "./profile";
 import { createProfileService } from "./profileService";
 import { createSessionRecorder } from "./sessions";
@@ -247,6 +249,36 @@ async function main(): Promise<void> {
     // rather than enthusiasm. Run against a handful of scripted sessions the answer is
     // INSUFFICIENT-EVIDENCE — which is the correct answer, and the one a gate that could
     // be talked into `clear` by a small sample would never give.
+    // ── Phase 3: cohorts as a generation input ────────────────────────────────
+    // The first thing here that changes what a blueprint CONTAINS. Cal reads query plans,
+    // so their cohort adds a plan-detail view above the floor; dee's surface has one fewer
+    // panel and not one panel fewer than the floor guarantees — which is the difference
+    // the whole phase rests on.
+    console.log(note("\n── Phase 3: cohorts add above a floor, and never below it ──"));
+    const calCohort = assignCohort(profile);
+    const deeCohort = assignCohort(null);
+    const calDeep = await composer.answer(shared, NO_PREFERENCES, profile, null, calCohort);
+    const deeFlat = await composer.answer(shared, NO_PREFERENCES, null, null, deeCohort);
+
+    console.log(
+      dim(
+        `  cal → cohort "${calCohort}" · blueprint ${calDeep.blueprint.id}\n` +
+          `  dee → cohort "${deeCohort}" · blueprint ${deeFlat.blueprint.id}\n` +
+          `  floor intact for both: ${calDeep.floor.ok && deeFlat.floor.ok}` +
+          ` (cal adds ${calDeep.floor.above.length - deeFlat.floor.above.length} above it)`
+      )
+    );
+    // A transition is announced, never silent — and it takes two windows, so a flapping
+    // predicate cannot re-compose someone's console every week.
+    let cohortState = INITIAL_COHORT_STATE;
+    for (const window of [1, 2]) {
+      const step = nextCohortState(cohortState, calCohort);
+      cohortState = step.state;
+      if (step.transition) {
+        console.log(dim(`  window ${window}: ${describeTransition(step.transition)}`));
+      }
+    }
+
     const gateVerdict = phase3Gate(report, report);
     console.log(dim(`\n${formatVerdict(gateVerdict)}`));
 
