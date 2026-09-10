@@ -37,6 +37,7 @@ overrides:
   '@loom/graph-executor': link:../loom/packages/graph-executor
   '@loom/intent': link:../loom/packages/intent
   '@loom/learning': link:../loom/packages/learning
+  '@loom/live-query': link:../loom/packages/live-query
   '@loom/llm': link:../loom/packages/llm
   '@loom/knowledge': link:../loom/packages/knowledge
   '@loom/memory': link:../loom/packages/memory
@@ -46,6 +47,7 @@ overrides:
   '@loom/planner': link:../loom/packages/planner
   '@loom/plugin-a2a': link:../loom/plugins/a2a
   '@loom/plugin-a2ui': link:../loom/plugins/a2ui
+  '@loom/plugin-audit-chain': link:../loom/plugins/audit-chain
   '@loom/plugin-cloudrun': link:../loom/plugins/cloudrun
   '@loom/plugin-content': link:../loom/plugins/content
   '@loom/plugin-durable-state': link:../loom/plugins/durable-state
@@ -440,6 +442,9 @@ importers:
       '@loom/event-runtime':
         specifier: link:../../../loom/packages/event-runtime
         version: link:../../../loom/packages/event-runtime
+      '@loom/live-query':
+        specifier: link:../../../loom/packages/live-query
+        version: link:../../../loom/packages/live-query
       '@loom/orchestration':
         specifier: link:../../../loom/packages/orchestration
         version: link:../../../loom/packages/orchestration
@@ -1225,12 +1230,18 @@ importers:
       '@loom/plugin-a2ui':
         specifier: link:../../../loom/plugins/a2ui
         version: link:../../../loom/plugins/a2ui
+      '@loom/plugin-audit-chain':
+        specifier: link:../../../loom/plugins/audit-chain
+        version: link:../../../loom/plugins/audit-chain
       '@loom/plugin-mcp':
         specifier: link:../../../loom/plugins/mcp
         version: link:../../../loom/plugins/mcp
       '@loom/plugin-mcp-app':
         specifier: link:../../../loom/plugins/mcp-app
         version: link:../../../loom/plugins/mcp-app
+      '@loom/snapshot-runtime':
+        specifier: link:../../../loom/packages/snapshot-runtime
+        version: link:../../../loom/packages/snapshot-runtime
       '@loom/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime

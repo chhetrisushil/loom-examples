@@ -1,22 +1,19 @@
-import type { ExecutionState } from "@loom/core";
-import type { WorkflowRuntime } from "@loom/workflow-runtime";
 import { describe, expect, it } from "vitest";
 import { type ReleaseIn, type ReleaseOut, releaseFlow } from "../src/flows";
-import { buildRuntime } from "../src/runtime";
+import { type ReleaseRuntime, awaitTerminal, buildRuntime } from "../src/runtime";
 
+// Waits on the log, not on a clock: `@loom/live-query` folds the execution's state and
+// pushes it again on every event, so this settles as soon as the supervisor finishes rather
+// than on the next 5ms tick — and there is no iteration cap guessing how long that takes.
 async function runRelease(
-  runtime: WorkflowRuntime,
+  bundle: ReleaseRuntime,
   executionId: string,
   input: ReleaseIn
 ): Promise<ReleaseOut> {
-  await runtime.start(releaseFlow, input, { executionId });
-  for (let i = 0; i < 400; i++) {
-    const state: ExecutionState | null = await runtime.loadState(executionId);
-    if (state?.status === "completed") return state.variables._output as ReleaseOut;
-    if (state?.status === "failed") throw new Error(`release ${executionId} failed`);
-    await new Promise((r) => setTimeout(r, 5));
-  }
-  throw new Error(`release ${executionId} did not finish`);
+  await bundle.runtime.start(releaseFlow, input, { executionId });
+  const state = await awaitTerminal(bundle.live, executionId);
+  if (state.status === "failed") throw new Error(`release ${executionId} failed`);
+  return state.variables._output as ReleaseOut;
 }
 
 describe("release pipeline via child workflows", () => {
@@ -32,7 +29,7 @@ describe("release pipeline via child workflows", () => {
     expect(out.published).toEqual({ manifest: "web,api,worker", count: 3 });
 
     // Each service ran as its own durable child execution (own log, own output).
-    const web = await rt.loadState("R1::build#0");
+    const web = await rt.runtime.loadState("R1::build#0");
     expect(web?.status).toBe("completed");
     expect((web?.variables._output as { artifact: string }).artifact).toBe("web@1.0.0");
   }, 20000);
@@ -51,7 +48,7 @@ describe("release pipeline via child workflows", () => {
     expect(out.published).toEqual({ manifest: "web,worker", count: 2 });
 
     // The failed build is durably recorded as a failed child execution.
-    expect((await rt.loadState("R2::build#1"))?.status).toBe("failed");
+    expect((await rt.runtime.loadState("R2::build#1"))?.status).toBe("failed");
   }, 20000);
 
   it("awaitAll aborts the release when any SMOKE test fails (all-or-nothing gate)", async () => {
@@ -73,9 +70,7 @@ describe("release pipeline via child workflows", () => {
 
     // Each child log holds exactly one EXECUTION_STARTED — every spawn was fixed by a
     // single ctx.decide, so recovery/replay never starts a second child.
-    const store = (
-      rt as unknown as { eventStore: { read(id: string): Promise<{ eventType: string }[]> } }
-    ).eventStore;
+    const store = rt.eventStore;
     for (const id of ["R4::build#0", "R4::build#1", "R4::smoke#0", "R4::smoke#1", "R4::publish"]) {
       const events = await store.read(id);
       expect(events.filter((e) => e.eventType === "EXECUTION_STARTED")).toHaveLength(1);
