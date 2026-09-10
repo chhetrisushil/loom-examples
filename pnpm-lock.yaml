@@ -898,6 +898,9 @@ importers:
       '@loom/plugin-content':
         specifier: link:../../../loom/plugins/content
         version: link:../../../loom/plugins/content
+      '@loom/plugin-durable-state':
+        specifier: link:../../../loom/plugins/durable-state
+        version: link:../../../loom/plugins/durable-state
       '@loom/plugin-mcp':
         specifier: link:../../../loom/plugins/mcp
         version: link:../../../loom/plugins/mcp

@@ -11,6 +11,8 @@ import type { LlmProvider } from "@loom/llm";
 import type { ProjectionRuntime } from "@loom/projection-runtime";
 import { type Classification, classifyIntent } from "./agent";
 import { catalogueEntry } from "./catalogue";
+import { NO_PREFERENCES, arrangeWhyWidgets, gapFor } from "./preferences";
+import type { OperatorPreferences } from "./preferences";
 import { readTelemetry } from "./telemetry";
 import { TOPIC_MODELS } from "./topics";
 
@@ -32,6 +34,8 @@ export interface DashboardResult {
    * right shape when the UI is a best effort over live telemetry.
    */
   validation: BlueprintValidation;
+  /** The stated preferences this composition was arranged under (Phase 1). */
+  preferences: OperatorPreferences;
 }
 
 // Every projection a composed dashboard may bind to (the renderer reads these).
@@ -52,7 +56,15 @@ export class DashboardComposer {
     private readonly executionId: string
   ) {}
 
-  async answer(question: string): Promise<DashboardResult> {
+  /**
+   * @param preferences the operator's STATED choices, resolved before composing. Omitted
+   * — or `NO_PREFERENCES` — yields the canonical arrangement through this same method,
+   * not a second code path, so the two cannot drift apart.
+   */
+  async answer(
+    question: string,
+    preferences: OperatorPreferences = NO_PREFERENCES
+  ): Promise<DashboardResult> {
     const classification = await classifyIntent(this.provider, question);
     const model = TOPIC_MODELS[classification.topic];
 
@@ -68,8 +80,14 @@ export class DashboardComposer {
       why,
     });
 
-    const blueprint = this.buildBlueprint(classification, model.primaryWidget, model.whyWidgets);
+    const blueprint = this.buildBlueprint(
+      classification,
+      model.primaryWidget,
+      model.whyWidgets,
+      preferences
+    );
     return {
+      preferences,
       question,
       classification,
       what,
@@ -87,7 +105,8 @@ export class DashboardComposer {
   private buildBlueprint(
     classification: Classification,
     primaryWidget: string,
-    whyWidgets: string[]
+    whyWidgets: string[],
+    preferences: OperatorPreferences
   ): Blueprint {
     // A WHAT section (the direct answer + its primary widget) then a WHY section (the
     // explanation + the causal widgets in a grid). The terminal renderer ignores `gap`
@@ -97,7 +116,16 @@ export class DashboardComposer {
       StatusBadge({ title: "▶ WHAT", binding: { projectionId: "answer", path: "what" } }),
       catalogueEntry(primaryWidget).build(),
       StatusBadge({ title: "▶ WHY", binding: { projectionId: "answer", path: "why" } }),
-      grid({ columns: 2, gap: 16, children: whyWidgets.map((id) => catalogueEntry(id).build()) }),
+      // Phase 1 acts HERE and only here: the operator's stated arrangement over the
+      // widget set the topic model chose. It reorders and re-spaces; the set is the
+      // agent's, and nothing a preference can say removes a widget from it.
+      grid({
+        columns: 2,
+        gap: gapFor(preferences),
+        children: arrangeWhyWidgets(whyWidgets, preferences).map((id) =>
+          catalogueEntry(id).build()
+        ),
+      }),
     ];
 
     return blueprint$({

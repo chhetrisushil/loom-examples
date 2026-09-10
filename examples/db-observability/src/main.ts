@@ -1,6 +1,8 @@
+import { blueprintNodeIds, preservesNodes } from "@loom/blueprint-runtime";
 import { buildApp } from "./app";
 import { SCHEMA_REPAIRED, createHydrator } from "./hydration";
 import { startTelemetryMcpServer } from "./mcpServer";
+import { createPreferenceService } from "./preferenceService";
 import { applyHydratedStates } from "./telemetry";
 
 // Ask the observability assistant a few questions. Telemetry is HYDRATED by a
@@ -93,6 +95,40 @@ async function main(): Promise<void> {
       );
       console.log(renderer.render(result.blueprint, executionId));
     }
+
+    // ── Phase 1: two operators, one question, one composer ────────────────────
+    // Ana pinned the slow-query table on this topic and works compact; Bo has stated
+    // nothing. Same agent, same widget set, same code path — only the arrangement
+    // differs, and the invariant below is what keeps that difference safe.
+    console.log(note("\n── Stated preferences: the same question for two operators ──"));
+    const prefs = createPreferenceService();
+    const ana = { tenant: "acme", operator: "ana", topic: "cpu" };
+    const bo = { tenant: "acme", operator: "bo", topic: "cpu" };
+    await prefs.state(ana, { density: "compact", pinnedWhyWidget: "queries.slow" });
+
+    const shared = QUESTIONS_BEFORE[0] as string;
+    const anaView = await composer.answer(shared, await prefs.resolve(ana));
+    const boView = await composer.answer(shared, await prefs.resolve(bo));
+
+    for (const [who, view] of [
+      ["ana (compact, pinned queries.slow)", anaView],
+      ["bo  (stated nothing → canonical)", boView],
+    ] as const) {
+      console.log(dim(`\n# ${who}`));
+      console.log(renderer.render(view.blueprint, executionId));
+    }
+
+    // The guarantee, checked rather than asserted: an arrangement rearranges and never
+    // withholds, so nothing Ana sees is unreachable to Bo and vice versa.
+    const preserved = preservesNodes(
+      blueprintNodeIds(boView.blueprint),
+      blueprintNodeIds(anaView.blueprint)
+    );
+    console.log(
+      dim(
+        `\n  arrangement preserved every node: ${preserved.ok} (${preserved.compared} compared, ${preserved.added.length} added)`
+      )
+    );
   } finally {
     await server.close();
   }

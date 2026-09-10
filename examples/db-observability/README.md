@@ -84,10 +84,42 @@ in-process (`src/mcpServer.ts`) — still offline, still deterministic.
   WHY widgets, and the two narrative strings derived from live telemetry.
 - **The composer** (`src/composer.ts`) — ties it together: classify → reason (WHAT/WHY)
   → publish the answer → **assemble the blueprint from the catalogue** for that intent.
+- **Stated preferences** (`src/preferences.ts` + `src/preferenceService.ts`) — Phase 1 of
+  the adaptive Operator Profile: what the operator explicitly chose, scoped per
+  `(tenant, operator, topic)`, stored as versioned durable state
+  (`@loom/plugin-durable-state` — keyed CAS, so a load and a save are both recorded
+  steps), read when the surface is composed. **No inference of any kind** — no flags, no
+  evidence, no cohorts. See below.
 
 Because `blueprint$`, `stack`, and the widget factories return plain data, the layout's
 `children` array is assembled conditionally at runtime — a `cpu` question yields a
 different dashboard than a `connections` one, all from the same catalogue.
+
+## Adaptation, Phase 1: stated preferences
+
+The same question composed for two operators differs only in **arrangement** — density,
+and which WHY widget leads — because one of them said so and the other said nothing.
+
+Two invariants hold this in place, and both are tests rather than intentions
+(`test/preferences.test.ts`):
+
+- **An unstated profile yields the canonical surface, through the same method.** Not an
+  equivalent surface: an identical one. Canonical mode is `answer(q)` with the profile
+  zeroed, so a holdout costs nothing and the canonical path cannot drift from the adaptive
+  one — they are the same path.
+- **No arrangement removes a node the canonical surface has.** Checked with
+  `preservesNodes` from `@loom/blueprint-runtime`, which reports the node ids a structural
+  change dropped. A preference reorders and re-spaces; the widget set is the agent's, and
+  nothing an operator can state removes a widget from it. The worst case is a worse
+  layout, never a missing capability.
+
+That second test is deliberately paired with one asserting the arrangement is *visible* —
+a projection that changed nothing at all would satisfy the invariant perfectly.
+
+What is **not** here is as deliberate: no disclosure preference (collapsing a pane needs a
+container this catalogue does not have — that is Phase 2's projection), no capability
+flags, no cohorts, and nothing derived from behaviour. Phase 1 exists to be measured
+first, because its effect is the bar every later phase has to clear.
 
 ## Run it
 
@@ -132,8 +164,10 @@ The composer emits a **framework-agnostic `Blueprint`** — the intent→WHAT/WH
 | `src/catalogue.ts` | The available widget catalogue (the palette) |
 | `src/topics.ts` | Per-topic WHAT/WHY causal models |
 | `src/agent.ts` | Offline intent classifier (`LlmProvider`) |
-| `src/composer.ts` | Classify → reason → assemble the blueprint dynamically |
+| `src/composer.ts` | Classify → reason → assemble the blueprint dynamically (arranged by stated preferences) |
+| `src/preferences.ts` | Phase 1: the preference contract, scope key, the two durable flows, and the pure arrangement functions |
+| `src/preferenceService.ts` | Runs those flows: state a choice, resolve the effective set |
 | `src/wiring.ts` | `buildCore` — surface-agnostic projections + composer (terminal-free) |
 | `src/app.ts` / `src/main.ts` | Terminal wiring + headless driver |
 | `src/browser/` | React dashboard: `renderers.tsx` (Recharts), `registry.ts`, `App.tsx`, `main.tsx` |
-| `test/` | Classification, dynamic assembly, rendered output, browser registry, hydration + drift repair |
+| `test/` | Classification, dynamic assembly, rendered output, browser registry, hydration + drift repair, preference scope + the two adaptation invariants |
