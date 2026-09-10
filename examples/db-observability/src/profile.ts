@@ -70,8 +70,21 @@ export const subjectOf = (tenant: string, operator: string): string => `${tenant
  * is decided by their INTERLEAVING, and two models would have to be read consistently
  * with each other, which is a guarantee neither of them offers.
  */
+/**
+ * The declared semantics of the extractor below (ADR 0095).
+ *
+ * The other half of the fold, and the half that used to travel with nothing. Changing
+ * `extract` is silent by construction: the rows the old one wrote stay, the watermark is
+ * already past the events that produced them, and one query then answers from two
+ * extractors at once. Bump this when what a row MEANS changes — a new indexed field, a
+ * different `kind` vocabulary, a filter — and the journaled profiles derived under the old
+ * one say so instead of looking current.
+ */
+export const EVIDENCE_MODEL_VERSION = "1";
+
 export const PROFILE_MODEL: ReadModelDefinition = {
   id: "operator-evidence",
+  version: EVIDENCE_MODEL_VERSION,
   kinds: [OPERATOR_ACTION, FLAG_LAPSED, FLAG_DECLARED],
   indexes: ["subject", "action", "flag", "kind"],
   extract: (event) => {
@@ -120,6 +133,12 @@ export interface OperatorProfile {
   flags: string[];
   /** Which catalogue produced this — half of the fold, so it travels with the result. */
   catalogueVersion: number;
+  /**
+   * Which evidence model produced it — the OTHER half. A journaled profile is reproducible
+   * because `ctx.decide` recorded the value; this is what lets a later reader ask whether
+   * the rows it was derived FROM still mean the same thing (ADR 0095).
+   */
+  evidenceVersion: string;
   /** Per-flag detail, for the operator-facing explanation. */
   detail: FlagState[];
 }
@@ -128,6 +147,7 @@ export const EMPTY_PROFILE = (subject: string): OperatorProfile => ({
   subject,
   flags: [],
   catalogueVersion: FLAG_CATALOGUE_VERSION,
+  evidenceVersion: EVIDENCE_MODEL_VERSION,
   detail: [],
 });
 
@@ -207,6 +227,7 @@ export function foldProfile(subject: string, rows: readonly ReadModelRow[]): Ope
     subject,
     flags: detail.map((d) => d.id),
     catalogueVersion: FLAG_CATALOGUE_VERSION,
+    evidenceVersion: EVIDENCE_MODEL_VERSION,
     detail,
   };
 }
@@ -276,6 +297,7 @@ const profileSchema = z.object({
   subject: z.string(),
   flags: z.array(z.string()),
   catalogueVersion: z.number().int().positive(),
+  evidenceVersion: z.string().min(1),
   detail: z.array(
     z.object({
       id: z.string(),

@@ -102,13 +102,13 @@ export function phase3Gate(
     meanDiscovery(baseline.discovery),
     meanDiscovery(candidate.discovery)
   );
-  const escape = compare("escape hatch", baseline.escapeHatch, candidate.escapeHatch);
+  const escapeHatch = compare("escape hatch", baseline.escapeHatch, candidate.escapeHatch);
   const canonical = compare(
     "canonical preference",
     baseline.canonicalPreference,
     candidate.canonicalPreference
   );
-  const comparisons = [success, discovery, escape, canonical];
+  const comparisons = [success, discovery, escapeHatch, canonical];
 
   // 1. Is this measured at all? Asked FIRST, because every judgment below is meaningless
   //    otherwise, and because a thin sample that happens to look good is the single most
@@ -142,9 +142,9 @@ export function phase3Gate(
       `capability discovery fell ${(-discovery.delta * 100).toFixed(1)}pp while efficiency rose — the primary metric cannot see this`
     );
   }
-  if (escape.delta !== null && escape.delta > maxEscapeRise) {
+  if (escapeHatch.delta !== null && escapeHatch.delta > maxEscapeRise) {
     reasons.push(
-      `escape-hatch use rose ${(escape.delta * 100).toFixed(1)}pp — operators are correcting the system more often, which is the most direct measure of it being wrong`
+      `escape-hatch use rose ${(escapeHatch.delta * 100).toFixed(1)}pp — operators are correcting the system more often, which is the most direct measure of it being wrong`
     );
   }
 

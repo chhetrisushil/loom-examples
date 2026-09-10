@@ -1,4 +1,4 @@
-import type { EventEnvelope, FlowDefinition } from "@loom/core";
+import type { EventEnvelope, FlowDefinition, PinReport } from "@loom/core";
 import { EffectRuntime } from "@loom/effect-runtime";
 import { InMemoryAsyncEventStore } from "@loom/event-runtime";
 import type { Policy } from "@loom/learning";
@@ -182,6 +182,15 @@ export interface ProfileService {
   events(executionId: string): Promise<EventEnvelope[]>;
   /** Every event this service has written, in time order — what a report reads. */
   allEvents(): Promise<EventEnvelope[]>;
+  /**
+   * ADR 0095 — was a journaled profile derived from the evidence model running now?
+   *
+   * `ctx.decide` makes a past session reproducible: the profile it was arranged under is
+   * served from the log, whatever the read model says today. It says nothing about the NEXT
+   * derivation, which reads rows an edited extractor may have written under different
+   * meaning — so this is the question that has to be asked separately.
+   */
+  evidenceDrift(recorded: { evidenceVersion?: string } | undefined): PinReport;
   /** How many times the read model has actually been folded (the deriver's call count). */
   derivations(): number;
 }
@@ -291,6 +300,12 @@ export function createProfileService(
       const handle = await runtime.restoreFromState(state);
       const finished = await handle.waitForCompletion();
       return finished.variables._output as SessionProfile;
+    },
+    evidenceDrift(recorded) {
+      // A profile journaled before the pin existed recorded nothing, and asking with an
+      // empty version is what turns that into an `unpinned` FINDING rather than an empty
+      // report a caller would read as "unchanged".
+      return readModels.checkPins({ [PROFILE_MODEL.id]: recorded?.evidenceVersion ?? "" });
     },
     events: (executionId) => eventStore.read(executionId),
     async allEvents() {

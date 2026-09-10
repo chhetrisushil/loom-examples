@@ -189,7 +189,7 @@ Three mechanisms, each replacing something the original design specified differe
 |---|---|---|
 | Where the profile lives | a projection folded per run | a **read model** (`@loom/plugin-read-model`) over ordinary run logs — a projection has no snapshot anchor, so a run-start re-fold is *O(operator's lifetime)* |
 | Expiry | a timestamp comparison at read time | an **event**. A read-time horizon makes the fold a function of `(events, now)`, so two reads of the same history disagree and pinning anything pins nothing. A scheduled evaluator observes the horizon and appends a lapse; the fold takes no clock |
-| What a run journals | the log offset it read at | the **resolved profile**, through `ctx.decide`. An offset reproduces the events but not the *fold* — and the fold is a versioned catalogue plus this code, both of which change |
+| What a run journals | the log offset it read at | the **resolved profile**, through `ctx.decide`. An offset reproduces the events but not the *fold* — and the fold is a versioned catalogue plus this code, both of which change. Both versions ride on the value: `catalogueVersion` and `evidenceVersion` |
 
 The last one has the sharpest test: resolve a profile, let the flag lapse so the derived
 profile is empty, then re-execute the finished run. It still answers with the flags it was
@@ -203,6 +203,15 @@ Other properties worth knowing:
   is what makes the exclusion enforceable rather than a policy statement.
 - **A flag is citable.** `explainFlag` produces the sentence the product owes the
   operator: which interaction, how many times, most recently when.
+- **Both halves of the fold travel with the value.** `ctx.decide` makes a past session
+  reproducible; it says nothing about the *next* derivation, which reads rows an edited
+  extractor may have written under different meaning — the old rows stay, the watermark is
+  already past the events that produced them, and one query then answers from two
+  extractors. So the profile carries `catalogueVersion` **and** `evidenceVersion`
+  (`PROFILE_MODEL.version`), and `profiles.evidenceDrift(profile)` compares what a journaled
+  profile was derived from against the model running now — `drift` when the extractor
+  changed, `unpinned` when one side declared nothing, because two sides that declared
+  nothing must not read as a verified match ([ADR 0095](https://github.com/chhetrisushil/loom/blob/main/docs/adr/0095-binding-semantics-pin.md)).
 - **Stated outranks inferred, without a tie-break** (the design's C7). A flag *suggests*
   which WHY widget leads; a stated pin overrides it. And a stated pin that does not apply
   to this topic does **not** hand the decision back to the inference — the person already
