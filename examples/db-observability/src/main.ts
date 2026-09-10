@@ -3,6 +3,8 @@ import { buildApp } from "./app";
 import { SCHEMA_REPAIRED, createHydrator } from "./hydration";
 import { startTelemetryMcpServer } from "./mcpServer";
 import { createPreferenceService } from "./preferenceService";
+import { explainFlag } from "./profile";
+import { createProfileService } from "./profileService";
 import { applyHydratedStates } from "./telemetry";
 
 // Ask the observability assistant a few questions. Telemetry is HYDRATED by a
@@ -127,6 +129,33 @@ async function main(): Promise<void> {
     console.log(
       dim(
         `\n  arrangement preserved every node: ${preserved.ok} (${preserved.compared} compared, ${preserved.added.length} added)`
+      )
+    );
+
+    // ── Phase 2: a profile DERIVED from what the operator actually did ────────
+    // Nothing here is stated. Cal opened the slow-query table three times over the
+    // fortnight; that is evidence, it is in the log, and the flag it sets is a fold over
+    // it — not a score, not a stored fact, and citable to the day.
+    console.log(note("\n── A derived profile: evidence, a flag, and what it says ──"));
+    const profiles = createProfileService();
+    for (let i = 0; i < 3; i++) await profiles.observe("acme", "cal", "open.queries.slow");
+
+    const cal = { tenant: "acme", operator: "cal", topic: "cpu" };
+    const profile = await profiles.resolve(cal, "session-cal-1");
+    for (const flag of profile.detail) console.log(dim(`  ${explainFlag(flag)}`));
+
+    const calView = await composer.answer(shared, await prefs.resolve(cal), profile);
+    console.log(dim("\n# cal (no stated preference; profile suggests the plan detail)"));
+    console.log(renderer.render(calView.blueprint, executionId));
+
+    // The profile the run used is a RECORDED DECISION, not a pointer to a store that has
+    // since moved on. Expire the flag and the derived view empties — while the run that
+    // already resolved still answers with what it was arranged under.
+    const lapsed = await profiles.expire("acme", "cal", Date.now() + 400 * 24 * 60 * 60 * 1000);
+    console.log(
+      dim(
+        `\n  expiry pass emitted ${lapsed} lapse event(s) → derived flags now [${(await profiles.derive("acme", "cal")).flags.join(", ")}]` +
+          `, but session-cal-1 still resolves [${(await profiles.replay("session-cal-1")).flags.join(", ")}]`
       )
     );
   } finally {

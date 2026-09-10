@@ -121,6 +121,41 @@ container this catalogue does not have — that is Phase 2's projection), no cap
 flags, no cohorts, and nothing derived from behaviour. Phase 1 exists to be measured
 first, because its effect is the bar every later phase has to clear.
 
+## Adaptation, Phase 2a: a profile derived from what was recorded
+
+Phase 1 stored what the operator said. Phase 2 stores **nothing**: a capability flag is a
+fold over events that already exist, so there is no write path from a run into profile
+state and replaying a run cannot mutate a profile.
+
+Three mechanisms, each replacing something the original design specified differently:
+
+| | Design said | Here, and why |
+|---|---|---|
+| Where the profile lives | a projection folded per run | a **read model** (`@loom/plugin-read-model`) over ordinary run logs — a projection has no snapshot anchor, so a run-start re-fold is *O(operator's lifetime)* |
+| Expiry | a timestamp comparison at read time | an **event**. A read-time horizon makes the fold a function of `(events, now)`, so two reads of the same history disagree and pinning anything pins nothing. A scheduled evaluator observes the horizon and appends a lapse; the fold takes no clock |
+| What a run journals | the log offset it read at | the **resolved profile**, through `ctx.decide`. An offset reproduces the events but not the *fold* — and the fold is a versioned catalogue plus this code, both of which change |
+
+The last one has the sharpest test: resolve a profile, let the flag lapse so the derived
+profile is empty, then re-execute the finished run. It still answers with the flags it was
+arranged under — and the deriver is never called, which the test asserts by counting.
+
+Other properties worth knowing:
+
+- **The catalogue is closed and versioned.** Flags are added by review, in `src/flags.ts`;
+  an unknown id is refused rather than returning `undefined`. Nothing here can encode a
+  demographic, a title or a tenure — there is no flag such an attribute could set, which
+  is what makes the exclusion enforceable rather than a policy statement.
+- **A flag is citable.** `explainFlag` produces the sentence the product owes the
+  operator: which interaction, how many times, most recently when.
+- **Stated outranks inferred, without a tie-break** (the design's C7). A flag *suggests*
+  which WHY widget leads; a stated pin overrides it. And a stated pin that does not apply
+  to this topic does **not** hand the decision back to the inference — the person already
+  said what they wanted.
+
+Still deliberately absent, for Phase 2b: the exploration floor (which must log its
+propensity at the moment of the draw, or the arm it creates cannot be evaluated later),
+canonical mode and the escape hatch, and the operator-facing profile surface.
+
 ## Run it
 
 **Visual dashboard (browser):**
@@ -167,7 +202,11 @@ The composer emits a **framework-agnostic `Blueprint`** — the intent→WHAT/WH
 | `src/composer.ts` | Classify → reason → assemble the blueprint dynamically (arranged by stated preferences) |
 | `src/preferences.ts` | Phase 1: the preference contract, scope key, the two durable flows, and the pure arrangement functions |
 | `src/preferenceService.ts` | Runs those flows: state a choice, resolve the effective set |
+| `src/flags.ts` | Phase 2: the closed, versioned capability-flag catalogue |
+| `src/profile.ts` | The evidence read model, the clock-free fold, the lapse evaluator, and the `ctx.decide` resolve flow |
+| `src/profileService.ts` | Runs it: observe an interaction, derive, expire, resolve, replay |
+| `src/suggest.ts` | The one thing a derived profile may do to a surface: suggest which WHY widget leads |
 | `src/wiring.ts` | `buildCore` — surface-agnostic projections + composer (terminal-free) |
 | `src/app.ts` / `src/main.ts` | Terminal wiring + headless driver |
 | `src/browser/` | React dashboard: `renderers.tsx` (Recharts), `registry.ts`, `App.tsx`, `main.tsx` |
-| `test/` | Classification, dynamic assembly, rendered output, browser registry, hydration + drift repair, preference scope + the two adaptation invariants |
+| `test/` | Classification, dynamic assembly, rendered output, browser registry, hydration + drift repair, preference scope + the two adaptation invariants, the flag fold + expiry + journaled profile |

@@ -51,6 +51,7 @@ overrides:
   '@loom/plugin-durable-state': link:../loom/plugins/durable-state
   '@loom/plugin-mcp': link:../loom/plugins/mcp
   '@loom/plugin-mcp-app': link:../loom/plugins/mcp-app
+  '@loom/plugin-read-model': link:../loom/plugins/read-model
   '@loom/plugin-renderer-react': link:../loom/plugins/renderer-react
   '@loom/plugin-renderer-terminal': link:../loom/plugins/renderer-terminal
   '@loom/plugin-sandbox': link:../loom/plugins/sandbox
@@ -904,6 +905,9 @@ importers:
       '@loom/plugin-mcp':
         specifier: link:../../../loom/plugins/mcp
         version: link:../../../loom/plugins/mcp
+      '@loom/plugin-read-model':
+        specifier: link:../../../loom/plugins/read-model
+        version: link:../../../loom/plugins/read-model
       '@loom/plugin-renderer-react':
         specifier: link:../../../loom/plugins/renderer-react
         version: link:../../../loom/plugins/renderer-react
