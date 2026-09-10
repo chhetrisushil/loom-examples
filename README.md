@@ -46,6 +46,7 @@ pnpm --filter @loom/db-observability start   # run one end-to-end
 | `a2ui-callfunction` | A2UI `callFunction` bidirectional RPC — two grains + crash→in-doubt recovery |
 | `mcp-app-release-approval` | Serve a surface as an MCP App (SEP-1865) — pinned template, ambient cursor polling, and decision provenance across a long-held gate (`@loom/plugin-mcp-app`) |
 | `runbook-recall` | Retrieval-augmented generation from parts that exist for other reasons: the `semantic` memory tier as the corpus, `MemoryStore.search` as the retriever, `@loom/knowledge` for the document→passage mapping, `ctx.decide` so the retrieval is a recorded fact (the suite deletes the corpus and replays to the same answer), ADR 0085 taint so a passage somebody edited into the wiki cannot reach an instruction position, and `assertGrounded` so a citation to a document that was never retrieved fails the flow |
+| `saved-views` | A composed surface as a logged artifact: validate before recording, store the tree by `sha256:` ref, and let the EVENT that cites it decide whether it survives the content sweep — then re-open it after a deploy moves the fold behind one binding from a rolling week to a calendar month, and get a `drift` finding instead of a number that quietly changed by $900 |
 | `learning-router` | The continuous-learning loop end to end: `decideWithPolicy` → `trajectories` → SNIPS off-policy evaluation → `promotionGate`, with a 3P LinUCB policy (`@loom/learning` + `loom-plugin-linucb`) |
 | `appgen-brownfield`, `appgen-models` | AI-driven app generation |
 
