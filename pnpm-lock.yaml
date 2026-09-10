@@ -890,6 +890,9 @@ importers:
       '@loom/event-runtime':
         specifier: link:../../../loom/packages/event-runtime
         version: link:../../../loom/packages/event-runtime
+      '@loom/learning':
+        specifier: link:../../../loom/packages/learning
+        version: link:../../../loom/packages/learning
       '@loom/llm':
         specifier: link:../../../loom/packages/llm
         version: link:../../../loom/packages/llm

@@ -27,15 +27,24 @@ const scope = { tenant: "acme", operator: "ana", topic: "queries" };
 const SUBJECT = subjectOf("acme", "ana");
 
 /** Rows as the read model stores them — the fold's only input. */
-const row = (action: string, timestamp: number, flag = "") => ({
-  rowId: `${action}${flag}-${timestamp}`,
+const row = (action: string, timestamp: number, flag = "", rowKind = "") => ({
+  rowId: `${action}${flag}${rowKind}-${timestamp}`,
   executionId: "x",
   sequence: 0,
   timestamp,
   kind: flag === "" ? "OPERATOR_ACTION" : "FLAG_LAPSED",
-  fields: { subject: SUBJECT, action, flag },
+  fields: {
+    subject: SUBJECT,
+    action,
+    flag,
+    kind: rowKind !== "" ? rowKind : action !== "" ? "evidence" : "lapse",
+  },
   value: {},
 });
+
+/** A row the operator produced by stating something about themselves (C7). */
+const declaredRow = (flag: string, timestamp: number, value: boolean) =>
+  row("", timestamp, flag, value ? "declared:set" : "declared:clear");
 
 const openPlan = (at: number) => row("open.queries.slow", at);
 
@@ -93,7 +102,7 @@ describe("the fold is a function of the rows, and of nothing else", () => {
   it("keeps one subject's evidence out of another's", () => {
     const other = {
       ...openPlan(T0),
-      fields: { subject: "acme:bo", action: "open.queries.slow", flag: "" },
+      fields: { subject: "acme:bo", action: "open.queries.slow", flag: "", kind: "evidence" },
     };
     expect(foldProfile(SUBJECT, [openPlan(T0), openPlan(T0 + 1), other]).flags).toEqual([]);
   });
@@ -131,7 +140,7 @@ describe("resolving a profile into a run", () => {
     const profile = createProfileService();
     for (let i = 0; i < 3; i++) await profile.observe("acme", "ana", "open.queries.slow");
 
-    const resolved = await profile.resolve(scope, "session-1");
+    const { profile: resolved } = await profile.open(scope, "session-1");
     expect(resolved.flags).toEqual(["reads_query_plans"]);
 
     // The world moves on: the flag lapses, so the DERIVED profile is now empty.
@@ -143,7 +152,7 @@ describe("resolving a profile into a run", () => {
     // set — reproducing the events but not the fold, which is the substitution this
     // design refuses.
     const before = profile.derivations();
-    const replayed = await profile.replay("session-1");
+    const replayed = (await profile.replay("session-1")).profile;
     expect(replayed.flags).toEqual(["reads_query_plans"]);
     // And the proof that it was SERVED rather than recomputed: the deriver was not called.
     expect(profile.derivations()).toBe(before);
@@ -152,7 +161,7 @@ describe("resolving a profile into a run", () => {
   it("records the decision with the catalogue version beside it", async () => {
     const profile = createProfileService();
     for (let i = 0; i < 3; i++) await profile.observe("acme", "ana", "open.queries.slow");
-    await profile.resolve(scope, "session-2");
+    await profile.open(scope, "session-2");
 
     const decision = (await profile.events("session-2")).find(
       (e) => e.eventType === "DECISION_RECORDED"
@@ -170,7 +179,7 @@ describe("resolving a profile into a run", () => {
 
   it("an operator with no history resolves to the empty profile", async () => {
     const profile = createProfileService();
-    const resolved = await profile.resolve({ ...scope, operator: "bo" }, "session-3");
+    const { profile: resolved } = await profile.open({ ...scope, operator: "bo" }, "session-3");
     expect(resolved).toEqual(EMPTY_PROFILE(subjectOf("acme", "bo")));
   });
 });

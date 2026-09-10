@@ -65,10 +65,16 @@ export class DashboardComposer {
    * — or `NO_PREFERENCES` — yields the canonical arrangement through this same method,
    * not a second code path, so the two cannot drift apart.
    */
+  /**
+   * @param surfaced a capability the exploration floor chose to surface this session
+   * (Phase 2b). It leads over the profile's own suggestion — that is the whole point of
+   * an experiment — and still yields to a stated preference.
+   */
   async answer(
     question: string,
     preferences: OperatorPreferences = NO_PREFERENCES,
-    profile: OperatorProfile | null = null
+    profile: OperatorProfile | null = null,
+    surfaced: string | null = null
   ): Promise<DashboardResult> {
     const classification = await classifyIntent(this.provider, question);
     const model = TOPIC_MODELS[classification.topic];
@@ -90,7 +96,8 @@ export class DashboardComposer {
       model.primaryWidget,
       model.whyWidgets,
       preferences,
-      profile
+      profile,
+      surfaced
     );
     return {
       preferences,
@@ -114,7 +121,8 @@ export class DashboardComposer {
     primaryWidget: string,
     whyWidgets: string[],
     preferences: OperatorPreferences,
-    profile: OperatorProfile | null
+    profile: OperatorProfile | null,
+    surfaced: string | null
   ): Blueprint {
     // A WHAT section (the direct answer + its primary widget) then a WHY section (the
     // explanation + the causal widgets in a grid). The terminal renderer ignores `gap`
@@ -133,7 +141,10 @@ export class DashboardComposer {
         children: arrangeWhyWidgets(
           whyWidgets,
           preferences,
-          suggestedLead(profile, whyWidgets)
+          // The session's experiment outranks the profile's own habit — surfacing what an
+          // operator already reaches for teaches nothing — and both yield to a stated
+          // preference, which is checked inside `arrangeWhyWidgets`.
+          surfaced ?? suggestedLead(profile, whyWidgets)
         ).map((id) => catalogueEntry(id).build()),
       }),
     ];

@@ -1,7 +1,15 @@
 import type { EventEnvelope, FlowDefinition } from "@loom/core";
+import { decideWithPolicy } from "@loom/learning";
+import type { Policy } from "@loom/learning";
 import type { ReadModelDefinition, ReadModelRow } from "@loom/plugin-read-model";
 import type { FlowRunner } from "@loom/workflow-runtime";
 import { z } from "zod";
+import {
+  type ExplorationContext,
+  NO_EXPLORATION,
+  explorationActions,
+  surfacedWidget,
+} from "./exploration";
 import { FLAG_CATALOGUE, FLAG_CATALOGUE_VERSION, flagDefinition } from "./flags";
 import type { PreferenceScope } from "./preferences";
 
@@ -26,12 +34,22 @@ import type { PreferenceScope } from "./preferences";
 
 export const OPERATOR_ACTION = "OPERATOR_ACTION";
 export const FLAG_LAPSED = "FLAG_LAPSED";
+/** C7 — the operator's own statement about themselves. Outranks every inference, forever. */
+export const FLAG_DECLARED = "FLAG_DECLARED";
 
 export interface OperatorActionPayload {
   tenant: string;
   operator: string;
   /** The catalogue action id, e.g. "open.queries.slow". */
   action: string;
+}
+
+export interface FlagDeclaredPayload {
+  tenant: string;
+  operator: string;
+  flag: string;
+  /** `true` sets it, `false` clears it. Both are statements; neither is an absence. */
+  value: boolean;
 }
 
 export interface FlagLapsedPayload {
@@ -54,15 +72,30 @@ export const subjectOf = (tenant: string, operator: string): string => `${tenant
  */
 export const PROFILE_MODEL: ReadModelDefinition = {
   id: "operator-evidence",
-  kinds: [OPERATOR_ACTION, FLAG_LAPSED],
-  indexes: ["subject", "action", "flag"],
+  kinds: [OPERATOR_ACTION, FLAG_LAPSED, FLAG_DECLARED],
+  indexes: ["subject", "action", "flag", "kind"],
   extract: (event) => {
+    const p = event.payload as { tenant: string; operator: string };
+    const subject = subjectOf(p.tenant, p.operator);
     if (event.eventType === OPERATOR_ACTION) {
-      const p = event.payload as OperatorActionPayload;
-      return [{ fields: { subject: subjectOf(p.tenant, p.operator), action: p.action, flag: "" } }];
+      const action = (event.payload as OperatorActionPayload).action;
+      return [{ fields: { subject, action, flag: "", kind: "evidence" } }];
     }
-    const p = event.payload as FlagLapsedPayload;
-    return [{ fields: { subject: subjectOf(p.tenant, p.operator), action: "", flag: p.flag } }];
+    if (event.eventType === FLAG_DECLARED) {
+      const declared = event.payload as FlagDeclaredPayload;
+      return [
+        {
+          fields: {
+            subject,
+            action: "",
+            flag: declared.flag,
+            kind: declared.value ? "declared:set" : "declared:clear",
+          },
+        },
+      ];
+    }
+    const lapse = event.payload as FlagLapsedPayload;
+    return [{ fields: { subject, action: "", flag: lapse.flag, kind: "lapse" } }];
   },
 };
 
@@ -70,9 +103,16 @@ export const PROFILE_MODEL: ReadModelDefinition = {
 
 export interface FlagState {
   id: string;
-  /** Timestamps of the observations that set it, oldest first. */
+  /** Timestamps of the observations that set it, oldest first. Empty when declared. */
   evidence: number[];
   lastEvidencedAt: number;
+  /**
+   * How this flag came to be set. A `declared` one was stated by the operator: it never
+   * expires and no inference overwrites it (C7). Recording the SOURCE rather than just
+   * the value is what lets the product tell someone why they are seeing something, and
+   * what stops a correction being quietly undone by the next evidence sweep.
+   */
+  source: "observed" | "declared";
 }
 
 export interface OperatorProfile {
@@ -102,23 +142,51 @@ export const EMPTY_PROFILE = (subject: string): OperatorProfile => ({
 export function foldProfile(subject: string, rows: readonly ReadModelRow[]): OperatorProfile {
   const evidenceByAction = new Map<string, number[]>();
   const lapsedAt = new Map<string, number>();
+  /** The operator's latest word on each flag, by timestamp. */
+  const declared = new Map<string, { value: boolean; at: number }>();
 
   for (const row of rows) {
     if (row.fields.subject !== subject) continue;
     const action = row.fields.action as string;
     const flag = row.fields.flag as string;
-    if (action !== "") {
+    // A row written by an earlier version of the extractor has no `kind`. It is skipped
+    // rather than guessed at — a read model is a cache with a documented rebuild path
+    // (RM-2), and guessing would let a stale row understate a profile silently.
+    const kind = typeof row.fields.kind === "string" ? row.fields.kind : "";
+    if (kind === "evidence" && action !== "") {
       const list = evidenceByAction.get(action);
       if (list === undefined) evidenceByAction.set(action, [row.timestamp]);
       else list.push(row.timestamp);
-    } else if (flag !== "") {
+    } else if (kind === "lapse" && flag !== "") {
       const prior = lapsedAt.get(flag) ?? 0;
       if (row.timestamp > prior) lapsedAt.set(flag, row.timestamp);
+    } else if (kind.startsWith("declared:") && flag !== "") {
+      const prior = declared.get(flag);
+      if (prior === undefined || row.timestamp >= prior.at) {
+        declared.set(flag, { value: kind === "declared:set", at: row.timestamp });
+      }
     }
   }
 
   const detail: FlagState[] = [];
   for (const definition of FLAG_CATALOGUE) {
+    // C7 first, and terminally. A statement is not a stronger piece of evidence to be
+    // weighed against the rest — it replaces the question. An operator who cleared a flag
+    // must not have it set again by the next three observations, or the correction was
+    // theatre and they will stop making them.
+    const stated = declared.get(definition.id);
+    if (stated !== undefined) {
+      if (stated.value) {
+        detail.push({
+          id: definition.id,
+          evidence: [],
+          lastEvidencedAt: stated.at,
+          source: "declared",
+        });
+      }
+      continue;
+    }
+
     const spentBefore = lapsedAt.get(definition.id) ?? 0;
     // Evidence older than the last lapse is spent, not deleted: the row stays in the log
     // as the record of something that did happen, and the fold simply stops counting it.
@@ -130,6 +198,7 @@ export function foldProfile(subject: string, rows: readonly ReadModelRow[]): Ope
         id: definition.id,
         evidence: live,
         lastEvidencedAt: live[live.length - 1] as number,
+        source: "observed",
       });
     }
   }
@@ -157,6 +226,9 @@ export function dueLapses(profile: OperatorProfile, now: number): FlagLapsedPayl
   const [tenant = "", operator = ""] = profile.subject.split(":");
   const due: FlagLapsedPayload[] = [];
   for (const state of profile.detail) {
+    // A declared flag never expires: expiry exists to stop an INFERENCE outliving its
+    // evidence, and a statement has none to outlive.
+    if (state.source === "declared") continue;
     const horizon = flagDefinition(state.id).horizonMs;
     if (now - state.lastEvidencedAt > horizon) {
       due.push({ tenant, operator, flag: state.id, lastEvidencedAt: state.lastEvidencedAt });
@@ -169,6 +241,9 @@ export function dueLapses(profile: OperatorProfile, now: number): FlagLapsedPayl
 export function explainFlag(state: FlagState): string {
   const definition = flagDefinition(state.id);
   const when = new Date(state.lastEvidencedAt).toISOString().slice(0, 10);
+  if (state.source === "declared") {
+    return `${definition.id}: set because you said so on ${when} — ${definition.describes}. It will not expire, and nothing the system observes will change it.`;
+  }
   return `${definition.id}: set because you did "${definition.evidencedBy}" ${state.evidence.length} times, most recently on ${when} — ${definition.describes}`;
 }
 
@@ -176,6 +251,25 @@ export function explainFlag(state: FlagState): string {
 
 export interface ResolveInput {
   scope: PreferenceScope;
+  /**
+   * Canonical mode: the shared reference frame an incident needs. The profile is zeroed
+   * for the duration and exploration is suppressed entirely — an incident is not a place
+   * to run an experiment, and a bridge call where two people describe different panels is
+   * worse than either arrangement.
+   */
+  canonical?: { active: boolean; reason?: string };
+  /** WHY widgets available on this surface — the range exploration may draw from. */
+  available?: string[];
+}
+
+/** What one session resolved: the profile it will be arranged under, and the draw. */
+export interface SessionProfile {
+  profile: OperatorProfile;
+  /** The capability surfaced above the assessed level this session, if any. */
+  surfaced: string | null;
+  /** The exploration decision id, so the outcome can be recorded against it. */
+  explorationId: string | null;
+  canonical: { active: boolean; reason?: string };
 }
 
 const profileSchema = z.object({
@@ -183,21 +277,35 @@ const profileSchema = z.object({
   flags: z.array(z.string()),
   catalogueVersion: z.number().int().positive(),
   detail: z.array(
-    z.object({ id: z.string(), evidence: z.array(z.number()), lastEvidencedAt: z.number() })
+    z.object({
+      id: z.string(),
+      evidence: z.array(z.number()),
+      lastEvidencedAt: z.number(),
+      source: z.enum(["observed", "declared"]),
+    })
   ),
 });
 
 export const RESOLVE_PROFILE_FLOW_ID = "resolve-operator-profile";
 
-export const resolveProfileFlowDef: FlowDefinition<ResolveInput, OperatorProfile> = {
+const canonicalSchema = z.object({ active: z.boolean(), reason: z.string().optional() });
+
+export const resolveProfileFlowDef: FlowDefinition<ResolveInput, SessionProfile> = {
   _tag: "FlowDefinition",
   id: RESOLVE_PROFILE_FLOW_ID,
-  name: "Resolve the operator profile",
+  name: "Open a session: resolve the profile and draw exploration",
   version: "1.0.0",
   inputSchema: z.object({
     scope: z.object({ tenant: z.string(), operator: z.string(), topic: z.string() }),
+    canonical: canonicalSchema.optional(),
+    available: z.array(z.string()).optional(),
   }) as unknown as z.ZodSchema<ResolveInput>,
-  outputSchema: profileSchema as unknown as z.ZodSchema<OperatorProfile>,
+  outputSchema: z.object({
+    profile: profileSchema,
+    surfaced: z.string().nullable(),
+    explorationId: z.string().nullable(),
+    canonical: canonicalSchema,
+  }) as unknown as z.ZodSchema<SessionProfile>,
   steps: [],
 };
 
@@ -211,17 +319,51 @@ export const resolveProfileFlowDef: FlowDefinition<ResolveInput, OperatorProfile
  * silent substitution the replay inspector refuses when a projection's code has changed.
  */
 export function resolveProfileRunner(
-  derive: (subject: string) => Promise<OperatorProfile>
-): FlowRunner<ResolveInput, OperatorProfile> {
-  return async (ctx, { scope }) => {
+  derive: (subject: string) => Promise<OperatorProfile>,
+  policy: Policy<string>
+): FlowRunner<ResolveInput, SessionProfile> {
+  return async (ctx, { scope, canonical, available }) => {
     const subject = subjectOf(scope.tenant, scope.operator);
-    return ctx.decide(
-      `profile:${subject}`,
-      () => derive(subject),
-      // The catalogue version rides along as rationale: two runs that resolved the same
-      // flag set under different catalogues did not resolve the same profile.
-      { source: "profile", rationale: { catalogueVersion: FLAG_CATALOGUE_VERSION } }
+    const mode = canonical ?? { active: false };
+
+    // Canonical mode zeroes the profile — and does so through the SAME resolution, not a
+    // branch around it, so the canonical surface cannot drift from the adaptive one.
+    const profile = mode.active
+      ? EMPTY_PROFILE(subject)
+      : await ctx.decide(
+          `profile:${subject}`,
+          () => derive(subject),
+          // The catalogue version rides along as rationale: two runs that resolved the
+          // same flag set under different catalogues did not resolve the same profile.
+          { source: "profile", rationale: { catalogueVersion: FLAG_CATALOGUE_VERSION } }
+        );
+
+    if (mode.active) {
+      return { profile, surfaced: null, explorationId: null, canonical: mode };
+    }
+
+    const actions = explorationActions(profile, available ?? []);
+    const explorationId = `explore:${subject}`;
+    const drawn = await decideWithPolicy(
+      ctx,
+      explorationId,
+      policy,
+      {
+        subject,
+        held: profile.flags.length,
+        topic: scope.topic,
+      } satisfies ExplorationContext,
+      actions
     );
+
+    return {
+      profile,
+      surfaced: surfacedWidget(drawn),
+      // Only a real draw gets an outcome: recording one against a session that surfaced
+      // nothing would score the absence of an experiment as its result.
+      explorationId: drawn === NO_EXPLORATION ? null : explorationId,
+      canonical: mode,
+    };
   };
 }
 

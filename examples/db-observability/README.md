@@ -152,9 +152,44 @@ Other properties worth knowing:
   to this topic does **not** hand the decision back to the inference — the person already
   said what they wanted.
 
-Still deliberately absent, for Phase 2b: the exploration floor (which must log its
-propensity at the moment of the draw, or the arm it creates cannot be evaluated later),
-canonical mode and the escape hatch, and the operator-facing profile surface.
+## Adaptation, Phase 2b: exploration, canonical mode, and the operator's own word
+
+**The exploration floor.** A system that only surfaces what it already believes someone
+can use learns nothing it does not already believe: the capability is never shown, never
+used, and the absence of use is read back as confirmation. So a fixed fraction of sessions
+leads with exactly one capability *above* the operator's assessed level, drawn uniformly
+from the ones this surface can actually show.
+
+Two details are the difference between a measurement and a gesture, and both are easy to
+omit without anything failing:
+
+- **The propensity is recorded at the draw** — the probability of the action *taken*, not
+  of exploring at all. It cannot be reconstructed afterwards, and without it
+  `evaluatePolicy` refuses a value estimate and reports `agreement-only`. A log missing it
+  looks perfectly healthy and is silently unevaluable.
+- **Non-use is recorded as a zero, not an absence.** Credit assignment *skips* an absent
+  outcome. Scoring only the successes is precisely what makes an assessed level inflate
+  forever, which is the failure the floor exists to prevent.
+
+**Canonical mode.** On an incident signal the profile is zeroed and the draw is suppressed
+entirely — through the same resolution, not a branch around it, so the canonical surface
+cannot drift from the adaptive one. The reason travels with the session, because silently
+rearranging someone's console the moment an incident starts is the same failure inverted.
+
+**The escape hatch** is recorded like any other interaction and is deliberately evidence
+*of nothing*: no catalogue flag takes it, so reaching for the canonical view can never make
+the system more confident. Its rate is the cheapest corrective signal available — a direct
+measure of how often adaptation was wrong.
+
+**C7 — the operator's own word.** A declared flag is set with no evidence, never expires,
+and is never overwritten by inference; a cleared one stays cleared however much evidence
+arrives afterwards. If the next three observations set it again, the correction was theatre
+and people stop making them. Declaring a flag outside the catalogue is refused: an operator
+may correct the system, not extend the vocabulary it reasons in.
+
+Precedence, end to end: **stated preference → this session's experiment → the profile's own
+habit**. An experiment outranks a habit because surfacing what someone already reaches for
+teaches nothing; both yield to what the person actually said.
 
 ## Run it
 
@@ -204,8 +239,9 @@ The composer emits a **framework-agnostic `Blueprint`** — the intent→WHAT/WH
 | `src/preferenceService.ts` | Runs those flows: state a choice, resolve the effective set |
 | `src/flags.ts` | Phase 2: the closed, versioned capability-flag catalogue |
 | `src/profile.ts` | The evidence read model, the clock-free fold, the lapse evaluator, and the `ctx.decide` resolve flow |
-| `src/profileService.ts` | Runs it: observe an interaction, derive, expire, resolve, replay |
+| `src/profileService.ts` | Runs it: observe, derive, expire, open a session (profile + draw), declare, score, replay |
 | `src/suggest.ts` | The one thing a derived profile may do to a surface: suggest which WHY widget leads |
+| `src/exploration.ts` | Phase 2b: the exploration floor — candidate capabilities, the draw, and the propensity of the action taken |
 | `src/wiring.ts` | `buildCore` — surface-agnostic projections + composer (terminal-free) |
 | `src/app.ts` / `src/main.ts` | Terminal wiring + headless driver |
 | `src/browser/` | React dashboard: `renderers.tsx` (Recharts), `registry.ts`, `App.tsx`, `main.tsx` |

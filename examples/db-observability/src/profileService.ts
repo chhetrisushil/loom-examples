@@ -1,21 +1,27 @@
 import type { EventEnvelope, FlowDefinition } from "@loom/core";
 import { EffectRuntime } from "@loom/effect-runtime";
 import { InMemoryAsyncEventStore } from "@loom/event-runtime";
+import type { Policy } from "@loom/learning";
 import { InMemoryReadModelStore, ReadModelService } from "@loom/plugin-read-model";
 import { InMemoryAsyncSnapshotStore } from "@loom/snapshot-runtime";
 import { WorkflowRuntime } from "@loom/workflow-runtime";
 import type { FlowRunner, RegisteredFlow } from "@loom/workflow-runtime";
 import { z } from "zod";
+import { ExplorationFloor } from "./exploration";
+import { flagDefinition } from "./flags";
 import type { PreferenceScope } from "./preferences";
 import {
   EMPTY_PROFILE,
+  FLAG_DECLARED,
   FLAG_LAPSED,
+  type FlagDeclaredPayload,
   type FlagLapsedPayload,
   OPERATOR_ACTION,
   type OperatorActionPayload,
   type OperatorProfile,
   PROFILE_MODEL,
   type ResolveInput,
+  type SessionProfile,
   dueLapses,
   foldProfile,
   resolveProfileFlowDef,
@@ -84,6 +90,61 @@ const lapseRunner: FlowRunner<LapseInput, { emitted: number }> = async (ctx, { l
   return { emitted: lapses.length };
 };
 
+interface DeclareInput {
+  tenant: string;
+  operator: string;
+  flag: string;
+  value: boolean;
+}
+
+const declareFlowDef: FlowDefinition<DeclareInput, { declared: true }> = {
+  _tag: "FlowDefinition",
+  id: "declare-flag",
+  name: "Declare a capability flag",
+  version: "1.0.0",
+  inputSchema: z.object({
+    tenant: z.string(),
+    operator: z.string(),
+    flag: z.string(),
+    value: z.boolean(),
+  }) as unknown as z.ZodSchema<DeclareInput>,
+  outputSchema: z.object({ declared: z.literal(true) }) as z.ZodSchema<{ declared: true }>,
+  steps: [],
+};
+
+const declareRunner: FlowRunner<DeclareInput, { declared: true }> = async (ctx, input) => {
+  ctx.emit(FLAG_DECLARED, input satisfies FlagDeclaredPayload);
+  return { declared: true };
+};
+
+interface OutcomeInput {
+  explorationId: string;
+  used: boolean;
+}
+
+const outcomeFlowDef: FlowDefinition<OutcomeInput, { scored: true }> = {
+  _tag: "FlowDefinition",
+  id: "score-exploration",
+  name: "Score a surfaced capability",
+  version: "1.0.0",
+  inputSchema: z.object({
+    explorationId: z.string(),
+    used: z.boolean(),
+  }) as unknown as z.ZodSchema<OutcomeInput>,
+  outputSchema: z.object({ scored: z.literal(true) }) as z.ZodSchema<{ scored: true }>,
+  steps: [],
+};
+
+const outcomeRunner: FlowRunner<OutcomeInput, { scored: true }> = async (
+  ctx,
+  { explorationId, used }
+) => {
+  // The shape `@loom/learning` mines for direct credit: an OUTCOME_RECORDED naming the
+  // decision. `score: 0` is a measurement; omitting the event is not.
+  ctx.emit("OUTCOME_RECORDED", { decisionId: explorationId, score: used ? 1 : 0 });
+  return { scored: true };
+};
+
 export interface ProfileService {
   /** Record something the operator did. The only write path in Phase 2. */
   observe(tenant: string, operator: string, action: string): Promise<void>;
@@ -96,22 +157,36 @@ export interface ProfileService {
    */
   expire(tenant: string, operator: string, now: number): Promise<number>;
   /**
-   * Resolve the profile into a run and journal it (`ctx.decide`). Re-running the same
-   * `executionId` serves the recorded profile, whatever the read model says by then.
+   * Open a session: resolve the profile (journalled through `ctx.decide`) and draw the
+   * exploration floor. Canonical mode zeroes the profile and suppresses the draw.
    */
-  resolve(scope: PreferenceScope, executionId: string): Promise<OperatorProfile>;
+  open(
+    scope: PreferenceScope,
+    executionId: string,
+    options?: { canonical?: { active: boolean; reason?: string }; available?: string[] }
+  ): Promise<SessionProfile>;
+  /** State a flag directly — C7. Never expires, and no inference overwrites it. */
+  declare(tenant: string, operator: string, flag: string, value: boolean): Promise<void>;
+  /**
+   * Score an exploration. `used: false` is recorded as a ZERO rather than left absent:
+   * credit assignment skips an absent outcome, so recording only the successes produces
+   * a profile that inflates monotonically.
+   */
+  scoreExploration(explorationId: string, executionId: string, used: boolean): Promise<void>;
   /**
    * Genuinely re-execute a finished run from its recorded state. `ctx.decide` serves the
    * recorded profile and the deriver is never consulted — which is the whole claim.
    */
-  replay(executionId: string): Promise<OperatorProfile>;
+  replay(executionId: string): Promise<SessionProfile>;
   /** The durable log for one execution. */
   events(executionId: string): Promise<EventEnvelope[]>;
   /** How many times the read model has actually been folded (the deriver's call count). */
   derivations(): number;
 }
 
-export function createProfileService(): ProfileService {
+export function createProfileService(
+  explorationPolicy: Policy<string> = new ExplorationFloor()
+): ProfileService {
   const rows = new InMemoryReadModelStore();
   const readModels = new ReadModelService(rows);
   readModels.register(PROFILE_MODEL);
@@ -129,6 +204,8 @@ export function createProfileService(): ProfileService {
 
   runtime.registerFlow(actionFlowDef, actionRunner as FlowRunner<unknown, unknown>);
   runtime.registerFlow(lapseFlowDef, lapseRunner as FlowRunner<unknown, unknown>);
+  runtime.registerFlow(declareFlowDef, declareRunner as FlowRunner<unknown, unknown>);
+  runtime.registerFlow(outcomeFlowDef, outcomeRunner as FlowRunner<unknown, unknown>);
   const actionFlow: RegisteredFlow<ActionInput, { recorded: true }> = {
     definition: actionFlowDef,
     runner: actionRunner,
@@ -136,6 +213,14 @@ export function createProfileService(): ProfileService {
   const lapseFlow: RegisteredFlow<LapseInput, { emitted: number }> = {
     definition: lapseFlowDef,
     runner: lapseRunner,
+  };
+  const declareFlow: RegisteredFlow<DeclareInput, { declared: true }> = {
+    definition: declareFlowDef,
+    runner: declareRunner,
+  };
+  const outcomeFlow: RegisteredFlow<OutcomeInput, { scored: true }> = {
+    definition: outcomeFlowDef,
+    runner: outcomeRunner,
   };
 
   let derivations = 0;
@@ -150,9 +235,9 @@ export function createProfileService(): ProfileService {
   const resolveRunner = resolveProfileRunner(async (subject) => {
     const [tenant = "", operator = ""] = subject.split(":");
     return derive(tenant, operator);
-  });
+  }, explorationPolicy);
   runtime.registerFlow(resolveProfileFlowDef, resolveRunner as FlowRunner<unknown, unknown>);
-  const resolveFlow: RegisteredFlow<ResolveInput, OperatorProfile> = {
+  const resolveFlow: RegisteredFlow<ResolveInput, SessionProfile> = {
     definition: resolveProfileFlowDef,
     runner: resolveRunner,
   };
@@ -179,13 +264,31 @@ export function createProfileService(): ProfileService {
       const { emitted } = await run(lapseFlow, { lapses }, `expire-${++n}`);
       return emitted;
     },
-    resolve: (scope, executionId) => run(resolveFlow, { scope }, executionId),
+    open: (scope, executionId, options) =>
+      run(
+        resolveFlow,
+        {
+          scope,
+          ...(options?.canonical !== undefined && { canonical: options.canonical }),
+          ...(options?.available !== undefined && { available: options.available }),
+        },
+        executionId
+      ),
+    async declare(tenant, operator, flag, value) {
+      // Refuses an id outside the catalogue, exactly like every other path: an operator
+      // may correct the system, not extend the vocabulary it reasons in.
+      flagDefinition(flag);
+      await run(declareFlow, { tenant, operator, flag, value }, `declare-${++n}`);
+    },
+    async scoreExploration(explorationId, executionId, used) {
+      await run(outcomeFlow, { explorationId, used }, executionId);
+    },
     async replay(executionId) {
       const state = await runtime.loadState(executionId);
       if (state === null) throw new Error(`no recorded execution "${executionId}"`);
       const handle = await runtime.restoreFromState(state);
       const finished = await handle.waitForCompletion();
-      return finished.variables._output as OperatorProfile;
+      return finished.variables._output as SessionProfile;
     },
     events: (executionId) => eventStore.read(executionId),
     derivations: () => derivations,
