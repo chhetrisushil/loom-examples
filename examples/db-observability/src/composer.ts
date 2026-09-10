@@ -11,6 +11,8 @@ import type { LlmProvider } from "@loom/llm";
 import type { ProjectionRuntime } from "@loom/projection-runtime";
 import { type Classification, classifyIntent } from "./agent";
 import { catalogueEntry } from "./catalogue";
+import { COHORT_MODEL_VERSION, type CohortId, cohortRule } from "./cohorts";
+import { type FloorReport, checkFloor } from "./floor";
 import { NO_PREFERENCES, arrangeWhyWidgets, gapFor } from "./preferences";
 import type { OperatorPreferences } from "./preferences";
 import type { OperatorProfile } from "./profile";
@@ -40,6 +42,10 @@ export interface DashboardResult {
   preferences: OperatorPreferences;
   /** The derived profile it was arranged under, if any (Phase 2). */
   profile: OperatorProfile | null;
+  /** The cohort this was GENERATED for, and the rules version that assigned it (Phase 3). */
+  cohort: { id: CohortId; modelVersion: number };
+  /** Whether the composition contains everything its intent's floor guarantees. */
+  floor: FloorReport;
 }
 
 // Every projection a composed dashboard may bind to (the renderer reads these).
@@ -70,11 +76,18 @@ export class DashboardComposer {
    * (Phase 2b). It leads over the profile's own suggestion — that is the whole point of
    * an experiment — and still yields to a stated preference.
    */
+  /**
+   * @param cohort the cohort to GENERATE for (Phase 3). Unlike every earlier input this
+   * one changes what the blueprint contains, so it participates in blueprint identity —
+   * two cohorts produce two different artifacts, deliberately and visibly, rather than
+   * one artifact that quietly means different things to different people.
+   */
   async answer(
     question: string,
     preferences: OperatorPreferences = NO_PREFERENCES,
     profile: OperatorProfile | null = null,
-    surfaced: string | null = null
+    surfaced: string | null = null,
+    cohort: CohortId = "unassigned"
   ): Promise<DashboardResult> {
     const classification = await classifyIntent(this.provider, question);
     const model = TOPIC_MODELS[classification.topic];
@@ -97,11 +110,17 @@ export class DashboardComposer {
       model.whyWidgets,
       preferences,
       profile,
-      surfaced
+      surfaced,
+      cohort
     );
     return {
       preferences,
       profile,
+      cohort: { id: cohort, modelVersion: COHORT_MODEL_VERSION },
+      // Checked on every composition rather than in a presubmit only: the tree is
+      // assembled at runtime from an agent's selection, so the only place the floor can
+      // actually be verified is where it is actually built.
+      floor: checkFloor(blueprint, classification.topic),
       question,
       classification,
       what,
@@ -122,11 +141,23 @@ export class DashboardComposer {
     whyWidgets: string[],
     preferences: OperatorPreferences,
     profile: OperatorProfile | null,
-    surfaced: string | null
+    surfaced: string | null,
+    cohort: CohortId
   ): Blueprint {
     // A WHAT section (the direct answer + its primary widget) then a WHY section (the
     // explanation + the causal widgets in a grid). The terminal renderer ignores `gap`
     // and flattens the grid; the browser renders it as a real 2-column dashboard.
+    // The cohort ADDS above the floor. `whyWidgets` is the floor's WHY half, and a
+    // cohort's additions are appended to it — never filtered, never reordered away.
+    // Duplicates are dropped rather than rendered twice: two nodes with one identity is a
+    // defect `validateBlueprint` reports, and a cohort whose additions overlap the floor
+    // is an ordinary authoring case, not an error.
+    const rule = cohortRule(cohort);
+    const additions = (rule?.adds[classification.topic] ?? []).filter(
+      (id) => !whyWidgets.includes(id)
+    );
+    const composed = [...whyWidgets, ...additions];
+
     const children: Array<Widget | Layout> = [
       StatusBadge({ title: "You asked", binding: { projectionId: "answer", path: "question" } }),
       StatusBadge({ title: "▶ WHAT", binding: { projectionId: "answer", path: "what" } }),
@@ -139,18 +170,22 @@ export class DashboardComposer {
         columns: 2,
         gap: gapFor(preferences),
         children: arrangeWhyWidgets(
-          whyWidgets,
+          composed,
           preferences,
           // The session's experiment outranks the profile's own habit — surfacing what an
           // operator already reaches for teaches nothing — and both yield to a stated
           // preference, which is checked inside `arrangeWhyWidgets`.
-          surfaced ?? suggestedLead(profile, whyWidgets)
+          surfaced ?? suggestedLead(profile, composed)
         ).map((id) => catalogueEntry(id).build()),
       }),
     ];
 
     return blueprint$({
-      id: `observability-${classification.topic}`,
+      // The cohort and its model version are PART OF THE IDENTITY. Two cohorts compose
+      // different structures, so they must not share an id: a pinned view, an annotation
+      // or a postmortem reference that resolved to one tree must never silently resolve
+      // to the other. This is the line Phases 0–2 deliberately never crossed.
+      id: `observability-${classification.topic}-${cohort}@v${COHORT_MODEL_VERSION}`,
       title: `DB Observability — ${TOPIC_MODELS[classification.topic].label}`,
       layout: stack({ gap: 16, children }),
       projections: ALL_PROJECTIONS,

@@ -247,6 +247,48 @@ Precedence, end to end: **stated preference → this session's experiment → th
 habit**. An experiment outranks a habit because surfacing what someone already reaches for
 teaches nothing; both yield to what the person actually said.
 
+## Adaptation, Phase 3: cohorts
+
+**Started without the gate.** `phase3Gate` returned `insufficient-evidence` on the data
+available — two sessions against a required two hundred — and this phase proceeded on an
+explicit decision rather than a measured effect. That is recorded in `src/cohorts.ts`
+itself, because the point of a gate is to be visible when it is overridden.
+
+A cohort is different in kind from everything before it: it is an input to **generation**.
+Phases 0–2 only rearranged what the agent had already chosen, which is why they were
+reversible and why blueprint identity never moved. A cohort decides what the blueprint
+*contains*, so two operators can be looking at structurally different surfaces — and a
+surface that differs per person cannot be named in a runbook unless something guarantees
+the parts everyone shares.
+
+- **Rules, not clustering.** A rule is explicable to the operator whose interface it
+  changed, reviewable *before* it ships rather than observable after, and it changes under
+  version control rather than whenever a batch job reruns. Every rule is named for what
+  someone *does*; there is no rule here a title or a tenure could satisfy, and a test says
+  so.
+- **The floor is what makes it safe.** Every intent declares the nodes every cohort must
+  contain, derived from the topic model rather than maintained beside it. Cohorts add above
+  it and never subtract, checked on every composition with `preservesNodes` — the floor's
+  ids as `before`, so a missing floor node is a finding and everything the cohort added
+  lands in `added`. Sixteen cases (four topics × four cohorts) assert it, plus a negative
+  case, because a floor check that cannot fail is not a floor check.
+- **`unassigned` is not `shallow`.** They render alike and mean different things: "we have
+  seen nothing from you" is not "we have seen enough to place you at the shallow end".
+- **The cohort is part of blueprint identity** — `observability-cpu-relational_deep@v1`.
+  Two cohorts compose different structures, so they must not share an id: a pinned view or
+  a postmortem reference that resolved to one tree must never silently resolve to the
+  other. This is the line Phases 0–2 deliberately never crossed.
+- **Hysteresis.** A transition needs its predicate to hold across two consecutive windows,
+  and a lapsed proposal *resets* rather than decrements — two windows on, one off, two on
+  is not four windows of evidence, and counting it as such is how a damper ends up
+  ratifying the oscillation it was added to prevent. Transitions are announced, and the
+  announcement carries the guarantee: *everything you could see before is still there*.
+
+One thing worth knowing about how this was built: the first version of the
+`relational_deep` rule added a widget the CPU floor already contained, so it composed an
+identical tree while reading, in review, as adaptation. A failing test caught it, and a
+second test now refuses any rule whose additions all sit inside the floor.
+
 ## Run it
 
 **Visual dashboard (browser):**
@@ -297,6 +339,8 @@ The composer emits a **framework-agnostic `Blueprint`** — the intent→WHAT/WH
 | `src/profile.ts` | The evidence read model, the clock-free fold, the lapse evaluator, and the `ctx.decide` resolve flow |
 | `src/profileService.ts` | Runs it: observe, derive, expire, open a session (profile + draw), declare, score, replay |
 | `src/suggest.ts` | The one thing a derived profile may do to a surface: suggest which WHY widget leads |
+| `src/cohorts.ts` | Phase 3: the rule-defined cohort model, and hysteresis |
+| `src/floor.ts` | Phase 3: the node floor every cohort's composition must contain |
 | `src/gate.ts` | The Phase 3 gate: baseline vs adaptive, counter-metric vetoes, three-valued verdict |
 | `src/metrics.ts` | Phase 0: the baseline lens — primary metrics, counter-metrics, the segmented guardrail |
 | `src/sessions.ts` | Phase 0: the session and incident events the report reads |
