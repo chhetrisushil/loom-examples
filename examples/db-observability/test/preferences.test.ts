@@ -1,5 +1,6 @@
 import { blueprintNodeIds, preservesNodes } from "@loom/blueprint-runtime";
 import { describe, expect, it } from "vitest";
+import { FLAG_CATALOGUE_VERSION } from "../src/flags";
 import { createPreferenceService } from "../src/preferenceService";
 import {
   NO_PREFERENCES,
@@ -8,6 +9,8 @@ import {
   gapFor,
   preferenceKey,
 } from "../src/preferences";
+import type { OperatorProfile } from "../src/profile";
+import { suggestedLead } from "../src/suggest";
 import { buildCore } from "../src/wiring";
 
 // ── Phase 1: stated preferences ──────────────────────────────────────────────
@@ -110,6 +113,53 @@ describe("the two invariants", () => {
       pinnedWhyWidget: "queries.slow",
     });
     expect(blueprintNodeIds(arranged.blueprint)).not.toEqual(blueprintNodeIds(canonical.blueprint));
+  });
+});
+
+describe("a derived profile can suggest, and a stated one overrides it", () => {
+  const WITH_FLAG: OperatorProfile = {
+    subject: "acme:ana",
+    flags: ["reads_query_plans"],
+    catalogueVersion: FLAG_CATALOGUE_VERSION,
+    detail: [{ id: "reads_query_plans", evidence: [1, 2, 3], lastEvidencedAt: 3 }],
+  };
+  const ids = ["connections.saturation", "queries.slow", "cpu.trend"];
+
+  it("suggests the widget its evidence points at", () => {
+    expect(suggestedLead(WITH_FLAG, ids)).toBe("queries.slow");
+    expect(arrangeWhyWidgets(ids, NO_PREFERENCES, suggestedLead(WITH_FLAG, ids))[0]).toBe(
+      "queries.slow"
+    );
+  });
+
+  it("suggests nothing when the flag's widget is not on this surface", () => {
+    expect(suggestedLead(WITH_FLAG, ["cpu.trend"])).toBeNull();
+    expect(suggestedLead(null, ids)).toBeNull();
+  });
+
+  it("a STATED pin outranks the inference — C7, and without a tie-break", () => {
+    const stated = { ...NO_PREFERENCES, pinnedWhyWidget: "cpu.trend" };
+    expect(arrangeWhyWidgets(ids, stated, suggestedLead(WITH_FLAG, ids))[0]).toBe("cpu.trend");
+  });
+
+  it("a stated pin that does not apply here does not hand the decision back to the inference", () => {
+    // The subtle one. "My pin is irrelevant on this topic" is not "so guess for me": the
+    // person already said what they wanted, and falling through would let a system
+    // preference win on a surface where a human one existed.
+    const stated = { ...NO_PREFERENCES, pinnedWhyWidget: "replication.lag" };
+    expect(arrangeWhyWidgets(ids, stated, suggestedLead(WITH_FLAG, ids))).toEqual(ids);
+  });
+
+  it("a profile-arranged surface still drops nothing", async () => {
+    const { composer } = buildCore();
+    const canonical = await composer.answer(QUESTION);
+    const arranged = await composer.answer(QUESTION, NO_PREFERENCES, WITH_FLAG);
+    const report = preservesNodes(
+      blueprintNodeIds(canonical.blueprint),
+      blueprintNodeIds(arranged.blueprint)
+    );
+    expect(report.ok).toBe(true);
+    expect(report.added).toEqual([]);
   });
 });
 

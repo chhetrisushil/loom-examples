@@ -196,6 +196,12 @@ export function gapFor(preferences: OperatorPreferences): number {
 /**
  * Order the WHY widgets: a pinned one leads, the rest keep the topic model's order.
  *
+ * With a profile (Phase 2), a flag may SUGGEST a lead widget — and a stated pin overrides
+ * it, always. That precedence is the design's C7: what an operator says about themselves
+ * outranks what the system inferred about them, permanently and without a tie-break. It
+ * is also the cheapest correction mechanism in the system, so the inference is worth
+ * having only if it yields to one.
+ *
  * Two properties this must have, and a test for each. It returns the SAME SET it was
  * given — a pin reorders, it never promotes one widget by dropping another — and a pin
  * naming a widget this topic does not show is a no-op rather than an error, because a
@@ -204,9 +210,15 @@ export function gapFor(preferences: OperatorPreferences): number {
  */
 export function arrangeWhyWidgets(
   ids: readonly string[],
-  preferences: OperatorPreferences
+  preferences: OperatorPreferences,
+  suggested: string | null = null
 ): string[] {
-  const pinned = preferences.pinnedWhyWidget;
-  if (pinned === null || !ids.includes(pinned)) return [...ids];
-  return [pinned, ...ids.filter((id) => id !== pinned)];
+  const stated = preferences.pinnedWhyWidget;
+  // A stated pin that names a widget this topic does not show is still an OPINION: it
+  // does not apply here, and it does not hand the decision to the inference either.
+  // Falling through would let a system guess override a person on a surface where the
+  // person had already said what they wanted.
+  const lead = stated !== null ? stated : suggested;
+  if (lead === null || !ids.includes(lead)) return [...ids];
+  return [lead, ...ids.filter((id) => id !== lead)];
 }

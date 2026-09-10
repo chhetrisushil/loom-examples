@@ -13,6 +13,8 @@ import { type Classification, classifyIntent } from "./agent";
 import { catalogueEntry } from "./catalogue";
 import { NO_PREFERENCES, arrangeWhyWidgets, gapFor } from "./preferences";
 import type { OperatorPreferences } from "./preferences";
+import type { OperatorProfile } from "./profile";
+import { suggestedLead } from "./suggest";
 import { readTelemetry } from "./telemetry";
 import { TOPIC_MODELS } from "./topics";
 
@@ -36,6 +38,8 @@ export interface DashboardResult {
   validation: BlueprintValidation;
   /** The stated preferences this composition was arranged under (Phase 1). */
   preferences: OperatorPreferences;
+  /** The derived profile it was arranged under, if any (Phase 2). */
+  profile: OperatorProfile | null;
 }
 
 // Every projection a composed dashboard may bind to (the renderer reads these).
@@ -63,7 +67,8 @@ export class DashboardComposer {
    */
   async answer(
     question: string,
-    preferences: OperatorPreferences = NO_PREFERENCES
+    preferences: OperatorPreferences = NO_PREFERENCES,
+    profile: OperatorProfile | null = null
   ): Promise<DashboardResult> {
     const classification = await classifyIntent(this.provider, question);
     const model = TOPIC_MODELS[classification.topic];
@@ -84,10 +89,12 @@ export class DashboardComposer {
       classification,
       model.primaryWidget,
       model.whyWidgets,
-      preferences
+      preferences,
+      profile
     );
     return {
       preferences,
+      profile,
       question,
       classification,
       what,
@@ -106,7 +113,8 @@ export class DashboardComposer {
     classification: Classification,
     primaryWidget: string,
     whyWidgets: string[],
-    preferences: OperatorPreferences
+    preferences: OperatorPreferences,
+    profile: OperatorProfile | null
   ): Blueprint {
     // A WHAT section (the direct answer + its primary widget) then a WHY section (the
     // explanation + the causal widgets in a grid). The terminal renderer ignores `gap`
@@ -122,9 +130,11 @@ export class DashboardComposer {
       grid({
         columns: 2,
         gap: gapFor(preferences),
-        children: arrangeWhyWidgets(whyWidgets, preferences).map((id) =>
-          catalogueEntry(id).build()
-        ),
+        children: arrangeWhyWidgets(
+          whyWidgets,
+          preferences,
+          suggestedLead(profile, whyWidgets)
+        ).map((id) => catalogueEntry(id).build()),
       }),
     ];
 
