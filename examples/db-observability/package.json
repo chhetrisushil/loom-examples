@@ -20,6 +20,7 @@
     "@loom/llm": "*",
     "@loom/orchestration": "*",
     "@loom/plugin-content": "*",
+    "@loom/plugin-durable-state": "*",
     "@loom/plugin-mcp": "*",
     "@loom/plugin-renderer-react": "*",
     "@loom/plugin-renderer-terminal": "*",
