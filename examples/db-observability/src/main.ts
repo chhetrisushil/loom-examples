@@ -3,9 +3,11 @@ import { buildApp } from "./app";
 import { ExplorationFloor } from "./exploration";
 import { SCHEMA_REPAIRED, createHydrator } from "./hydration";
 import { startTelemetryMcpServer } from "./mcpServer";
+import { baselineReport, ttmRegressed } from "./metrics";
 import { createPreferenceService } from "./preferenceService";
 import { explainFlag } from "./profile";
 import { createProfileService } from "./profileService";
+import { createSessionRecorder } from "./sessions";
 import { applyHydratedStates } from "./telemetry";
 
 // Ask the observability assistant a few questions. Telemetry is HYDRATED by a
@@ -192,6 +194,52 @@ async function main(): Promise<void> {
         `  under incident (${underIncident.canonical.reason}): profile zeroed, surfaced ${underIncident.surfaced} — an incident is not a place to run an experiment`
       )
     );
+
+    // ── Phase 0: the baseline the later phases are judged against ─────────────
+    // Recorded with adaptation OFF, which is the control arm and costs nothing: it is the
+    // same composer call with the profile zeroed. Every rate carries its denominator, and
+    // a rate over nobody is null rather than zero — "nobody succeeded" and "nobody tried"
+    // are different findings.
+    console.log(note("\n── Phase 0: the baseline, with adaptation off ──"));
+    const sessions = createSessionRecorder();
+    await sessions.start({
+      sessionId: "b1",
+      tenant: "acme",
+      operator: "ana",
+      topic: "cpu",
+      adaptive: false,
+    });
+    await sessions.succeeded("b1", "plan.exported");
+    await sessions.ended("b1");
+    // A session that ended without an explicit success is not a success, however fast it
+    // was: the quickest session in any log is someone who found nothing and left.
+    await sessions.start({
+      sessionId: "b2",
+      tenant: "acme",
+      operator: "bo",
+      topic: "cpu",
+      adaptive: false,
+    });
+    await sessions.ended("b2");
+    await sessions.incidentOpened("i-1", "orders-prod", false);
+    await sessions.incidentMitigated("i-1", "orders-prod", false);
+
+    const report = baselineReport([...(await sessions.log()), ...(await profiles.allEvents())]);
+    console.log(
+      dim(
+        `  task success ${report.taskSuccess.numerator}/${report.taskSuccess.denominator}` +
+          ` · time-to-success over ${report.timeToSuccess.n} success(es)` +
+          ` · escape hatch ${report.escapeHatch.numerator}/${report.escapeHatch.denominator}` +
+          ` · TTM canonical n=${report.incidentTimeToMitigate.canonical.n}, adaptive n=${report.incidentTimeToMitigate.adaptive.n}`
+      )
+    );
+    const gate = ttmRegressed(
+      report.incidentTimeToMitigate.canonical.meanMs,
+      report.incidentTimeToMitigate.adaptive
+    );
+    // The guardrail fails CLOSED: with no adaptive incidents measured there is nothing to
+    // clear, and "we could not tell" must never read as "no regression".
+    console.log(dim(`  release gate: ${gate.blocked ? "BLOCKED" : "clear"} — ${gate.reason}`));
 
     const lapsed = await profiles.expire("acme", "cal", Date.now() + 400 * 24 * 60 * 60 * 1000);
     console.log(

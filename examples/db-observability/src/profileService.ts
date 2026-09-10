@@ -180,6 +180,8 @@ export interface ProfileService {
   replay(executionId: string): Promise<SessionProfile>;
   /** The durable log for one execution. */
   events(executionId: string): Promise<EventEnvelope[]>;
+  /** Every event this service has written, in time order — what a report reads. */
+  allEvents(): Promise<EventEnvelope[]>;
   /** How many times the read model has actually been folded (the deriver's call count). */
   derivations(): number;
 }
@@ -291,6 +293,11 @@ export function createProfileService(
       return finished.variables._output as SessionProfile;
     },
     events: (executionId) => eventStore.read(executionId),
+    async allEvents() {
+      const ids = await eventStore.listExecutions();
+      const logs = await Promise.all(ids.map((id) => eventStore.read(id)));
+      return logs.flat().sort((a, b) => a.timestamp - b.timestamp || a.sequence - b.sequence);
+    },
     derivations: () => derivations,
   };
 }
