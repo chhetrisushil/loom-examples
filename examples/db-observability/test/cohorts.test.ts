@@ -13,7 +13,7 @@ import {
 } from "../src/cohorts";
 import { FLAG_CATALOGUE_VERSION } from "../src/flags";
 import { checkFloor, floorFor } from "../src/floor";
-import type { OperatorProfile } from "../src/profile";
+import { EVIDENCE_MODEL_VERSION, type OperatorProfile } from "../src/profile";
 import { buildCore } from "../src/wiring";
 
 // ── Phase 3: cohorts ─────────────────────────────────────────────────────────
@@ -33,6 +33,7 @@ const withFlags = (...flags: string[]): OperatorProfile => ({
   subject: "acme:ana",
   flags,
   catalogueVersion: FLAG_CATALOGUE_VERSION,
+  evidenceVersion: EVIDENCE_MODEL_VERSION,
   detail: flags.map((id) => ({ id, evidence: [1], lastEvidencedAt: 1, source: "observed" })),
 });
 

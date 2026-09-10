@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { ExplorationFloor, NO_EXPLORATION, explorationActions } from "../src/exploration";
 import { FLAG_CATALOGUE } from "../src/flags";
 import { NO_PREFERENCES } from "../src/preferences";
-import type { OperatorProfile } from "../src/profile";
+import { EVIDENCE_MODEL_VERSION, type OperatorProfile } from "../src/profile";
 import { createProfileService } from "../src/profileService";
 import { buildCore } from "../src/wiring";
 
@@ -16,6 +16,7 @@ const held = (...flags: string[]): OperatorProfile => ({
   subject: "acme:ana",
   flags,
   catalogueVersion: 1,
+  evidenceVersion: EVIDENCE_MODEL_VERSION,
   detail: flags.map((id) => ({ id, evidence: [1], lastEvidencedAt: 1, source: "observed" })),
 });
 

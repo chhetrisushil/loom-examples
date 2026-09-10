@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { FLAG_CATALOGUE_VERSION, flagDefinition } from "../src/flags";
 import {
   EMPTY_PROFILE,
+  EVIDENCE_MODEL_VERSION,
   type OperatorProfile,
   dueLapses,
   explainFlag,
@@ -177,6 +178,23 @@ describe("resolving a profile into a run", () => {
     expect(payload.rationale.catalogueVersion).toBe(FLAG_CATALOGUE_VERSION);
   });
 
+  it("the journaled profile carries BOTH halves of the fold, not one", async () => {
+    // The catalogue version already travelled with the value. The evidence model — the
+    // extractor those rows were produced by — did not, and it is the half that decides
+    // whether the ROWS a later derivation reads still mean the same thing (ADR 0095).
+    const profile = createProfileService();
+    for (let i = 0; i < 3; i++) await profile.observe("acme", "ana", "open.queries.slow");
+    const { profile: resolved } = await profile.open(scope, "session-2b");
+
+    expect(resolved.evidenceVersion).toBe(EVIDENCE_MODEL_VERSION);
+    const decision = (await profile.events("session-2b")).find(
+      (e) => e.eventType === "DECISION_RECORDED"
+    );
+    const choice = (decision?.payload as { choice: OperatorProfile }).choice;
+    // Recorded IN the journaled value, so it survives a replay of this session unchanged.
+    expect(choice.evidenceVersion).toBe(EVIDENCE_MODEL_VERSION);
+  });
+
   it("an operator with no history resolves to the empty profile", async () => {
     const profile = createProfileService();
     const { profile: resolved } = await profile.open({ ...scope, operator: "bo" }, "session-3");
@@ -191,5 +209,52 @@ describe("the operator can be told why", () => {
     expect(sentence).toContain("open.queries.slow");
     expect(sentence).toContain("3 times");
     expect(sentence).toContain("2026-09-01");
+  });
+});
+
+// ── The evidence pin (ADR 0095) ──────────────────────────────────────────────
+//
+// `ctx.decide` makes a PAST session reproducible. It says nothing about the NEXT
+// derivation, which reads rows an edited extractor may have written under a different
+// meaning — the rows stay, the watermark is already past the events that produced them,
+// and nothing anywhere reports it. These are the cases that make that visible.
+
+describe("evidenceDrift — was this profile derived from the model running now?", () => {
+  it("a profile resolved under the current model reports no drift", async () => {
+    const profile = createProfileService();
+    await profile.observe("acme", "ana", "open.queries.slow");
+    const { profile: resolved } = await profile.open(
+      { tenant: "acme", operator: "ana", topic: "queries" },
+      "session-p1"
+    );
+
+    expect(profile.evidenceDrift(resolved)).toEqual({ ok: true, findings: [], compared: 1 });
+  });
+
+  it("a profile derived under an older extractor is an ERROR, naming both versions", () => {
+    const profile = createProfileService();
+
+    const report = profile.evidenceDrift({ evidenceVersion: "0" });
+
+    expect(report.ok).toBe(false);
+    expect(report.findings[0]).toMatchObject({
+      code: "drift",
+      severity: "error",
+      id: "operator-evidence",
+      recorded: "0",
+      current: EVIDENCE_MODEL_VERSION,
+    });
+  });
+
+  it("a profile from before the pin is REPORTED, not read as unchanged", () => {
+    // The case a careless implementation passes silently: nothing recorded, nothing
+    // compared, a clean report. `compared: 0` plus a finding is the honest answer.
+    const profile = createProfileService();
+
+    const report = profile.evidenceDrift(undefined);
+
+    expect(report.compared).toBe(0);
+    expect(report.findings[0]).toMatchObject({ code: "unpinned", severity: "warn" });
+    expect(report.findings).toHaveLength(1);
   });
 });

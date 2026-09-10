@@ -9,7 +9,7 @@ import {
   gapFor,
   preferenceKey,
 } from "../src/preferences";
-import type { OperatorProfile } from "../src/profile";
+import { EVIDENCE_MODEL_VERSION, type OperatorProfile } from "../src/profile";
 import { suggestedLead } from "../src/suggest";
 import { buildCore } from "../src/wiring";
 
@@ -121,6 +121,7 @@ describe("a derived profile can suggest, and a stated one overrides it", () => {
     subject: "acme:ana",
     flags: ["reads_query_plans"],
     catalogueVersion: FLAG_CATALOGUE_VERSION,
+    evidenceVersion: EVIDENCE_MODEL_VERSION,
     detail: [
       { id: "reads_query_plans", evidence: [1, 2, 3], lastEvidencedAt: 3, source: "observed" },
     ],
