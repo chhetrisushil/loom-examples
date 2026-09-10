@@ -15,8 +15,10 @@
     "@loom/core": "*",
     "@loom/event-runtime": "*",
     "@loom/plugin-a2ui": "*",
+    "@loom/plugin-audit-chain": "*",
     "@loom/plugin-mcp": "*",
     "@loom/plugin-mcp-app": "*",
+    "@loom/snapshot-runtime": "*",
     "@loom/workflow-runtime": "*",
     "zod": "catalog:"
   },

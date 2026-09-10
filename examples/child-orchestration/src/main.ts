@@ -1,22 +1,17 @@
-import type { ExecutionState } from "@loom/core";
-import type { WorkflowRuntime } from "@loom/workflow-runtime";
 import { type ReleaseIn, type ReleaseOut, releaseFlow } from "./flows";
-import { buildRuntime } from "./runtime";
+import { type ReleaseRuntime, awaitTerminal, buildRuntime } from "./runtime";
 
-// Poll for a terminal state (the supervisor drives children + resumes off the event loop).
+// Wait on the LOG, not a clock: the supervisor drives children + resumes off the event
+// loop, so a live query over the same store says when the release is done (@loom/live-query).
 async function runRelease(
-  runtime: WorkflowRuntime,
+  bundle: ReleaseRuntime,
   executionId: string,
   input: ReleaseIn
 ): Promise<ReleaseOut> {
-  await runtime.start(releaseFlow, input, { executionId });
-  for (let i = 0; i < 400; i++) {
-    const state: ExecutionState | null = await runtime.loadState(executionId);
-    if (state?.status === "completed") return state.variables._output as ReleaseOut;
-    if (state?.status === "failed") throw new Error(`release ${executionId} failed`);
-    await new Promise((r) => setTimeout(r, 5));
-  }
-  throw new Error(`release ${executionId} did not finish`);
+  await bundle.runtime.start(releaseFlow, input, { executionId });
+  const state = await awaitTerminal(bundle.live, executionId);
+  if (state.status === "failed") throw new Error(`release ${executionId} failed`);
+  return state.variables._output as ReleaseOut;
 }
 
 function report(title: string, out: ReleaseOut): void {

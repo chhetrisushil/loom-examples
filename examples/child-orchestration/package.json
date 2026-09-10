@@ -1,7 +1,7 @@
 {
   "name": "@loom/example-child-orchestration",
   "version": "0.0.1",
-  "description": "Child-workflow orchestration end to end: a release pipeline that fans out builds with awaitChildren (settled, tolerate partial failure), gates smoke tests with awaitAll (all-or-nothing), and publishes with awaitChild (one child) — all durable, replay-safe, no new syscall.",
+  "description": "Child-workflow orchestration end to end: a release pipeline that fans out builds with awaitChildren (settled, tolerate partial failure), gates smoke tests with awaitAll (all-or-nothing), and publishes with awaitChild (one child) \u2014 all durable, replay-safe, no new syscall.",
   "private": true,
   "scripts": {
     "build": "tsc --build",
@@ -14,6 +14,7 @@
     "@loom/core": "*",
     "@loom/effect-runtime": "*",
     "@loom/event-runtime": "*",
+    "@loom/live-query": "*",
     "@loom/orchestration": "*",
     "@loom/snapshot-runtime": "*",
     "@loom/workflow-runtime": "*",

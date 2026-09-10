@@ -248,3 +248,47 @@ describe("the resume authenticator", () => {
     await h.close();
   });
 });
+
+describe("the approval log is tamper-evident", () => {
+  // The K12 authenticator decides whether an approval is ACCEPTED. That says nothing about
+  // whether the record still says what it said — and this app's entire output is a record of
+  // who approved a production release. `@loom/plugin-audit-chain` hash-chains every event in
+  // metadata the fold ignores, so the two questions stay separate and both are answerable.
+
+  it("verifies the chain over a real approval, and counts what it checked", async () => {
+    h = await harness({ userGrant: "demo-grant" });
+    h.host.clickApprove();
+    await settle(500);
+    // Assert the approval actually landed — a chain verified over a log with no approval
+    // in it would pass while proving nothing about the thing this app records.
+    expect(h.surface().status).toBe("shipped");
+
+    const verified = await h.app.auditLog.verifyChain(h.executionId);
+    expect(verified.ok).toBe(true);
+    // The denominator: `ok` over an empty log would be a pass that proves nothing.
+    expect(verified.length).toBeGreaterThan(3);
+    expect(verified.brokenAt).toBeUndefined();
+  });
+
+  it("detects an edit to the approval AFTER the fact", async () => {
+    h = await harness({ userGrant: "demo-grant" });
+    h.host.clickApprove();
+    await settle(500);
+    expect(h.surface().status).toBe("shipped");
+    expect((await h.app.auditLog.verifyChain(h.executionId)).ok).toBe(true);
+
+    // Tamper with the durable record the way an attacker with store access would: rewrite
+    // the approver on the event that reopened the gate, leaving every hash in place.
+    const events = await h.app.auditLog.read(h.executionId);
+    const approval = events.find(
+      (e) => e.eventType === RELEASE_SIGNAL && (e.payload as ReleaseSignal).kind === "approval"
+    );
+    expect(approval).toBeDefined();
+    (approval as { payload: Record<string, unknown> }).payload.approver = "someone-else";
+
+    const broken = await h.app.auditLog.verifyChain(h.executionId);
+    expect(broken.ok).toBe(false);
+    expect(broken.brokenAt).toBe(approval?.sequence);
+    expect(broken.reason).toBeTruthy();
+  });
+});
