@@ -137,3 +137,18 @@ It exists because an example that drives only the *server* proves half a protoco
 it skips is where this binding had already been wrong twice. Writing this example found both:
 the template never called the cursor tool it was documented to poll, and its `List` branch read
 a prop the A2UI `list()` helper never emits, so every list rendered empty.
+
+
+## The log is tamper-evident
+
+This app's entire output is a record of **who approved a production release**, so two questions
+have to stay separate. The K12 `ResumeAuthenticator` decides whether an approval is *accepted* —
+only the trust boundary may approve. `@loom/plugin-audit-chain` answers the other one: whether
+the accepted approval is still the one **recorded**. It hash-chains every event into `metadata`,
+which the fold ignores, so replay is byte-identical whether or not it is wired, and
+`app.auditLog.verifyChain(executionId)` recomputes the chain out of band.
+
+The evidence is the negative case: a test rewrites the approver on the durable event after the
+fact and gets `ok: false` with `brokenAt` at that sequence. The positive test asserts the
+approval actually landed first — a chain verified over a log with no approval in it passes while
+proving nothing about the thing this app exists to record.

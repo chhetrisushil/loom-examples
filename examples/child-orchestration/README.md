@@ -17,6 +17,18 @@ new event type**. Each await rides ONE suspend/resume cycle, every spawn is fixe
 single `ctx.decide`, and child ids are deterministic (`<parent>::<key>#<i>`), so the whole
 pipeline is replay-safe and crash-recoverable frame by frame.
 
+## Waiting on the log, not on a clock
+
+The supervisor turns spawn intents into child executions and completions back into parent
+resumes, all off the event loop — so "is the release done?" is a question about the LOG.
+`buildRuntime()` returns a `LiveQuery` (`@loom/live-query`) over the same store, and
+`awaitTerminal` resolves on the first terminal push: `subscribe` delivers current state
+immediately and again after every event, so an execution that already finished still settles.
+
+It replaced a 400-iteration poll at 5 ms. The wall-clock difference is small here; what is gone
+is an interval that is either wasteful or too slow, and a cap that was a guess about how long a
+release takes.
+
 ## Run it
 
 ```bash
