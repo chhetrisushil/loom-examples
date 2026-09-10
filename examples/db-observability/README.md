@@ -123,6 +123,34 @@ Two rules hold across all of them:
   measured incidents: "we could not tell" must never read as "no regression" on the one
   metric that is allowed to stop a release.
 
+### The Phase 3 gate
+
+`src/gate.ts` judges an adaptive arm against the Phase 0 baseline, and it is the piece that
+decides whether the programme may proceed to the first change that **cannot be quietly
+undone**. Three decisions rather than two:
+
+- `blocked` — measured, and the answer is no;
+- `insufficient-evidence` — not measured well enough to say. Not a pass and not a failure:
+  the next action is more data, not a redesign;
+- `clear` — measured, positive, and nothing else regressed.
+
+Collapsing the middle one into either neighbour is the mistake worth avoiding. A gate that
+returns `clear` on a thin sample launders an absence of evidence into an irreversible
+decision, and one that returns `blocked` sends someone to fix a system that may be fine.
+
+The counter-metrics can veto a win: a rise in task success bought with a fall in discovery
+is the capability trap, not a result, and the primary metric cannot see it. A neutral
+result is also not a licence — "no harm" justifies *keeping* Phases 1–2, not proceeding
+past them.
+
+**On this example's data the verdict is `INSUFFICIENT-EVIDENCE`, and that is the point.**
+The sessions here are scripted, so there is no effect to measure; a number computed from
+them would be a plausible-sounding figure whose principal effect in a review is to be
+mistaken for evidence. Real measurement needs sessions in each arm, exploration volume
+(off-policy evidence is gated by how much was explored, not by how long the log is), and
+unit attribution — `trajectories(events, { unitOf })`, without which pooled evidence cannot
+be told apart from one operator's.
+
 ## Adaptation, Phase 1: stated preferences
 
 The same question composed for two operators differs only in **arrangement** — density,
@@ -269,6 +297,7 @@ The composer emits a **framework-agnostic `Blueprint`** — the intent→WHAT/WH
 | `src/profile.ts` | The evidence read model, the clock-free fold, the lapse evaluator, and the `ctx.decide` resolve flow |
 | `src/profileService.ts` | Runs it: observe, derive, expire, open a session (profile + draw), declare, score, replay |
 | `src/suggest.ts` | The one thing a derived profile may do to a surface: suggest which WHY widget leads |
+| `src/gate.ts` | The Phase 3 gate: baseline vs adaptive, counter-metric vetoes, three-valued verdict |
 | `src/metrics.ts` | Phase 0: the baseline lens — primary metrics, counter-metrics, the segmented guardrail |
 | `src/sessions.ts` | Phase 0: the session and incident events the report reads |
 | `src/exploration.ts` | Phase 2b: the exploration floor — candidate capabilities, the draw, and the propensity of the action taken |

@@ -1,6 +1,7 @@
 import { blueprintNodeIds, preservesNodes } from "@loom/blueprint-runtime";
 import { buildApp } from "./app";
 import { ExplorationFloor } from "./exploration";
+import { formatVerdict, phase3Gate } from "./gate";
 import { SCHEMA_REPAIRED, createHydrator } from "./hydration";
 import { startTelemetryMcpServer } from "./mcpServer";
 import { baselineReport, ttmRegressed } from "./metrics";
@@ -240,6 +241,14 @@ async function main(): Promise<void> {
     // The guardrail fails CLOSED: with no adaptive incidents measured there is nothing to
     // clear, and "we could not tell" must never read as "no regression".
     console.log(dim(`  release gate: ${gate.blocked ? "BLOCKED" : "clear"} — ${gate.reason}`));
+
+    // ── The Phase 3 gate, run on this demo's own data ─────────────────────────
+    // Phase 3 is the first step that touches blueprint identity, so it asks for evidence
+    // rather than enthusiasm. Run against a handful of scripted sessions the answer is
+    // INSUFFICIENT-EVIDENCE — which is the correct answer, and the one a gate that could
+    // be talked into `clear` by a small sample would never give.
+    const gateVerdict = phase3Gate(report, report);
+    console.log(dim(`\n${formatVerdict(gateVerdict)}`));
 
     const lapsed = await profiles.expire("acme", "cal", Date.now() + 400 * 24 * 60 * 60 * 1000);
     console.log(
