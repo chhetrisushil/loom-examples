@@ -1,8 +1,11 @@
+import { generateKeyPairSync } from "node:crypto";
 import type { SurfaceState } from "@loom/agent-surface";
+import { InMemoryAsyncEventStore } from "@loom/event-runtime";
+import { ed25519Signer, ed25519Verifier, hashChainedEventStore } from "@loom/plugin-audit-chain";
 import { McpClient } from "@loom/plugin-mcp";
 import { SURFACE_HOST_URI, surfaceHostPin } from "@loom/plugin-mcp-app";
 import { afterEach, describe, expect, it } from "vitest";
-import { buildApp } from "../src/app";
+import { RELEASE_KEY_ID, auditorView, buildApp } from "../src/app";
 import { RELEASE_SIGNAL, RegisteredReleaseFlow } from "../src/flow";
 import type { ReleaseSignal } from "../src/flow";
 import { startHost } from "../src/host";
@@ -290,5 +293,61 @@ describe("the approval log is tamper-evident", () => {
     expect(broken.ok).toBe(false);
     expect(broken.brokenAt).toBe(approval?.sequence);
     expect(broken.reason).toBeTruthy();
+  });
+});
+
+// ── The approval record, checked by someone who could not have written it ─────
+//
+// This app's entire output is a record of who approved a production release. The K12
+// authenticator decides whether an approval is ACCEPTED; the chain is what lets anyone show
+// afterwards that the accepted approval is still the one in the log.
+//
+// It used to be hash-only — tamper-evident, with nothing established about authorship — and
+// an HMAC would not have fixed that for an EXTERNAL reader: verification needs the same
+// secret, so the auditor you hand it to could re-chain and re-sign the whole log
+// (loom#382). Entries are signed now, and the auditor holds only the public key.
+
+describe("the approval log is verifiable by an outside party", () => {
+  it("verifies with the public key alone, and says that authorship was checked", async () => {
+    const h = await harness({ userGrant: "demo-grant" });
+    try {
+      await h.asApp.callTool("approve", {});
+      const audit = await auditorView(h.app).verifyChain(h.executionId);
+      expect(audit).toMatchObject({ ok: true, signaturesChecked: true });
+      expect(audit.length).toBeGreaterThan(1);
+    } finally {
+      await h.close();
+    }
+  });
+
+  it("an auditor holding only the public key cannot produce a valid entry", async () => {
+    const h = await harness({ userGrant: "demo-grant" });
+    try {
+      await h.asApp.callTool("approve", {});
+
+      // Everything an auditor has. Signing needs a private key, which is not in it — so the
+      // strongest thing a hostile auditor can do is sign with a key of their own…
+      const forged = generateKeyPairSync("ed25519");
+      const rechained = hashChainedEventStore(new InMemoryAsyncEventStore(), {
+        signer: ed25519Signer(forged.privateKey, RELEASE_KEY_ID), // claims the same key id
+      });
+      for (const row of await h.app.auditLog.read(h.executionId)) {
+        const { metadata: _chain, ...bare } = row;
+        await rechained.append(
+          bare.eventType === "APPROVAL_GRANTED"
+            ? { ...bare, payload: { ...(bare.payload as object), actor: "someone-else" } }
+            : bare
+        );
+      }
+      // …which is internally consistent, and worthless to anyone holding the published key.
+      expect(await rechained.verifyChain(h.executionId)).toMatchObject({ ok: true });
+      const audit = await hashChainedEventStore(rechained, {
+        verifier: ed25519Verifier({ [RELEASE_KEY_ID]: h.app.auditPublicKey }),
+      }).verifyChain(h.executionId);
+      expect(audit.ok).toBe(false);
+      expect(audit.reason).toMatch(/signature invalid/);
+    } finally {
+      await h.close();
+    }
   });
 });

@@ -1,6 +1,12 @@
+import { type KeyObject, generateKeyPairSync } from "node:crypto";
 import { type LoomApp, defineConfig } from "@loom/app";
 import { InMemoryAsyncEventStore } from "@loom/event-runtime";
-import { type HashChainedEventStore, hashChainedEventStore } from "@loom/plugin-audit-chain";
+import {
+  type HashChainedEventStore,
+  ed25519Signer,
+  ed25519Verifier,
+  hashChainedEventStore,
+} from "@loom/plugin-audit-chain";
 import { InMemoryAsyncSnapshotStore } from "@loom/snapshot-runtime";
 import type { ResumeAuthenticator } from "@loom/workflow-runtime";
 import { RELEASE_SIGNAL, RegisteredReleaseFlow } from "./flow";
@@ -60,10 +66,28 @@ export const releaseResumeAuthenticator: ResumeAuthenticator = {
 export interface ReleaseApp extends LoomApp {
   /** The chained store, for `verifyChain(executionId)` — an out-of-band audit read. */
   auditLog: HashChainedEventStore;
+  /**
+   * The PUBLIC key of the signing pair, and nothing else. Handed to whoever checks the log:
+   * `auditorView(app)` builds a verify-only view from it that can prove every entry and
+   * author none.
+   */
+  auditPublicKey: KeyObject;
 }
 
 export function buildApp(): ReleaseApp {
-  const auditLog = hashChainedEventStore(new InMemoryAsyncEventStore());
+  // A fresh pair per process, because this is a demo. In a deployment the private key lives
+  // wherever your other signing keys live and the public half is published; loom makes no
+  // trust-root decision either way — it signs with the key it is handed.
+  const { privateKey, publicKey } = generateKeyPairSync("ed25519");
+  const store = new InMemoryAsyncEventStore();
+  // SIGNED, not HMAC'd. An HMAC would make this log tamper-evident to whoever holds the
+  // secret — but verification would need that same secret, so the auditor you hand it to
+  // could also re-chain and re-sign the whole log. For a record of who approved a production
+  // release, "the only people who can check it are the people who could have faked it" is
+  // the wrong guarantee (loom#382).
+  const auditLog = hashChainedEventStore(store, {
+    signer: ed25519Signer(privateKey, RELEASE_KEY_ID),
+  });
   const app = defineConfig({
     storage: {
       kind: "custom",
@@ -82,5 +106,21 @@ export function buildApp(): ReleaseApp {
     // check are about.
     checks: { verify: "warn" },
   });
-  return Object.assign(app, { auditLog });
+  return Object.assign(app, { auditLog, auditPublicKey: publicKey });
+}
+
+/** The key id stamped on every signed entry, so rotation would not invalidate history. */
+export const RELEASE_KEY_ID = "release-approvals-2026";
+
+/**
+ * What an auditor gets: the same durable rows, and the PUBLIC key.
+ *
+ * No private key, no HMAC secret — so this view can prove every entry and author none. That
+ * asymmetry is the whole point: an approval record is only worth something to a regulator if
+ * the party checking it could not have written it.
+ */
+export function auditorView(app: ReleaseApp): HashChainedEventStore {
+  return hashChainedEventStore(app.auditLog, {
+    verifier: ed25519Verifier({ [RELEASE_KEY_ID]: app.auditPublicKey }),
+  });
 }

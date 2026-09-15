@@ -139,7 +139,7 @@ the template never called the cursor tool it was documented to poll, and its `Li
 a prop the A2UI `list()` helper never emits, so every list rendered empty.
 
 
-## The log is tamper-evident
+## The log is tamper-evident — and checkable by someone outside
 
 This app's entire output is a record of **who approved a production release**, so two questions
 have to stay separate. The K12 `ResumeAuthenticator` decides whether an approval is *accepted* —
@@ -152,3 +152,18 @@ The evidence is the negative case: a test rewrites the approver on the durable e
 fact and gets `ok: false` with `brokenAt` at that sequence. The positive test asserts the
 approval actually landed first — a chain verified over a log with no approval in it passes while
 proving nothing about the thing this app exists to record.
+
+**Signed, not HMAC'd** ([loom#382](https://github.com/chhetrisushil/loom/issues/382)). Hashes alone
+establish that a log was not edited; they say nothing about *who wrote it*, and an HMAC would not
+fix that for an outside reader — verification needs the same secret, so the auditor you hand it to
+could re-chain and re-sign the whole thing. For a record of who approved a production release,
+"the only people who can check it are the people who could have faked it" is the wrong guarantee.
+
+Entries are Ed25519-signed, and `auditorView(app)` is what an external party gets: the same durable
+rows plus the **public key**, and nothing else. It can prove every entry and author none —
+`verifyChain` returns `signaturesChecked: true`, so a passing result means authorship was actually
+checked rather than merely not contradicted.
+
+The evidence here is again a negative: a test takes everything an auditor holds, re-chains the log
+with the approver rewritten, and re-signs it with a key of its own. That forgery is *internally
+consistent* — and fails immediately against the published key.
