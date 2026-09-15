@@ -1,12 +1,16 @@
 import type { SurfaceEmitter } from "@loom/agent-surface";
+import type { ExecutionState } from "@loom/core";
+import type { ExecutionDispatcher } from "@loom/dispatcher";
 import type { BranchRegistry } from "@loom/event-runtime";
 import { parallelLimit } from "@loom/scheduler";
 import type { WorkflowRuntime } from "@loom/workflow-runtime";
 import { MigrationExecutionFlow } from "../capabilities/flows";
+import { BRANCH_TARGET } from "../compute/dispatcher";
 import { progressHub } from "../runtime/progressHub";
 import type { BranchSurface, BranchView } from "../warroom/branchView";
 import { emptyBranchSurface } from "../warroom/branchView";
 import {
+  SHADOW_VERIFIED,
   STRATEGIES,
   type StrategyId,
   type StrategyOutcome,
@@ -40,6 +44,14 @@ export interface BranchOrchestratorDeps {
   runtime: WorkflowRuntime;
   branchRegistry: BranchRegistry;
   branch: SurfaceEmitter;
+  /**
+   * OPTIONAL compute placement for branch work. A simulated migration clones a table and
+   * backfills it — capacity sized for a branch, not for the web server. With a dispatcher
+   * wired, each branch is dispatched to the `branch` lane instead of running in-process;
+   * without one the example behaves exactly as before (and the progress bars still work,
+   * which is itself a finding — see the README).
+   */
+  dispatcher?: ExecutionDispatcher;
 }
 
 export class BranchOrchestrator {
@@ -128,18 +140,27 @@ export class BranchOrchestrator {
           this.patchBranch(s.id, { progress: pct });
         });
         try {
-          // Resume this branch down the alternate path — dry-run only.
-          const resumed = await this.deps.runtime.resume(fork.executionId, {
+          // Drive this branch down the alternate path — dry-run only. Dispatched to the
+          // `branch` lane when a dispatcher is wired: the package carries identity and
+          // resume coordinates, never code or state, so the worker rebuilds the branch
+          // from the shared stores and this process never runs the backfill.
+          const resumeEvent = {
             eventType: "MigrationDecision",
             payload: { approved: true, strategy: s.id, simulate: true, approvedBy: "explorer" },
-          });
-          const final = await resumed.waitForCompletion();
+          };
+          const final = await this.drive(fork.executionId, resumeEvent);
           await this.deps.branchRegistry.moveTip(branchName, final.sequence);
 
-          const outcome = final.variables._output as StrategyOutcome;
-          this.patchBranch(s.id, { status: "simulated", progress: 100, outcome });
+          // A simulated branch does not finish here any more: it parks for shadow
+          // verification. The outcome is readable once that gate is answered.
+          const suspended = final.status === "suspended";
+          this.patchBranch(s.id, {
+            status: suspended ? "awaiting-verification" : "simulated",
+            progress: 100,
+            ...(suspended ? {} : { outcome: final.variables._output as StrategyOutcome }),
+          });
           await this.refreshRefs();
-          return outcome;
+          return final.variables._output as StrategyOutcome;
         } finally {
           unsub();
         }
@@ -187,6 +208,64 @@ export class BranchOrchestrator {
     const outcome = final.variables._output as StrategyOutcome;
     this.patchBranch(strategy, { status: "committed", progress: 100, outcome, winner: true });
     this.setPhase("committed");
+    await this.refreshRefs();
+    this.publish();
+    return outcome;
+  }
+
+  /**
+   * Run one branch step, wherever the branch belongs. With a dispatcher this crosses the
+   * placement boundary as an `ExecutionPackage`; without one it is an in-process resume.
+   * Both return the folded state at the stopping point — completed OR suspended.
+   */
+  private async drive(
+    executionId: string,
+    resumeEvent: { eventType: string; payload: unknown }
+  ): Promise<ExecutionState> {
+    if (this.deps.dispatcher === undefined) {
+      const resumed = await this.deps.runtime.resume(executionId, resumeEvent);
+      // waitForSuspend resolves for a parked branch; waitForCompletion never would.
+      return await Promise.race([resumed.waitForSuspend(), resumed.waitForCompletion()]);
+    }
+    const result = await this.deps.dispatcher.dispatch(
+      {
+        executionId,
+        workflowId: MigrationExecutionFlow.definition.id,
+        flowId: MigrationExecutionFlow.definition.id,
+        resumeEvent,
+      },
+      { target: BRANCH_TARGET }
+    );
+    return result.state;
+  }
+
+  /** A DBA answers one branch's shadow verification. Arrives whenever that person gets to it. */
+  async verify(
+    strategy: StrategyId,
+    verdict: { verified: boolean; verifiedBy: string; rowsChecked?: number }
+  ): Promise<StrategyOutcome | null> {
+    const branch = this.state.branches.find((b) => b.strategy === strategy);
+    if (!branch?.executionId) throw new Error(`Branch "${strategy}" has not been forked.`);
+    if (branch.status !== "awaiting-verification") return branch.outcome ?? null;
+
+    const final = await this.drive(branch.executionId, {
+      eventType: SHADOW_VERIFIED,
+      payload: {
+        branchExecutionId: branch.executionId,
+        verified: verdict.verified,
+        verifiedBy: verdict.verifiedBy,
+        ...(verdict.rowsChecked !== undefined && { rowsChecked: verdict.rowsChecked }),
+      },
+    });
+    await this.deps.branchRegistry.moveTip(branch.branchName, final.sequence);
+    const outcome = final.variables._output as StrategyOutcome;
+    this.patchBranch(strategy, {
+      status: verdict.verified ? "simulated" : "rejected",
+      outcome,
+    });
+    if (this.state.branches.every((b) => b.status !== "awaiting-verification")) {
+      this.setPhase("explored");
+    }
     await this.refreshRefs();
     this.publish();
     return outcome;

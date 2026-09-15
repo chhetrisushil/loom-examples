@@ -1392,6 +1392,12 @@ importers:
       '@loom/plugin-sqlite':
         specifier: link:../../../loom/plugins/sqlite
         version: link:../../../loom/plugins/sqlite
+      '@loom/plugin-worker-remote':
+        specifier: link:../../../loom/plugins/worker-remote
+        version: link:../../../loom/plugins/worker-remote
+      '@loom/plugin-worker-server':
+        specifier: link:../../../loom/plugins/worker-server
+        version: link:../../../loom/plugins/worker-server
       '@loom/projection-runtime':
         specifier: link:../../../loom/packages/projection-runtime
         version: link:../../../loom/packages/projection-runtime

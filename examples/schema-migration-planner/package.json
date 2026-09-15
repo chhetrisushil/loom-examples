@@ -12,12 +12,13 @@
     "build:ui": "tsc --build && vite build",
     "start": "vite build && tsx src/server/main.ts",
     "test": "vitest run",
-    "clean": "rm -rf dist .data tsconfig.tsbuildinfo"
+    "clean": "rm -rf dist .data tsconfig.tsbuildinfo",
+    "dev:worker": "tsx src/compute/main.ts",
+    "demo:placement": "tsx src/scripts/branchPlacement.ts"
   },
   "dependencies": {
-    "@loom/plugin-a2a": "*",
-    "@loom/agent-surface": "*",
     "@loom/agent": "*",
+    "@loom/agent-surface": "*",
     "@loom/app": "*",
     "@loom/blueprint-runtime": "*",
     "@loom/capability": "*",
@@ -28,6 +29,10 @@
     "@loom/intent": "*",
     "@loom/llm": "*",
     "@loom/planner": "*",
+    "@loom/plugin-a2a": "*",
+    "@loom/plugin-sqlite": "*",
+    "@loom/plugin-worker-remote": "*",
+    "@loom/plugin-worker-server": "*",
     "@loom/projection-runtime": "*",
     "@loom/registry": "*",
     "@loom/scheduler": "*",
@@ -35,8 +40,7 @@
     "@loom/snapshot-runtime": "*",
     "@loom/worker-runtime-local": "*",
     "@loom/workflow-runtime": "*",
-    "zod": "catalog:",
-    "@loom/plugin-sqlite": "*"
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@loom/testing": "*",

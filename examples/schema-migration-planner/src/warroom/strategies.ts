@@ -138,3 +138,23 @@ export const MigrationDecisionSchema = z.object({
   approvedBy: z.string(),
 });
 export type MigrationDecision = z.infer<typeof MigrationDecisionSchema>;
+
+// ── The shadow-verification gate ─────────────────────────────────────────────
+//
+// A shadow migration does not end when the backfill does. Someone compares row
+// counts, checks constraint violations, and signs the branch off — and that person
+// is not waiting at a keyboard while 40 million rows copy. So a simulated branch
+// suspends here, which is what makes a branch LONG-RUNNING rather than merely slow:
+// the compute that ran the backfill is finished and released, and the execution is
+// parked in storage until a human answers.
+export const SHADOW_VERIFIED = "ShadowVerified";
+
+export const ShadowVerificationSchema = z.object({
+  // The verification names the branch it settles: a sibling's sign-off parses
+  // identically at the same gate (see incident-war-room for the same contract).
+  branchExecutionId: z.string().min(1),
+  verified: z.boolean(),
+  verifiedBy: z.string().min(1),
+  rowsChecked: z.number().int().nonnegative().optional(),
+});
+export type ShadowVerification = z.infer<typeof ShadowVerificationSchema>;

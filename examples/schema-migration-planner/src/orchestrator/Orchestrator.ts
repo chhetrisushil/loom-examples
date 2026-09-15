@@ -3,6 +3,7 @@ import type { SurfaceEmitter } from "@loom/agent-surface";
 import type { ApprovalDecision, InProcessA2ABus } from "@loom/app";
 import type { CapabilityCatalog } from "@loom/capability";
 import type { EventEnvelope } from "@loom/core";
+import type { ExecutionDispatcher } from "@loom/dispatcher";
 import type { BranchRegistry } from "@loom/event-runtime";
 import { IntentRuntime } from "@loom/intent";
 import { PlannerRuntime } from "@loom/planner";
@@ -30,6 +31,8 @@ export interface OrchestratorDeps {
   bus: InProcessA2ABus;
   branchRegistry: BranchRegistry;
   missionId: string;
+  /** Optional compute placement for branch simulations — see `compute/dispatcher.ts`. */
+  dispatcher?: ExecutionDispatcher;
 }
 
 interface MissionModel {
@@ -92,6 +95,7 @@ export class Orchestrator {
       runtime: deps.missionRuntime,
       branchRegistry: deps.branchRegistry,
       branch: this.branch,
+      ...(deps.dispatcher !== undefined && { dispatcher: deps.dispatcher }),
     });
   }
 
@@ -155,7 +159,20 @@ export class Orchestrator {
     );
     const outcomes = await this.branchOrch.explore();
     this.setPhase("branches-ready");
-    this.log(`Explored ${outcomes.length} strategies. Awaiting the operator's pick (no merge).`);
+    this.log(
+      `Explored ${outcomes.length} strategies. Each branch is parked for shadow verification — nothing is decidable until a DBA answers.`
+    );
+  }
+
+  /** A DBA verifies one branch's shadow table. Arrives independently, per branch. */
+  async verifyBranch(
+    strategy: StrategyId,
+    verdict: { verified: boolean; verifiedBy: string; rowsChecked?: number }
+  ): Promise<void> {
+    await this.branchOrch.verify(strategy, verdict);
+    this.log(
+      `${verdict.verifiedBy} ${verdict.verified ? "verified" : "rejected"} the "${strategy}" shadow migration.`
+    );
   }
 
   // Phase 3: promote a winner and apply it for real.
