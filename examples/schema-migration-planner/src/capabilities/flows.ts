@@ -8,6 +8,9 @@ import { progressHub } from "../runtime/progressHub";
 import {
   type MigrationDecision,
   MigrationDecisionSchema,
+  SHADOW_VERIFIED,
+  type ShadowVerification,
+  ShadowVerificationSchema,
   type StrategyId,
   type StrategyOutcome,
   projectOutcome,
@@ -319,11 +322,47 @@ const migrationExecutionRunner: FlowRunner<{ target: string }, MigrationResult> 
     report(ctx.executionId, `Migration abandoned by ${decision.approvedBy}.`);
     return { applied: false, summary: `Abandoned by ${decision.approvedBy}.` };
   }
-  return ctx.run(MigrationStep, {
+  const outcome = (await ctx.run(MigrationStep, {
     target: input.target,
     strategy: decision.strategy,
     simulate: decision.simulate,
-  }) as Promise<StrategyOutcome>;
+  })) as StrategyOutcome;
+
+  if (!decision.simulate) return outcome;
+
+  // The shadow backfill is done; the branch now waits for a human to verify it. This is
+  // the point of the example: the expensive compute that ran the backfill is finished and
+  // released, and the branch sits in storage — possibly for days — until someone answers.
+  // Whatever wakes it later has to know where a branch of this size may run.
+  report(ctx.executionId, `Shadow backfill complete on ${input.target}. Awaiting verification…`);
+  let verification = await ctx.suspend<ShadowVerification>({
+    on: SHADOW_VERIFIED,
+    correlationKey: `${input.target}:${decision.strategy}`,
+    timeout: 12 * 60 * 60 * 1000,
+  });
+  while (verification.branchExecutionId !== ctx.executionId) {
+    report(
+      ctx.executionId,
+      `Ignored a verification addressed to ${verification.branchExecutionId}.`
+    );
+    verification = await ctx.suspend<ShadowVerification>({
+      on: SHADOW_VERIFIED,
+      correlationKey: `${input.target}:${decision.strategy}`,
+      timeout: 12 * 60 * 60 * 1000,
+    });
+  }
+  report(
+    ctx.executionId,
+    `${verification.verifiedBy} ${verification.verified ? "verified" : "rejected"} the shadow migration.`
+  );
+  return {
+    ...outcome,
+    verification: {
+      verifiedBy: verification.verifiedBy,
+      verified: verification.verified,
+      ...(verification.rowsChecked !== undefined && { rowsChecked: verification.rowsChecked }),
+    },
+  } as StrategyOutcome;
 };
 
 export const MigrationExecutionFlow: RegisteredFlow<{ target: string }, MigrationResult> = {
@@ -339,7 +378,10 @@ export const MigrationExecutionFlow: RegisteredFlow<{ target: string }, Migratio
     steps: [MigrationStep],
     // A DIFFERENT gate, a different shape: this one carries the branch (strategy) and whether
     // the apply is a shadow-schema simulation. Per-gate contracts make that expressible.
-    resumeSchemas: { MigrationDecision: MigrationDecisionSchema },
+    resumeSchemas: {
+      MigrationDecision: MigrationDecisionSchema,
+      [SHADOW_VERIFIED]: ShadowVerificationSchema,
+    },
   }),
   runner: migrationExecutionRunner,
 };

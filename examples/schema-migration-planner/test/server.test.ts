@@ -49,7 +49,22 @@ describe("schema migration planner (durable, headless)", () => {
     expect(forkPoint).not.toBeNull();
 
     // Phase 2 — fork + simulate every candidate concurrently (against a shadow schema).
+    // Each branch runs its backfill and then PARKS for shadow verification: a real
+    // shadow migration ends with a human comparing row counts, not with the copy.
     await app.orchestrator.exploreBranches();
+    const parked = app.orchestrator.branchSurface();
+    expect(parked.branches.every((b) => b.status === "awaiting-verification")).toBe(true);
+    // Every branch's live backfill progress streamed all the way to 100% before parking.
+    expect(parked.branches.every((b) => b.progress === 100)).toBe(true);
+
+    // Phase 2b — each DBA answers their own branch, in whatever order they get to it.
+    for (const s of STRATEGIES) {
+      await app.orchestrator.verifyBranch(s.id, {
+        verified: true,
+        verifiedBy: `${s.id}-dba`,
+        rowsChecked: 41_000_000,
+      });
+    }
     expect(mission().phase).toBe("branches-ready");
 
     const explored = app.orchestrator.branchSurface();
@@ -59,8 +74,6 @@ describe("schema migration planner (durable, headless)", () => {
     const durations = new Set(outcomes.map((o) => o?.durationMinutes));
     expect(durations.size).toBe(STRATEGIES.length);
     expect(explored.branches.every((b) => b.outcome?.simulated === true)).toBe(true);
-    // Every branch's live backfill progress streamed all the way to 100%.
-    expect(explored.branches.every((b) => b.progress === 100)).toBe(true);
 
     // Parent is untouched: `main` still names the suspended gate at the fork point,
     // and one child ref exists per candidate strategy.

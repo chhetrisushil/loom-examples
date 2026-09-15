@@ -1,11 +1,13 @@
+import { join } from "node:path";
 import { BroadcastingProjectionRuntime, InProcessA2ABus, defineConfig } from "@loom/app";
 import type { EventEnvelope } from "@loom/core";
 import type { BranchRegistry } from "@loom/event-runtime";
-import { sqliteStorage } from "@loom/plugin-sqlite";
+import { SqliteTimerStore, sqliteStorage } from "@loom/plugin-sqlite";
 import type { RegisteredFlow, WorkflowRuntime } from "@loom/workflow-runtime";
 import { AGENT_CARDS, CAPABILITY_AGENT, FLEET } from "../agents/definitions";
 import { buildCatalog } from "../capabilities/catalog";
 import { MigrationExecutionFlow } from "../capabilities/flows";
+import { buildBranchDispatcher } from "../compute/dispatcher";
 import { Orchestrator } from "../orchestrator/Orchestrator";
 import { MISSION_ID, type ServerFrame } from "../wire";
 
@@ -34,7 +36,17 @@ export interface ServerApp {
 // (SSE), the bring-your-own A2A transport with its pluggable compute dispatcher,
 // and the Orchestrator. Kept transport-free so it can be driven headlessly in
 // tests and wrapped by the HTTP server in main.ts.
-export function createApp(opts: { dataDir: string; missionId?: string }): ServerApp {
+export function createApp(opts: {
+  dataDir: string;
+  missionId?: string;
+  /**
+   * Where branch simulations run. Given a worker URL, every forked branch is dispatched
+   * to it instead of running inside this process — the shadow backfill is the expensive
+   * part, and it wants capacity sized for a branch rather than for a web server. Omit and
+   * the example behaves exactly as before.
+   */
+  branchWorkerUrl?: string;
+}): ServerApp {
   const missionId = opts.missionId ?? MISSION_ID;
 
   const observers = new Set<(frame: ServerFrame) => void>();
@@ -52,6 +64,9 @@ export function createApp(opts: { dataDir: string; missionId?: string }): Server
     // The branchable migration flow isn't planner-routed — the Migration Board
     // drives it directly — so register it explicitly.
     flows: [MigrationExecutionFlow as RegisteredFlow],
+    // Durable deadlines, so the shadow-verification gate inside each branch has a real
+    // one — and so something other than an operator can wake a parked branch.
+    timers: { store: new SqliteTimerStore(join(opts.dataDir, "timers.db")) },
   });
 
   if (!app.stores.branchRegistry) {
@@ -80,6 +95,9 @@ export function createApp(opts: { dataDir: string; missionId?: string }): Server
     bus,
     branchRegistry,
     missionId,
+    ...(opts.branchWorkerUrl !== undefined && {
+      dispatcher: buildBranchDispatcher(app.runtime, opts.branchWorkerUrl),
+    }),
   });
 
   return {

@@ -31,9 +31,15 @@ Fully offline (deterministic `DemoLlmProvider`). `dev` runs both processes; or r
 2. **Gate** — the mutating migration flow suspends at a durable `ctx.suspend`. `main` points at it. The UI
    jumps to the **Migration Board** tab.
 3. **Explore** — the server forks one child per strategy (*online-ddl*, *shadow-copy*, *dual-write*) and
-   resumes each **in `simulate` mode**, concurrently (`@loom/scheduler` `parallelLimit`). Each runs against a
-   **shadow schema**, **streaming live backfill progress**, and finishes with a projected outcome. The parent
-   log is never touched (copy-on-write).
+   drives each **in `simulate` mode**, concurrently (`@loom/scheduler` `parallelLimit`). Each runs against a
+   **shadow schema**, **streaming live backfill progress**. The parent log is never touched (copy-on-write).
+   With a branch worker configured, each one is **dispatched to its own compute** rather than run inside the
+   web server — see *Branch compute* below.
+3b. **Verify** — a shadow migration does not end when the backfill does: someone compares row counts and
+   signs the branch off. Each branch therefore **parks on its own `ctx.suspend`** with a 12-hour deadline,
+   and `exploreBranches()` returns while all three are suspended. This is what makes a branch *long-running*
+   rather than merely slow — the compute that ran the backfill is finished and released, and the execution
+   is parked in storage until a human answers.
 4. **Compare** — three progress bars advance at once, then a side-by-side diff. No dominant option:
 
    | strategy | lock time | duration | rows | reversible | risk |
@@ -47,6 +53,37 @@ Fully offline (deterministic `DemoLlmProvider`). `dev` runs both processes; or r
 
 A contrasting **simple goal** ("add a nullable notes column; apply automatically if low risk") is
 metadata-only and **auto-applies without branching**.
+
+## Branch compute (`src/compute/`)
+
+A simulated migration clones a table and backfills 40M rows. Running three of those inside the web server
+is the demo's convenient lie; this example can stop telling it.
+
+```sh
+pnpm --filter @loom/schema-migration-planner dev:worker          # a branch worker on :7071
+BRANCH_WORKER_URL=http://localhost:7071 pnpm --filter @loom/schema-migration-planner dev
+```
+
+The worker is **not a different program**: the same flow registered on a `WorkflowRuntime` over the **same**
+SQLite files. That is the placement seam — an `ExecutionPackage` carries identity and resume coordinates,
+never code or state, so the worker reconstructs the branch from the shared log. `PlacementDispatcher` routes
+the `branch` lane to it (`RemoteWorkerRuntime` → `POST /execute`) and everything else stays local.
+
+Three things this surfaces that the in-process version cannot:
+
+- **A worker that omits a `TimerStore` silently discards every deadline.** A runtime derives a suspension's
+  `wakeAt` from its `timeout` *only when a TimerStore is wired* — unwired, the condition is committed without
+  one, byte-identically. Split your compute and every runtime that can suspend needs the store; only one of
+  them needs the `TimerService`. `loom verify`'s `suspension-safety` rule catches this, so **run verify
+  against the worker's composition, not just the coordinator's.**
+- **A wake does not know where the branch belongs** — [loom#392](https://github.com/chhetrisushil/loom/issues/392).
+  `ExecutionPolicy` is never persisted; it is a caller-side struct mapped to `DispatchMetadata` at dispatch
+  time. So `TimerService` resumes a parked branch on whatever runtime it holds — the coordinator — regardless
+  of where that branch was placed. `pnpm demo:placement` shows it, and `test/compute.test.ts` pins it.
+- **`progressHub` does not cross a process.** The live backfill bars are an in-process transient sink, so a
+  branch running on a real worker reports nothing to the coordinator's surface. (The tests run both sides in
+  one process, so the bars still work *there* — that is an artifact of the test topology, not a property.)
+  Durable progress would have to be events; see [loom#394](https://github.com/chhetrisushil/loom/issues/394).
 
 ## Why "no merge" is the honest model
 
@@ -85,6 +122,12 @@ schema-inspector / risk-assessor / migration-executor agents + mock tools, the c
   strategy branches, each yields a **distinct** projected outcome with **progress reaching 100%**, the parent
   stays suspended, `promote` moves `main` off the parent onto the real apply, lineage records every fork, and
   the simple goal auto-applies without branching.
+- `pnpm --filter @loom/schema-migration-planner demo:placement` — narrated headless: branches dispatched to a
+  real worker, parked for verification with the coordinator idle, then the wake landing in the wrong process
+  (source: `src/scripts/branchPlacement.ts`).
+- `test/compute.test.ts` — asserts every branch was advanced by the **worker's** runtime and never by the
+  coordinator's, and pins the loom#392 gap. When that fix lands, the second test should fail and its
+  expectation flips — it is not a test to delete.
 - Live: `pnpm ... dev`, run the complex goal, click **Explore branches**, watch three progress bars advance,
   then **Promote** a strategy.
 
@@ -92,6 +135,9 @@ schema-inspector / risk-assessor / migration-executor agents + mock tools, the c
 
 - **Server-restart resume of an in-flight mission** (the event log, snapshots, and branch refs persist, but
   the `Orchestrator`'s in-memory model is not rehydrated on a full restart).
-- **Cross-process A2A** (the agents run in-process via `InProcessA2ABus`).
+- **Cross-process A2A** (the agents run in-process via `InProcessA2ABus`). Branch *execution* does cross a
+  process when a worker is configured; the agent mesh does not.
+- **Multi-node branch compute.** Shared SQLite (WAL) is honest for one host. Two nodes would want Postgres,
+  where `acquireFence` keeps a partitioned zombie worker from writing.
 - **Real DDL** — migrations are mocked deterministically; `projectOutcome` stands in for a gh-ost `--dry-run`
   or a shadow apply.

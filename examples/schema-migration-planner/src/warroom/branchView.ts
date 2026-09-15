@@ -9,8 +9,9 @@ import type { StrategyId, StrategyOutcome } from "./strategies";
 
 export type BranchStatus =
   | "proposed" // a candidate the operator can explore
-  | "simulating" // forked, dry-run in flight
-  | "simulated" // dry-run done, projected outcome available
+  | "simulating" // forked, shadow backfill in flight (possibly on another machine)
+  | "awaiting-verification" // backfill done; PARKED until a DBA verifies the shadow table
+  | "simulated" // verified — a promotable candidate
   | "committing" // the winner, applying for real
   | "committed" // the winner, applied
   | "rejected"; // a losing branch, kept as lineage
