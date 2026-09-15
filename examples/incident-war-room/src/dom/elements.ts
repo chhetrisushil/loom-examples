@@ -34,6 +34,7 @@ const PHASE_COLORS: Record<string, string> = {
   "awaiting-approval": "#b7791f",
   "awaiting-branches": "#b7791f",
   "exploring-branches": "#5a3fb0",
+  "reviewing-branches": "#8a6d1f",
   "branches-ready": "#2b6cb0",
   remediating: "#2b6cb0",
   resolved: "#276749",
@@ -464,8 +465,50 @@ class BranchControlsElement extends WidgetElement {
       bar.appendChild(explore);
     } else if (phase === "exploring") {
       bar.appendChild(el("div", "empty", "Simulating candidate branches…"));
-    } else if (phase === "explored") {
+    } else if (phase === "reviewing") {
+      // Every branch is parked on its OWN gate. Reviews arrive one at a time, in any
+      // order, from whoever owns that strategy — so the control is per branch, and
+      // there is deliberately no "approve all".
+      const open = branches.filter((b) => b.status === "awaiting-review").length;
+      bar.appendChild(
+        el("div", "branch-note", `${open} branch(es) parked, each waiting on its own reviewer.`)
+      );
       for (const b of branches) {
+        const row = el("div", "branch-review-row");
+        const decided = b.review !== undefined;
+        row.appendChild(
+          el(
+            "div",
+            "branch-review-label",
+            decided
+              ? `${b.label} — ${b.review?.approved ? "cleared" : "declined"} by ${b.review?.reviewer}`
+              : `${b.label} — awaiting ${b.strategy} owner`
+          )
+        );
+        if (!decided && b.status === "awaiting-review") {
+          const ok = el("button", "btn green", "Clear") as HTMLButtonElement;
+          ok.addEventListener("click", () =>
+            this.fire("REVIEW", { strategy: b.strategy, approved: true })
+          );
+          const no = el("button", "btn", "Decline") as HTMLButtonElement;
+          no.addEventListener("click", () =>
+            this.fire("REVIEW", { strategy: b.strategy, approved: false })
+          );
+          row.append(ok, no);
+        }
+        if (b.review?.approved === true) {
+          const go = el("button", "btn green", `Promote ${b.label}`) as HTMLButtonElement;
+          go.addEventListener("click", () => this.fire("PROMOTE", { strategy: b.strategy }));
+          row.appendChild(go);
+        }
+        bar.appendChild(row);
+      }
+    } else if (phase === "explored") {
+      const promotable = branches.filter((b) => b.review?.approved === true);
+      if (promotable.length === 0) {
+        bar.appendChild(el("div", "empty", "Every branch was declined — nothing to promote."));
+      }
+      for (const b of promotable) {
         const btn = el("button", "btn green", `Promote ${b.label}`) as HTMLButtonElement;
         btn.addEventListener("click", () => this.fire("PROMOTE", { strategy: b.strategy }));
         bar.appendChild(btn);

@@ -36,10 +36,20 @@ Fully offline (deterministic `DemoLlmProvider`). `dev` runs both processes; or r
    **in `simulate` mode**, concurrently, via `@loom/scheduler`'s `parallelLimit`. Each branch previews a
    projected outcome (lag-after, ETA, downtime, cost, risk) **without touching real infrastructure**. The
    parent log is never modified (copy-on-write).
-4. **Compare** — the branch graph + side-by-side diff fill in live over SSE as each simulation lands.
-5. **Promote** — pick a winner. The server `promote`s its ref onto `main` (recording the decision), then
-   forks a fresh commit branch and resumes it with `simulate:false` to apply the fix **for real**. Losing
-   branches remain immutable, independently resumable lineage. **There is no merge.**
+4. **Review — a gate *inside* each branch.** Every simulation then parks on its own
+   `ctx.suspend`, waiting for that strategy's owner. This is the part that makes the example
+   about long-running work rather than a fan-out: `exploreBranches()` **returns while all three
+   branches are still suspended**, and each review arrives independently, whenever that person
+   gets to it. Awaiting completion here would hang forever — the suspend path never resolves the
+   completion promise, so one human-gated branch would stall the whole cohort.
+5. **Promote** — the first branch to come back *cleared* can win; waiting for every reviewer would
+   make the slowest one the critical path for an incident fix. The server `promote`s its ref onto
+   `main`, forks a fresh commit branch, and resumes it with `simulate:false` to apply the fix **for
+   real** — and the committing execution records **why** with `ctx.decide` (the candidate set and
+   the reason, in the log rather than only in a UI). Promoting also **retracts** the branches still
+   parked: `promote()` is a pointer move, so on its own it would leave their reviewers owing an
+   answer nobody needs, and a late answer would resume a loser and apply it for real. Branches that
+   were *answered* stay as immutable lineage. **There is no merge.**
 
 The **CPU** incident goal (low risk) contrasts this: it auto-remediates through the same pipeline without
 opening the War Room — branching is reserved for the genuinely ambiguous, mutually-exclusive decision.
@@ -72,8 +82,20 @@ first-class artifact (`BranchRegistry` lineage), not a lost draft.
   `mission` / `telemetry` / `branch` surfaces), then one `patch` frame per `A2UI_PATCH`.
 - `POST /api/missions/:id/approve {approved}` → HITL decision for the low-risk (CPU) path.
 - `POST /api/missions/:id/branches` → **fork + simulate** every candidate remediation (streams over SSE).
+  Returns once each branch is *parked on its own review gate*, not once they finish.
 - `GET  /api/missions/:id/branches` → the current branch surface (refs, lineage, projected outcomes).
-- `POST /api/missions/:id/promote {strategy}` → **pick a winner** and apply it for real.
+- `POST /api/missions/:id/review {strategy, approved}` → **one branch's owner answers its own gate.**
+  There is deliberately no "submit all reviews" call: each branch is a separate durable execution.
+- `POST /api/missions/:id/promote {strategy}` → **pick a cleared winner**, apply it for real, and
+  retract whatever is still parked.
+
+### Addressing an approval to a branch
+
+`ResumeEvent` is `{ eventType, payload }` — a `ResumeAuthenticator` never sees *which* execution it is
+approving, so a sibling's sign-off parses identically at the same gate. The branch id therefore travels
+**in the payload**, is **required** by the gate's `resumeSchemas`, and is checked by the runner against
+its own `executionId`. A mis-addressed review is ignored and the branch re-parks, still waiting for its
+own; a review naming no branch at all is refused before it reaches the log.
 
 ## Bring your own backend
 
@@ -85,14 +107,16 @@ a Postgres reference (schema + `LISTEN/NOTIFY`) lives in
 ## Verify
 
 - `pnpm --filter @loom/incident-war-room demo:fork` — narrated, headless walkthrough: run to the gate, fork
-  three speculative branches, simulate each, show the parent untouched, promote the winner onto `main`, and
-  print the lineage. Source: `src/scripts/speculativeFork.ts`.
-- `pnpm --filter @loom/incident-war-room test` — headless e2e over the durable SQLite wiring: asserts the
-  gate forks into N candidate branches, each yields a distinct projected outcome, the parent stays
-  suspended, `promote` moves `main` off the parent onto the real apply, lineage records every fork, and the
-  metric recovers.
-- Live: `pnpm ... dev`, open the app, run the replica goal, click **Explore branches**, watch the graph +
-  diff populate, then **Promote** a branch.
+  three speculative branches, watch each one *park on its own review gate*, let the reviews arrive one at a
+  time, show the parent untouched, promote the winner onto `main`, and print the lineage.
+  Source: `src/scripts/speculativeFork.ts`.
+- `pnpm --filter @loom/incident-war-room test` — headless e2e over the durable SQLite wiring. Beyond the
+  fork/promote path it pins the three things the review gate introduces: `exploreBranches()` returns with
+  every branch still `suspended`; a review naming another branch leaves its target parked (and one naming
+  no branch is refused before the append); and promoting **cancels** the siblings still waiting, so a late
+  review cannot resume a loser.
+- Live: `pnpm ... dev`, open the app, run the replica goal, click **Explore branches**, then clear or
+  decline each branch as its owner, and **Promote** one that was cleared.
 
 ## Out of scope (not built)
 
