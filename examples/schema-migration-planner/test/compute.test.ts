@@ -93,15 +93,15 @@ describe("branch simulations run on their own compute", () => {
     }
   }, 30000);
 
-  it("KNOWN GAP (loom#392): a timer wake resumes the branch in the COORDINATOR, not where it was placed", async () => {
-    // Placement is not durable. `ExecutionPolicy` is never persisted — it is a caller-side
-    // struct mapped to DispatchMetadata at dispatch time — so nothing the branch left behind
-    // says where it belongs. `TimerService.fire` calls `runtime.resume` on whatever runtime
-    // it was constructed with, which is how a branch sized for a cloned database wakes up
-    // inside a web server.
+  it("a timer wake resumes the branch on the WORKER it was placed on (loom#392)", async () => {
+    // This test spent its first life asserting the opposite, under the name
+    // `KNOWN GAP (loom#392)`: placement was never persisted — `ExecutionPolicy` is a
+    // caller-side struct mapped to DispatchMetadata at dispatch time — so `TimerService`
+    // resumed a parked branch on whatever runtime it held, and a branch sized for a cloned
+    // database woke up inside the web server.
     //
-    // This test asserts today's WRONG behaviour on purpose. When loom#392 lands it should
-    // fail, and the fix is to flip the expectation — not to delete the test.
+    // Now the lane is recorded on the execution's anchor and the wake is dispatched back to
+    // it. The assertion is inverted rather than deleted, because the inversion IS the fix.
     void app.orchestrator.run(GOAL);
     await reachPhase("awaiting-branches");
     await app.orchestrator.exploreBranches();
@@ -115,13 +115,14 @@ describe("branch simulations run on their own compute", () => {
     workerResumes.length = 0;
     coordinatorResumes.length = 0;
 
-    // Whatever wakes a parked branch has no idea where that branch runs.
     const timers = new SqliteTimerStore(join(dataDir, "timers.db"));
-    const service = new TimerService(app.missionRuntime, timers);
+    const service = new TimerService(app.missionRuntime, timers, {
+      dispatcher: app.branchDispatcher,
+    });
     await service.tick(wakeAt + 1000);
 
-    expect(coordinatorResumes).toContain(parkedId); // ← the gap
-    expect(workerResumes).not.toContain(parkedId);
+    expect(workerResumes).toContain(parkedId); // ← the fix
+    expect(coordinatorResumes).not.toContain(parkedId);
     await timers.close();
   }, 30000);
 });

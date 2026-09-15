@@ -76,10 +76,14 @@ Three things this surfaces that the in-process version cannot:
   one, byte-identically. Split your compute and every runtime that can suspend needs the store; only one of
   them needs the `TimerService`. `loom verify`'s `suspension-safety` rule catches this, so **run verify
   against the worker's composition, not just the coordinator's.**
-- **A wake does not know where the branch belongs** — [loom#392](https://github.com/chhetrisushil/loom/issues/392).
-  `ExecutionPolicy` is never persisted; it is a caller-side struct mapped to `DispatchMetadata` at dispatch
-  time. So `TimerService` resumes a parked branch on whatever runtime it holds — the coordinator — regardless
-  of where that branch was placed. `pnpm demo:placement` shows it, and `test/compute.test.ts` pins it.
+- **A wake goes back to where the branch belongs** — and did not, until
+  [loom#392](https://github.com/chhetrisushil/loom/issues/392). Placement used to be a caller-side struct
+  mapped to `DispatchMetadata` at dispatch time, so `TimerService` resumed a parked branch on whatever
+  runtime it held. Passing a target per dispatch is not enough: it lives in one process's memory, so the
+  first dispatch lands on the worker and every later wake lands in the web server. The branch is now
+  **placed at fork** (`fork(…, { computeTarget })`), the lane is recorded on its anchor, and the timer
+  service dispatches the wake back to it. `pnpm demo:placement` shows the round trip; `test/compute.test.ts`
+  asserts it — that test spent its first life asserting the opposite.
 - **`progressHub` does not cross a process.** The live backfill bars are an in-process transient sink, so a
   branch running on a real worker reports nothing to the coordinator's surface. (The tests run both sides in
   one process, so the bars still work *there* — that is an artifact of the test topology, not a property.)
