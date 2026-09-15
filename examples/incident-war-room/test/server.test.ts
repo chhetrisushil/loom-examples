@@ -212,6 +212,41 @@ describe("incident war room (durable, headless)", () => {
     expect(existsSync(join(dataDir, "branches.db"))).toBe(true);
   }, 30000);
 
+  it("a promotion that lost the race changes nothing — not even the cohort", async () => {
+    // Two operators, one War Room. Without a compare-and-set the second promotion lands
+    // silently on top of the first and `main` names a strategy nobody picked second.
+    void app.orchestrator.run(REPLICA_GOAL);
+    await reachPhase("awaiting-branches");
+    await app.orchestrator.exploreBranches();
+    await app.orchestrator.reviewBranch("scale-replicas", {
+      approved: true,
+      reviewer: "storage-owner",
+    });
+
+    // Someone else moves `main` first — this is the race, made deterministic.
+    const surface = app.orchestrator.branchSurface();
+    await app.branchRegistry.putRef({
+      name: "main",
+      executionId: "someone-elses-promotion",
+      tip: 99,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+
+    await expect(app.orchestrator.promoteBranch("scale-replicas")).rejects.toMatchObject({
+      name: "BranchPromotionConflictError",
+    });
+
+    // Nothing moved: `main` is untouched, and — because the cohort is closed only AFTER the
+    // guarded ref move — the branches still waiting were NOT cancelled for a promotion that
+    // never happened.
+    expect((await app.branchRegistry.getRef("main"))?.executionId).toBe("someone-elses-promotion");
+    for (const b of surface.branches.filter((x) => x.status === "awaiting-review")) {
+      const state = await app.missionRuntime.loadState(b.executionId as string);
+      expect(state?.status).toBe("suspended");
+    }
+  }, 30000);
+
   it("declining every branch leaves nothing promotable", async () => {
     void app.orchestrator.run(REPLICA_GOAL);
     await reachPhase("awaiting-branches");
