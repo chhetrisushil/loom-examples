@@ -210,10 +210,20 @@ export class BranchOrchestrator {
     this.setPhase("committing");
     this.patchBranch(strategy, { status: "committing", winner: true });
 
-    // Close the cohort. `promote()` is a pointer move: on its own it leaves every other
-    // branch suspended and resumable, so their reviewers still owe an answer nobody
-    // needs — and a late answer would resume a loser and run its effects for real.
-    // Cancelling is the app's job (the registry has no opinion about live siblings).
+    // Repoint main onto the winning exploration — records the human decision.
+    //
+    // `expect` makes this a compare-and-set. Two operators can be looking at the same War
+    // Room, and a promotion is last-write-wins without it: the second one lands silently on
+    // top of the first, and `main` ends up naming a strategy nobody chose second. Here we
+    // assert main still names the gate we forked from.
+    const winnerExecId = winner.executionId as string;
+    await this.deps.branchRegistry.promote(winnerBranch, "main", { expect: parent });
+
+    // Close the cohort — AFTER the guarded ref move, never before. `promote()` is a pointer
+    // move: on its own it leaves every other branch suspended and resumable, so their
+    // reviewers still owe an answer nobody needs, and a late answer would resume a loser and
+    // run its effects for real. But retracting first would mean a LOST compare-and-set had
+    // already cancelled three people's open questions for a promotion that never happened.
     for (const s of STRATEGIES) {
       if (s.id === strategy) continue;
       const other = this.state.branches.find((b) => b.strategy === s.id);
@@ -225,9 +235,6 @@ export class BranchOrchestrator {
         this.patchBranch(s.id, { status: "rejected" });
       }
     }
-
-    // Repoint main onto the winning exploration — records the human decision.
-    await this.deps.branchRegistry.promote(winnerBranch, "main");
 
     // Commit for real: a fresh branch forked from the same gate, resumed with
     // simulate:false. The real mutation is itself a durable, replayable execution.
@@ -248,8 +255,10 @@ export class BranchOrchestrator {
     });
     const final = await resumed.waitForCompletion();
     await this.deps.branchRegistry.moveTip("commit", final.sequence);
-    // main now names the applied execution — "what we actually did".
-    await this.deps.branchRegistry.promote("commit", "main");
+    // main now names the applied execution — "what we actually did". Expect the ref we
+    // just moved: if anything else repointed main while the real apply was running, this
+    // refuses rather than overwriting whatever that was.
+    await this.deps.branchRegistry.promote("commit", "main", { expect: winnerExecId });
 
     const outcome = final.variables._output as StrategyOutcome;
     this.patchBranch(strategy, { status: "committed", outcome, winner: true });
