@@ -1,7 +1,8 @@
+import { join } from "node:path";
 import { BroadcastingProjectionRuntime, defineConfig } from "@loom/app";
 import type { EventEnvelope } from "@loom/core";
-import type { BranchRegistry } from "@loom/event-runtime";
-import { sqliteStorage } from "@loom/plugin-sqlite";
+import type { BranchRegistry, EventStore } from "@loom/event-runtime";
+import { SqliteTimerStore, sqliteStorage } from "@loom/plugin-sqlite";
 import type { RegisteredFlow, WorkflowRuntime } from "@loom/workflow-runtime";
 import { CAPABILITY_AGENT, FLEET } from "../agents/definitions";
 import { buildCatalog } from "../capabilities/catalog";
@@ -20,6 +21,8 @@ export interface ServerApp {
   readonly missionRuntime: WorkflowRuntime;
   // Git-style branch registry: movable refs + fork lineage for speculation.
   readonly branchRegistry: BranchRegistry;
+  /** The durable log itself — tests read it to assert what a promotion recorded. */
+  readonly eventStore: EventStore;
   // A serialized ProjectionSnapshot of the mission + telemetry surfaces.
   snapshot(): string;
   // Observe the A2UI patch frames the server would push to SSE clients.
@@ -44,6 +47,11 @@ export function createApp(opts: { dataDir: string; missionId?: string }): Server
   const catalog = buildCatalog();
   const app = defineConfig({
     storage: sqliteStorage({ dir: opts.dataDir, branching: true }),
+    // T1 — durable deadlines. Both gates in the remediation flow carry a `timeout`,
+    // and the branch gates matter most: a fork copies the gate, and (since a timer row
+    // is keyed by execution) each branch carries its own deadline rather than sharing
+    // the parent's. Without a TimerStore those timeouts are recorded and never fire.
+    timers: { store: new SqliteTimerStore(join(opts.dataDir, "timers.db")) },
     projectionRuntime,
     surfaces: SURFACES,
     catalog,
@@ -77,6 +85,7 @@ export function createApp(opts: { dataDir: string; missionId?: string }): Server
     projectionRuntime,
     missionRuntime: app.runtime,
     branchRegistry,
+    eventStore: app.stores.eventStore,
     snapshot: () => projectionRuntime.snapshot(),
     subscribeBroadcast(cb) {
       observers.add(cb);

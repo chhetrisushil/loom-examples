@@ -3,6 +3,7 @@ import {
   type ApproveRequest,
   MISSION_ID,
   type PromoteRequest,
+  type ReviewRequest,
   type ServerFrame,
   type StartRequest,
 } from "../wire";
@@ -31,6 +32,21 @@ export async function approve(approved: boolean): Promise<void> {
 // War Room: fork + simulate every candidate remediation. Results stream over SSE.
 export async function exploreBranches(): Promise<void> {
   await fetch(API.branches(MISSION_ID), { method: "POST" });
+}
+
+// War Room: answer ONE branch's review gate. Each branch is a separate durable
+// execution parked on its own gate, so these arrive independently — there is no
+// "submit all reviews" call, and there cannot be.
+export async function reviewBranch(strategy: string, approved: boolean): Promise<void> {
+  await fetch(API.review(MISSION_ID), {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      strategy,
+      approved,
+      reviewer: "on-call reviewer",
+    } satisfies ReviewRequest),
+  });
 }
 
 // War Room: promote the chosen branch and apply it for real.

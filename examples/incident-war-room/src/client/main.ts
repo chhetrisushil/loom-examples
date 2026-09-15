@@ -8,7 +8,14 @@ import { type MountedBlueprint, mountBlueprint } from "../dom/BlueprintDom";
 import { defineWidgetElements } from "../dom/elements";
 import type { PendingApproval } from "../domain";
 import { MISSION_ID } from "../wire";
-import { approve, exploreBranches, openStream, promoteBranch, startMission } from "./api";
+import {
+  approve,
+  exploreBranches,
+  openStream,
+  promoteBranch,
+  reviewBranch,
+  startMission,
+} from "./api";
 
 const EXAMPLE_GOALS = [
   "Why is CPU utilization high? Fix it if remediation is low risk.",
@@ -20,11 +27,17 @@ const ACTIVE_PHASES = new Set([
   "awaiting-approval",
   "awaiting-branches",
   "exploring-branches",
+  "reviewing-branches",
   "branches-ready",
   "remediating",
 ]);
 // Phases where the War Room tab is where the action is.
-const BRANCH_PHASES = new Set(["awaiting-branches", "exploring-branches", "branches-ready"]);
+const BRANCH_PHASES = new Set([
+  "awaiting-branches",
+  "exploring-branches",
+  "reviewing-branches",
+  "branches-ready",
+]);
 
 type Tab = "mission" | "warroom" | "observability";
 
@@ -50,11 +63,15 @@ function el(tag: string, className?: string, text?: string): HTMLElement {
 }
 
 // Widget actions → POST to the server. Approvals from RiskApproval; branch
-// explore/promote from the War Room's BranchControls.
+// explore/review/promote from the War Room's BranchControls.
 function handleAction(action: WidgetAction): void {
   if (action.type === "APPROVE") void approve(true);
   if (action.type === "REJECT") void approve(false);
   if (action.type === "EXPLORE") void exploreBranches();
+  if (action.type === "REVIEW") {
+    const p = action.payload as { strategy?: string; approved?: boolean } | undefined;
+    if (p?.strategy && typeof p.approved === "boolean") void reviewBranch(p.strategy, p.approved);
+  }
   if (action.type === "PROMOTE") {
     const strategy = (action.payload as { strategy?: string } | undefined)?.strategy;
     if (strategy) void promoteBranch(strategy);

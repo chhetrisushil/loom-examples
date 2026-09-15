@@ -2,7 +2,13 @@ import * as fs from "node:fs";
 import * as http from "node:http";
 import * as path from "node:path";
 import type { StrategyId } from "../warroom/strategies";
-import { API, type PromoteRequest, type ServerFrame, type StartRequest } from "../wire";
+import {
+  API,
+  type PromoteRequest,
+  type ReviewRequest,
+  type ServerFrame,
+  type StartRequest,
+} from "../wire";
 import { createApp } from "./app";
 
 const PORT = Number(process.env.PORT ?? 8787);
@@ -132,6 +138,25 @@ const server = http.createServer((req, res) => {
       // GET /api/missions/:id/branches — the current branch surface.
       if (method === "GET" && url === API.branches(app.missionId)) {
         json(res, 200, orchestrator.branchSurface());
+        return;
+      }
+
+      // POST /api/missions/:id/review — one branch's owner answers its own gate.
+      if (method === "POST" && url === API.review(app.missionId)) {
+        const body = (await parseBody(req)) as ReviewRequest;
+        const strategy = String(body?.strategy ?? "").trim();
+        if (!strategy || typeof body?.approved !== "boolean") {
+          json(res, 400, { error: "missing strategy or approved" });
+          return;
+        }
+        void orchestrator
+          .reviewBranch(strategy as StrategyId, {
+            approved: body.approved,
+            reviewer: String(body.reviewer ?? "on-call reviewer"),
+            ...(body.note !== undefined && { note: String(body.note) }),
+          })
+          .catch((err) => console.error("[review] failed:", err));
+        json(res, 202, { ok: true });
         return;
       }
 

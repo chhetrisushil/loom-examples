@@ -22,29 +22,56 @@ import { SqliteBranchRegistry, SqliteEventStore, SqliteSnapshotStore } from "@lo
 
 import { WorkflowRuntime } from "@loom/workflow-runtime";
 import { RemediateLagFlow } from "../capabilities/flows";
-import { STRATEGIES, type StrategyId, type StrategyOutcome } from "../warroom/strategies";
+import {
+  type ReviewedOutcome,
+  SIMULATION_REVIEWED,
+  STRATEGIES,
+  type StrategyId,
+  type StrategyOutcome,
+} from "../warroom/strategies";
 
 const line = (s = ""): void => {
   process.stdout.write(`${s}\n`);
 };
 const rule = (): void => line("─".repeat(76));
 
-async function simulateBranch(
+// Fork one branch and run its simulation. It does NOT finish: it parks on its own
+// review gate, waiting for that strategy's owner. Awaiting completion here would
+// hang forever — the suspend path never resolves the completion promise.
+async function startBranch(
   runtime: WorkflowRuntime,
   branchRegistry: SqliteBranchRegistry,
   parentId: string,
   forkSequence: number,
   strategy: StrategyId
-): Promise<StrategyOutcome> {
+): Promise<string> {
   const branchName = `spec/${strategy}`;
   const fork = await runtime.fork(parentId, forkSequence, { branchName });
   const resumed = await runtime.resume(fork.executionId, {
     eventType: "RemediationDecision",
     payload: { approved: true, strategy, simulate: true, approvedBy: "explorer" },
   });
+  const parked = await resumed.waitForSuspend();
+  await branchRegistry.moveTip(branchName, parked.sequence);
+  return fork.executionId;
+}
+
+// One reviewer answers one branch. The review NAMES its branch: the gate's schema
+// requires it and the flow checks it, so an answer meant for a sibling is ignored.
+async function reviewBranch(
+  runtime: WorkflowRuntime,
+  branchRegistry: SqliteBranchRegistry,
+  executionId: string,
+  strategy: StrategyId,
+  reviewer: string
+): Promise<ReviewedOutcome> {
+  const resumed = await runtime.resume(executionId, {
+    eventType: SIMULATION_REVIEWED,
+    payload: { branchExecutionId: executionId, approved: true, reviewer },
+  });
   const state = await resumed.waitForCompletion();
-  await branchRegistry.moveTip(branchName, state.sequence);
-  return state.variables._output as StrategyOutcome;
+  await branchRegistry.moveTip(`spec/${strategy}`, state.sequence);
+  return state.variables._output as ReviewedOutcome;
 }
 
 async function main(): Promise<void> {
@@ -90,18 +117,37 @@ async function main(): Promise<void> {
     }
 
     rule();
-    line("③ Simulate each branch (dry-run) to preview its projected outcome");
+    line("③ Simulate each branch — every one parks on its OWN review gate");
+    rule();
+    const branchIds = new Map<StrategyId, string>();
+    for (const s of STRATEGIES) {
+      const id = await startBranch(runtime, branchRegistry, taskId, S, s.id);
+      branchIds.set(s.id, id);
+      const state = await runtime.loadState(id);
+      line(`   ${s.id.padEnd(18)} ${state?.status} — awaiting "${state?.suspendedOn?.on}"`);
+    }
+    line("   Nothing here is finished. Three branches, three humans, three clocks.");
+
+    rule();
+    line("④ Reviews arrive independently — each names the branch it settles");
     rule();
     for (const s of STRATEGIES) {
-      const outcome = await simulateBranch(runtime, branchRegistry, taskId, S, s.id);
+      const outcome = await reviewBranch(
+        runtime,
+        branchRegistry,
+        branchIds.get(s.id) as string,
+        s.id,
+        `${s.id}-owner`
+      );
       line(
         `   ${s.id.padEnd(18)} lag→${String(outcome.projectedLagMs).padStart(4)}ms  ` +
-          `eta ${outcome.etaMinutes}m  downtime ${outcome.downtimeSeconds}s  $${outcome.costPerHourUsd}/hr`
+          `eta ${outcome.etaMinutes}m  downtime ${outcome.downtimeSeconds}s  ` +
+          `$${outcome.costPerHourUsd}/hr  (cleared by ${outcome.review?.reviewer})`
       );
     }
 
     rule();
-    line("④ Original task is untouched — still suspended at the gate");
+    line("⑤ Original task is untouched — still suspended at the gate");
     rule();
     const parentEvents = await eventStore.read(taskId);
     line(`   ${taskId} last event: ${parentEvents[parentEvents.length - 1]?.eventType}`);
@@ -110,7 +156,7 @@ async function main(): Promise<void> {
     // The operator's pick: scale-replicas — no downtime and a big lag win.
     const winner: StrategyId = "scale-replicas";
     rule();
-    line(`⑤ Promote "${winner}" onto main and apply it FOR REAL (no merge)`);
+    line(`⑥ Promote "${winner}" onto main and apply it FOR REAL (no merge)`);
     rule();
     line("   before:");
     for (const r of await branchRegistry.listRefs()) {
@@ -122,7 +168,16 @@ async function main(): Promise<void> {
     const committed = await (
       await runtime.resume(commit.executionId, {
         eventType: "RemediationDecision",
-        payload: { approved: true, strategy: winner, simulate: false, approvedBy: "operator" },
+        payload: {
+          approved: true,
+          strategy: winner,
+          simulate: false,
+          approvedBy: "operator",
+          // Recorded by the committing execution with ctx.decide: what else was on the
+          // table and why this one won — in the log, not just in a console line.
+          candidates: STRATEGIES.map((x) => x.id),
+          reason: "no downtime, biggest lag win",
+        },
       })
     ).waitForCompletion();
     await branchRegistry.moveTip("commit", committed.sequence);

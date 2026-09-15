@@ -145,19 +145,40 @@ export class Orchestrator {
     await this.branchOrch.prepare(target, `${taskId}-exec`);
   }
 
-  // Phase 2: fork + speculatively simulate every candidate remediation.
+  // Phase 2: fork every candidate, simulate it, and leave it parked on its own
+  // review gate. Returns when the cohort is OPEN, not when it is finished.
   async exploreBranches(): Promise<void> {
     if (this.model.phase !== "awaiting-branches") return;
     this.setPhase("exploring-branches");
     this.log("Forking speculative branches — simulating each candidate remediation concurrently.");
-    const outcomes = await this.branchOrch.explore();
-    this.setPhase("branches-ready");
-    this.log(`Explored ${outcomes.length} branches. Awaiting the operator's pick (no merge).`);
+    const branches = await this.branchOrch.explore();
+    this.setPhase("reviewing-branches");
+    this.log(
+      `${branches.length} branches simulated and parked — each waiting on its own reviewer. Nothing is decidable until they answer.`
+    );
+  }
+
+  // Phase 2b: one branch's reviewer answers. Arrivals are independent; the cohort
+  // closes when the last one lands.
+  async reviewBranch(
+    strategy: StrategyId,
+    verdict: { approved: boolean; reviewer: string; note?: string }
+  ): Promise<void> {
+    if (this.model.phase !== "reviewing-branches") return;
+    await this.branchOrch.review(strategy, verdict);
+    const surface = this.branchOrch.getSurface();
+    this.log(
+      `${verdict.reviewer} ${verdict.approved ? "cleared" : "declined"} "${strategy}" — ${surface.awaitingReview} branch(es) still unanswered.`
+    );
+    if (surface.phase === "explored") {
+      this.setPhase("branches-ready");
+      this.log("Every branch has been ruled on. The cohort is decidable — pick a winner.");
+    }
   }
 
   // Phase 3: promote a winner and apply it for real.
   async promoteBranch(strategy: StrategyId): Promise<void> {
-    if (this.model.phase !== "branches-ready" && this.model.phase !== "exploring-branches") return;
+    if (this.model.phase !== "branches-ready" && this.model.phase !== "reviewing-branches") return;
     this.setPhase("remediating");
     this.log(`Promoting "${strategy}" onto main and applying it for real (branch-only, no merge).`);
     const outcome = await this.branchOrch.promote(strategy);

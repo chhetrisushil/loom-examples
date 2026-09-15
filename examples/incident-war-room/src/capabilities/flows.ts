@@ -7,8 +7,12 @@ import { fetchReplicaStatus, restartPool, scaleReplicas, sleep } from "../agents
 import type { Diagnosis, RemediationAssessment } from "../domain";
 import { llm } from "../runtime/services";
 import {
+  type BranchReview,
+  BranchReviewSchema,
   type RemediationDecision,
   RemediationDecisionSchema,
+  type ReviewedOutcome,
+  SIMULATION_REVIEWED,
   type StrategyId,
   type StrategyOutcome,
   projectOutcome,
@@ -379,6 +383,12 @@ const RemediateStep = step$({
 // BranchOrchestrator reads back.
 type RemediationResult = { applied: boolean; summary: string };
 
+// How long a strategy owner has to review their branch's simulation before it
+// times out. With `timers` wired (see server/app.ts) this is a durable deadline —
+// and, since each branch is forked AT a gate, every branch carries its own timer
+// row rather than sharing the parent's.
+const REVIEW_WINDOW_MS = 2 * 60 * 60 * 1000;
+
 const remediateLagRunner: FlowRunner<{ target: string }, RemediationResult> = async (
   ctx,
   input
@@ -396,11 +406,65 @@ const remediateLagRunner: FlowRunner<{ target: string }, RemediationResult> = as
     report(ctx.executionId, `Remediation abandoned by ${decision.approvedBy}.`);
     return { applied: false, summary: `Abandoned by ${decision.approvedBy}.` };
   }
-  return ctx.run(RemediateStep, {
+
+  const outcome = (await ctx.run(RemediateStep, {
     target: input.target,
     strategy: decision.strategy,
     simulate: decision.simulate,
-  }) as Promise<StrategyOutcome>;
+  })) as StrategyOutcome;
+
+  if (!decision.simulate) {
+    // The committing branch. A promotion is otherwise invisible to the log — the
+    // BranchRegistry moves a ref, and "why this one" lives in app state. Recording it
+    // with ctx.decide puts the candidate set and the reason in the log of the execution
+    // that actually applies the change, replays deterministically, and would carry a
+    // propensity for free if the pick ever became policy-driven rather than human.
+    await ctx.decide("promoted-strategy", () => decision.strategy, {
+      source: decision.approvedBy,
+      rationale: decision.reason ?? `promoted by ${decision.approvedBy}`,
+      alternatives: (decision.candidates ?? []).filter((c) => c !== decision.strategy),
+    });
+    return outcome;
+  }
+
+  // ── The gate inside the branch ──────────────────────────────────────────────
+  //
+  // This suspension is why the orchestrator cannot await completion: a simulated
+  // branch parks here until its own reviewer answers, which may be days. Each branch
+  // is an independent execution, so N branches park on N gates and each resumes on its
+  // own schedule.
+  let review = await ctx.suspend<BranchReview>({
+    on: SIMULATION_REVIEWED,
+    correlationKey: `${input.target}:${decision.strategy}`,
+    timeout: REVIEW_WINDOW_MS,
+  });
+  // The review must name THIS branch. A sibling's sign-off parses identically — same
+  // gate name, same shape — so without this check one reviewer's answer would settle
+  // whichever branch it happened to be delivered to. Re-park rather than fail: the
+  // mis-addressed answer is ignored, and the branch keeps waiting for its own.
+  while (review.branchExecutionId !== ctx.executionId) {
+    report(
+      ctx.executionId,
+      `Ignored a review addressed to ${review.branchExecutionId} — this branch is ${ctx.executionId}.`
+    );
+    review = await ctx.suspend<BranchReview>({
+      on: SIMULATION_REVIEWED,
+      correlationKey: `${input.target}:${decision.strategy}`,
+      timeout: REVIEW_WINDOW_MS,
+    });
+  }
+  report(
+    ctx.executionId,
+    `${review.reviewer} ${review.approved ? "cleared" : "declined"} the "${decision.strategy}" simulation.`
+  );
+  return {
+    ...outcome,
+    review: {
+      reviewer: review.reviewer,
+      approved: review.approved,
+      ...(review.note !== undefined && { note: review.note }),
+    },
+  } satisfies ReviewedOutcome;
 };
 
 export const RemediateLagFlow: RegisteredFlow<{ target: string }, RemediationResult> = {
@@ -417,7 +481,13 @@ export const RemediateLagFlow: RegisteredFlow<{ target: string }, RemediationRes
     // A DIFFERENT gate with a genuinely different shape: this one carries the branch
     // (strategy) and whether the apply is a simulation. Per-gate contracts are what make
     // that expressible — one map, keyed by the `on` name.
-    resumeSchemas: { RemediationDecision: RemediationDecisionSchema },
+    // Two gates, two contracts, one map keyed by the `on` name. The second is the
+    // per-branch review — and it REQUIRES `branchExecutionId`, so an approval that
+    // does not name a branch is refused before it reaches the log.
+    resumeSchemas: {
+      RemediationDecision: RemediationDecisionSchema,
+      [SIMULATION_REVIEWED]: BranchReviewSchema,
+    },
   }),
   runner: remediateLagRunner,
 };

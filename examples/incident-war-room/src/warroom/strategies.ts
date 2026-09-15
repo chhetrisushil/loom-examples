@@ -127,5 +127,38 @@ export const RemediationDecisionSchema = z.object({
   strategy: StrategyIdSchema,
   simulate: z.boolean(),
   approvedBy: z.string(),
+  // Only the committing resume carries these: the candidate set that was on the table
+  // and why this one won. They are what turns a promotion from a pointer move into a
+  // durable decision (see the `ctx.decide` in `remediateLagRunner`).
+  candidates: z.array(StrategyIdSchema).optional(),
+  reason: z.string().optional(),
 });
 export type RemediationDecision = z.infer<typeof RemediationDecisionSchema>;
+
+// ── The gate INSIDE a branch ──────────────────────────────────────────────────
+//
+// Each simulated branch parks for the strategy owner's sign-off. That is the whole
+// point of this example: the branches are not a fan-out that finishes, they are N
+// independent durable executions each waiting on a different human, for as long as
+// that person takes.
+
+/** The resume eventType that settles one branch's review. */
+export const SIMULATION_REVIEWED = "SimulationReviewed";
+
+export const BranchReviewSchema = z.object({
+  // The approval NAMES the branch it approves. `ResumeEvent` is `{ eventType, payload }`,
+  // so a `ResumeAuthenticator` never sees which execution it is being applied to —
+  // evidence minted for one branch is byte-identical for its sibling. The address has to
+  // travel IN the payload, and the gate's contract has to require it. The runner then
+  // checks it against its own executionId and re-parks on a mismatch.
+  branchExecutionId: z.string().min(1),
+  approved: z.boolean(),
+  reviewer: z.string().min(1),
+  note: z.string().optional(),
+});
+export type BranchReview = z.infer<typeof BranchReviewSchema>;
+
+/** A simulated branch's outcome once its reviewer has ruled on it. */
+export interface ReviewedOutcome extends StrategyOutcome {
+  review?: { reviewer: string; approved: boolean; note?: string };
+}

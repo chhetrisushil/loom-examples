@@ -19,6 +19,10 @@ export const API = {
   //   GET  /branches → the current branch surface (refs, lineage, outcomes).
   //   POST /promote  → pick a winner ({ strategy }) and apply it for real.
   branches: (id: string): string => `/api/missions/${id}/branches`,
+  //   POST /review   → one branch's reviewer answers ({ strategy, approved, reviewer }).
+  //                    Each branch is parked on its OWN gate, so reviews arrive
+  //                    independently and in any order.
+  review: (id: string): string => `/api/missions/${id}/review`,
   promote: (id: string): string => `/api/missions/${id}/promote`,
 };
 
@@ -33,6 +37,12 @@ export interface ApproveRequest {
 }
 export interface PromoteRequest {
   strategy: string;
+}
+export interface ReviewRequest {
+  strategy: string;
+  approved: boolean;
+  reviewer?: string;
+  note?: string;
 }
 
 // Frames pushed to the client over the SSE stream.

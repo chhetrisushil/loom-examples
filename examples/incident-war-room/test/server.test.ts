@@ -70,73 +70,165 @@ describe("incident war room (durable, headless)", () => {
     ).resolves.toBeDefined();
   });
 
-  it("forks the gate into candidate branches, simulates each, promotes a winner (no merge)", async () => {
+  it("forks the gate into candidate branches, each parking on its own review", async () => {
     void app.orchestrator.run(REPLICA_GOAL);
 
     // The replica remediation reaches the gate and opens the War Room.
     await reachPhase("awaiting-branches");
-    expect(mission().phase).toBe("awaiting-branches");
-
     const prepared = app.orchestrator.branchSurface();
     expect(prepared.branches).toHaveLength(STRATEGIES.length);
-    expect(prepared.branches.every((b) => b.status === "proposed")).toBe(true);
-    const parentId = prepared.parentExecutionId;
+    const parentId = prepared.parentExecutionId as string;
     const forkPoint = prepared.forkPoint;
-    expect(parentId).toBeTruthy();
-    expect(forkPoint).not.toBeNull();
 
-    // Phase 2 — fork + simulate every candidate concurrently.
+    // Phase 2 — fork + simulate every candidate. This RETURNS while every branch is
+    // still suspended: each one parked on its own review gate. The previous version of
+    // this orchestrator awaited waitForCompletion() here, which never resolves for a
+    // suspended execution — one human-gated branch would have hung the whole fan-out.
     await app.orchestrator.exploreBranches();
-    expect(mission().phase).toBe("branches-ready");
+    expect(mission().phase).toBe("reviewing-branches");
 
-    const explored = app.orchestrator.branchSurface();
-    const outcomes = explored.branches.map((b) => b.outcome);
-    // Every branch produced a distinct projected outcome (a real fork happened).
-    expect(outcomes.every((o) => o !== undefined)).toBe(true);
-    const lags = new Set(outcomes.map((o) => o?.projectedLagMs));
-    expect(lags.size).toBe(STRATEGIES.length);
-    expect(explored.branches.every((b) => b.outcome?.simulated === true)).toBe(true);
+    const open = app.orchestrator.branchSurface();
+    expect(open.phase).toBe("reviewing");
+    expect(open.awaitingReview).toBe(STRATEGIES.length);
+    expect(open.branches.every((b) => b.status === "awaiting-review")).toBe(true);
+    // Nothing has an outcome yet — the simulation ran, but its result is only readable
+    // once the branch's own gate is answered and the execution completes.
+    expect(open.branches.every((b) => b.outcome === undefined)).toBe(true);
 
-    // Parent is untouched: `main` still names the suspended gate at the fork point,
-    // and one child ref exists per candidate strategy.
-    const mainRef = explored.refs.find((r) => r.name === "main");
-    expect(mainRef?.executionId).toBe(parentId);
-    expect(mainRef?.tip).toBe(forkPoint);
-    for (const s of STRATEGIES) {
-      expect(explored.refs.some((r) => r.name === `spec/${s.id}`)).toBe(true);
+    // Each branch really is a separate, durably suspended execution.
+    for (const b of open.branches) {
+      const state = await app.missionRuntime.loadState(b.executionId as string);
+      expect(state?.status).toBe("suspended");
     }
 
-    // Patches were broadcast to (would-be) SSE clients as branches resolved.
-    const frames: unknown[] = [];
-    // (subscribe late is fine — promote still emits patches below)
-    app.subscribeBroadcast((f) => frames.push(f));
+    // Parent untouched: `main` still names the gate at the fork point.
+    const mainRef = open.refs.find((r) => r.name === "main");
+    expect(mainRef?.executionId).toBe(parentId);
+    expect(mainRef?.tip).toBe(forkPoint);
+  }, 30000);
 
-    // Phase 3 — promote the winner and apply it for real.
+  it("a review addressed to another branch is ignored, and that branch keeps waiting", async () => {
+    // `ResumeEvent` is `{ eventType, payload }` — a ResumeAuthenticator never sees WHICH
+    // execution it is approving, so a sibling's sign-off parses identically at this gate.
+    // The address has to be in the payload, and the flow has to check it.
+    void app.orchestrator.run(REPLICA_GOAL);
+    await reachPhase("awaiting-branches");
+    await app.orchestrator.exploreBranches();
+
+    const [a, b] = app.orchestrator.branchSurface().branches;
+    const target = a?.executionId as string;
+    const foreign = b?.executionId as string;
+    const before = await app.missionRuntime.loadState(target);
+
+    // A well-formed review — but it names the OTHER branch.
+    const handle = await app.missionRuntime.resume(target, {
+      eventType: "SimulationReviewed",
+      payload: {
+        branchExecutionId: foreign,
+        approved: true,
+        reviewer: "wrong-owner",
+      },
+    });
+    await handle.waitForSuspend();
+
+    const after = await app.missionRuntime.loadState(target);
+    expect(after?.status).toBe("suspended"); // re-parked, not settled
+    expect(after?.sequence).toBeGreaterThan(before?.sequence as number); // the attempt IS in the log
+    expect(app.orchestrator.branchSurface().awaitingReview).toBe(STRATEGIES.length);
+
+    // And a review that names no branch at all is refused before it reaches the log.
+    await expect(
+      app.missionRuntime.resume(target, {
+        eventType: "SimulationReviewed",
+        payload: { approved: true, reviewer: "no-address" },
+      })
+    ).rejects.toThrow(/resumeSchemas/);
+  }, 30000);
+
+  it("promotes a cleared branch and RETRACTS the siblings still waiting", async () => {
+    void app.orchestrator.run(REPLICA_GOAL);
+    await reachPhase("awaiting-branches");
+    await app.orchestrator.exploreBranches();
+
+    // Only one reviewer has answered. The other two branches are still parked — and a
+    // promotion must not leave them live, or a late answer would resume a loser and
+    // apply it for real.
+    await app.orchestrator.reviewBranch("scale-replicas", {
+      approved: true,
+      reviewer: "storage-owner",
+      note: "cheapest safe fix",
+    });
+    const reviewed = app.orchestrator.branchSurface();
+    expect(reviewed.awaitingReview).toBe(STRATEGIES.length - 1);
+    const cleared = reviewed.branches.find((b) => b.strategy === "scale-replicas");
+    expect(cleared?.status).toBe("simulated");
+    expect(cleared?.review).toEqual({
+      reviewer: "storage-owner",
+      approved: true,
+      note: "cheapest safe fix",
+    });
+    expect(cleared?.outcome?.simulated).toBe(true);
+
+    const stillOpen = reviewed.branches.filter((b) => b.status === "awaiting-review");
+    expect(stillOpen).toHaveLength(STRATEGIES.length - 1);
+
     await app.orchestrator.promoteBranch("scale-replicas");
     await reachPhase("resolved");
-    expect(mission().phase).toBe("resolved");
 
     const committed = app.orchestrator.branchSurface();
     const winner = committed.branches.find((b) => b.strategy === "scale-replicas");
     expect(winner?.status).toBe("committed");
     expect(winner?.outcome?.applied).toBe(true);
-    expect(winner?.outcome?.simulated).toBe(false);
-    // The losing branches were kept (rejected, not deleted) as the audit trail.
-    expect(committed.branches.filter((b) => b.status === "rejected")).toHaveLength(
-      STRATEGIES.length - 1
-    );
+    expect(committed.awaitingReview).toBe(0);
 
-    // `main` moved off the parent onto the real, committed apply — a pointer move,
-    // no merge. Lineage records every fork off the gate (3 specs + 1 commit).
+    // The retracted branches are cancelled, not merely relabelled: their executions are
+    // terminal, so a late review cannot resume them.
+    for (const b of stillOpen) {
+      const surfaceRow = committed.branches.find((x) => x.strategy === b.strategy);
+      expect(surfaceRow?.status).toBe("cancelled");
+      const state = await app.missionRuntime.loadState(b.executionId as string);
+      expect(state?.status).toBe("cancelled");
+      await expect(
+        app.missionRuntime.resume(b.executionId as string, {
+          eventType: "SimulationReviewed",
+          payload: { branchExecutionId: b.executionId, approved: true, reviewer: "late" },
+        })
+      ).rejects.toThrow();
+    }
+
+    // `main` moved onto the real apply, and the committing execution recorded WHY:
+    // the candidate set and the reason are in its log, not just in a UI.
     const finalMain = committed.refs.find((r) => r.name === "main");
-    expect(finalMain?.executionId).not.toBe(parentId);
-    expect(committed.lineageCount).toBeGreaterThanOrEqual(STRATEGIES.length + 1);
+    expect(finalMain?.executionId).not.toBe(committed.parentExecutionId);
+    const commitEvents = await app.eventStore.read(finalMain?.executionId as string);
+    const decision = commitEvents.find((e) => e.eventType === "DECISION_RECORDED");
+    expect(decision).toBeDefined();
+    const payload = decision?.payload as { choice?: unknown; alternatives?: unknown };
+    expect(payload.choice).toBe("scale-replicas");
+    expect(payload.alternatives).toEqual(["failover-primary", "throttle-writes"]);
 
-    // The real apply recovered the metric and was persisted to SQLite on disk.
     expect(telemetry().metrics.lagMs).toBe(180);
-    expect(frames.some((f) => (f as { kind?: string }).kind === "patch")).toBe(true);
     expect(existsSync(join(dataDir, "events.db"))).toBe(true);
     expect(existsSync(join(dataDir, "branches.db"))).toBe(true);
+  }, 30000);
+
+  it("declining every branch leaves nothing promotable", async () => {
+    void app.orchestrator.run(REPLICA_GOAL);
+    await reachPhase("awaiting-branches");
+    await app.orchestrator.exploreBranches();
+
+    for (const s of STRATEGIES) {
+      await app.orchestrator.reviewBranch(s.id, { approved: false, reviewer: `${s.id}-owner` });
+    }
+    const surface = app.orchestrator.branchSurface();
+    expect(surface.awaitingReview).toBe(0);
+    expect(surface.phase).toBe("explored"); // the cohort closed…
+    expect(surface.branches.every((b) => b.status === "declined")).toBe(true);
+
+    // …but a declined branch is not a winner.
+    await expect(app.orchestrator.promoteBranch("scale-replicas")).rejects.toThrow(
+      /has not cleared it/
+    );
   }, 30000);
 
   it("auto-remediates a low-risk CPU incident without branching", async () => {
