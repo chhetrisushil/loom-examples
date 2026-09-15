@@ -1,13 +1,14 @@
 import { join } from "node:path";
 import { BroadcastingProjectionRuntime, InProcessA2ABus, defineConfig } from "@loom/app";
 import type { EventEnvelope } from "@loom/core";
+import type { ExecutionDispatcher } from "@loom/dispatcher";
 import type { BranchRegistry } from "@loom/event-runtime";
 import { SqliteTimerStore, sqliteStorage } from "@loom/plugin-sqlite";
 import type { RegisteredFlow, WorkflowRuntime } from "@loom/workflow-runtime";
 import { AGENT_CARDS, CAPABILITY_AGENT, FLEET } from "../agents/definitions";
 import { buildCatalog } from "../capabilities/catalog";
 import { MigrationExecutionFlow } from "../capabilities/flows";
-import { buildBranchDispatcher } from "../compute/dispatcher";
+import { buildPlacementDispatcher } from "../compute/dispatcher";
 import { Orchestrator } from "../orchestrator/Orchestrator";
 import { MISSION_ID, type ServerFrame } from "../wire";
 
@@ -22,6 +23,8 @@ export interface ServerApp {
   readonly missionRuntime: WorkflowRuntime;
   // Git-style branch registry: movable refs + fork lineage for speculation.
   readonly branchRegistry: BranchRegistry;
+  /** The placement dispatcher, when a branch worker is configured (#392). */
+  readonly branchDispatcher?: ExecutionDispatcher;
   // A serialized ProjectionSnapshot of the mission + telemetry surfaces.
   snapshot(): string;
   // Observe the A2UI patch frames the server would push to SSE clients.
@@ -56,6 +59,16 @@ export function createApp(opts: {
   const projectionRuntime = new BroadcastingProjectionRuntime(missionId, SURFACES, emitPatch);
 
   const catalog = buildCatalog();
+  // Built before defineConfig so the timer service can be handed the same dispatcher the
+  // branch orchestrator uses — one placement decision, honoured on both paths.
+  let runtimeRef: WorkflowRuntime | undefined;
+  const branchDispatcher =
+    opts.branchWorkerUrl !== undefined
+      ? buildPlacementDispatcher(opts.branchWorkerUrl, () => {
+          if (runtimeRef === undefined) throw new Error("runtime not built yet");
+          return runtimeRef;
+        })
+      : undefined;
   const app = defineConfig({
     storage: sqliteStorage({ dir: opts.dataDir, branching: true }),
     projectionRuntime,
@@ -66,8 +79,16 @@ export function createApp(opts: {
     flows: [MigrationExecutionFlow as RegisteredFlow],
     // Durable deadlines, so the shadow-verification gate inside each branch has a real
     // one — and so something other than an operator can wake a parked branch.
-    timers: { store: new SqliteTimerStore(join(opts.dataDir, "timers.db")) },
+    // #392 — with a branch worker configured, a wake goes back to the lane the execution
+    // was started in. Without the dispatcher here, a branch placed on the worker and then
+    // parked for verification would be resumed by the timer service inside THIS process.
+    timers: {
+      store: new SqliteTimerStore(join(opts.dataDir, "timers.db")),
+      ...(branchDispatcher !== undefined && { dispatcher: branchDispatcher }),
+    },
   });
+
+  runtimeRef = app.runtime;
 
   if (!app.stores.branchRegistry) {
     throw new Error("branch registry required for the Migration Board");
@@ -95,9 +116,7 @@ export function createApp(opts: {
     bus,
     branchRegistry,
     missionId,
-    ...(opts.branchWorkerUrl !== undefined && {
-      dispatcher: buildBranchDispatcher(app.runtime, opts.branchWorkerUrl),
-    }),
+    ...(branchDispatcher !== undefined && { dispatcher: branchDispatcher }),
   });
 
   return {
@@ -106,6 +125,7 @@ export function createApp(opts: {
     projectionRuntime,
     missionRuntime: app.runtime,
     branchRegistry,
+    ...(branchDispatcher !== undefined && { branchDispatcher }),
     snapshot: () => projectionRuntime.snapshot(),
     subscribeBroadcast(cb) {
       observers.add(cb);

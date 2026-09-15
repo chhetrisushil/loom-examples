@@ -71,21 +71,23 @@ async function main(): Promise<void> {
     line("   The expensive compute is released. The branch is just storage now.");
 
     rule();
-    line("④ …and here is the gap (loom#392): fire the deadline and watch where it lands");
+    line("④ Fire the deadline — and watch the wake go back to the worker (loom#392)");
     rule();
     const parked = app.orchestrator.branchSurface().branches[0];
     const st = await app.missionRuntime.loadState(parked?.executionId as string);
     ranOnWorker.length = 0;
     const timers = new SqliteTimerStore(join(dataDir, "timers.db"));
-    await new TimerService(app.missionRuntime, timers).tick((st?.suspendedOn?.wakeAt ?? 0) + 1000);
+    await new TimerService(app.missionRuntime, timers, {
+      ...(app.branchDispatcher !== undefined && { dispatcher: app.branchDispatcher }),
+    }).tick((st?.suspendedOn?.wakeAt ?? 0) + 1000);
     await timers.close();
     const wokeOnWorker = ranOnWorker.includes(parked?.executionId as string);
     line(`   woke "${parked?.strategy}" on: ${wokeOnWorker ? "worker" : "COORDINATOR"}`);
-    line("   Placement is never persisted — `ExecutionPolicy` is a caller-side struct");
-    line("   mapped to DispatchMetadata at dispatch time. Nothing the branch left behind");
-    line("   says where it belongs, so the wake runs wherever the timer service lives.");
+    line("   The lane is recorded on the branch's anchor at fork time, so the timer service");
+    line("   dispatches the wake back to it. Placing a branch per DISPATCH was not enough:");
+    line("   that lives in one process's memory and is gone by the first suspension.");
     rule();
-    line("✓ Branches have their own compute. Their WAKES do not. (loom#392)");
+    line("✓ Branches have their own compute — and so do their wakes.");
   } finally {
     app.close();
     await worker.stop();

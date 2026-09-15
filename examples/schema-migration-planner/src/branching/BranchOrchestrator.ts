@@ -128,7 +128,15 @@ export class BranchOrchestrator {
       STRATEGIES.map((s) => async (_signal: AbortSignal) => {
         const branchName = `spec/${s.id}`;
         // Copy-on-write fork of the suspended gate. Parent stays intact.
-        const fork = await this.deps.runtime.fork(parent, forkPoint, { branchName });
+        // Placed, not merely dispatched. Passing a target per dispatch is ephemeral — it
+        // lives in this process's memory — so the FIRST dispatch would land on the worker
+        // and every later wake would land wherever the timer service runs (loom#392).
+        // Recording it on the branch at fork time is what makes the placement survive the
+        // suspension this branch is about to take.
+        const fork = await this.deps.runtime.fork(parent, forkPoint, {
+          branchName,
+          ...(this.deps.dispatcher !== undefined && { computeTarget: BRANCH_TARGET }),
+        });
         this.patchBranch(s.id, {
           executionId: fork.executionId,
           status: "simulating",

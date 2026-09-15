@@ -17,9 +17,34 @@ export function buildBranchDispatcher(
   coordinator: WorkflowRuntime,
   branchWorkerUrl: string
 ): ExecutionDispatcher {
+  return buildPlacementDispatcher(branchWorkerUrl, () => coordinator);
+}
+
+/**
+ * The same two lanes, but with the local one resolved on first use.
+ *
+ * The composition root needs this: `defineConfig` builds the runtime, and the dispatcher has
+ * to be handed TO `defineConfig` (so the timer service can re-drive a wake on the lane the
+ * execution was started in, #392). One placement decision, honoured by the branch
+ * orchestrator and by the wake path, rather than two that can disagree.
+ */
+export function buildPlacementDispatcher(
+  branchWorkerUrl: string,
+  coordinator: () => WorkflowRuntime
+): ExecutionDispatcher {
+  let local: ExecutionDispatcher | undefined;
+  const localLane = (): ExecutionDispatcher => {
+    local ??= new LocalDispatcher(new LocalWorkerRuntime(coordinator()));
+    return local;
+  };
+  const lazyLocal: ExecutionDispatcher = {
+    dispatch: (pkg, meta) => localLane().dispatch(pkg, meta),
+    cancel: (executionId) => localLane().cancel(executionId),
+    health: () => localLane().health(),
+  };
   return new PlacementDispatcher({
     targets: {
-      local: new LocalDispatcher(new LocalWorkerRuntime(coordinator)),
+      local: lazyLocal,
       [BRANCH_TARGET]: new LocalDispatcher(new RemoteWorkerRuntime(branchWorkerUrl)),
     },
     default: "local",
