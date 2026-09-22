@@ -32,7 +32,11 @@ export const catalog: SemanticCatalog = defineSemanticCatalog({
       name: "Note",
       version: "1.0.0",
       props: ["label"],
-      binding: "none",
+      // "optional" (not "required") absorbs the surface contract's "none" below with no
+      // binding-contract-conflict (loomCatalog.ts): most Notes are unbound (a `<textarea>` the
+      // user owns), but `app.ts`'s `bindNote()` shows one bound to a live value directly, with no
+      // change to this contract's props or surface.
+      binding: "optional",
       surfaces: {
         web: { kind: "NoteInput", props: ["label"], binding: "none" },
         terminal: { kind: "NoteInput", props: ["label"], binding: "none" },

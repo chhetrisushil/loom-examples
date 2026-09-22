@@ -19,18 +19,21 @@ pnpm --filter @loom/experience-recompose test
 - the report is loom's identity report (`identity.added`, and `identity.findings` = the dropped ids) plus what the adapter did (`remounted`, `rebound`, `findings`);
 - `dispose()` is clean: the tree is gone, the widgets are detached, and a later store write reaches no widget.
 
-Three more tests:
+Four more tests:
 
 - **The user-input rule:** a relabel of the note reaches its caption through `patch`, and the typed text, selection and focus are untouched.
+- **The bound-Note rule:** `App.bindNote()` binds `memo` directly to a live value. A patch-only revision (the caption relabels; the binding doesn't change) never calls `update`, so the typed text stays; a genuine change to the bound value does call it, and overwrites what the user typed — `update` only ever protects text the app's own value hasn't moved past.
 - **A kind change** (`Note` → `Alert`) remounts exactly that node.
 - **An app renderer without `patch`** is remounted and reported, never silently re-created. The user gets a new textarea.
 
 ## The recipe
 
 ```ts
-controller.load(nextExperience);                    // hydration recomposes: unbound handles aborted/dropped, shared ones kept
+controller.load(nextExperience);                    // hydration recomposes: handles the new artifact no longer binds are dropped, shared ones kept
 handle.update(compile(nextExperience, opts).blueprint);
 ```
+
+"Dropped" here means removed from the store once its (by-then-settled) result is no longer needed — this example never revises before a P1 load resolves, so nothing here proves an *in-flight* load gets aborted. That path (`AbortController.abort()` on `recompose`) is `@loom-ui/hydration`'s own, covered by its controller tests, not this one's.
 
 `src/app.ts` does exactly this with a real `HydrationController`. Its `TransientInvoker` (the one method hydration needs from loom's runtime) is a fake, `LatencyInvoker`, which answers every `latency.summary` call with a fixed output: p99 `412`, phase `steady`, 30 recent samples. The controller's batch timer is injected, so `settle()` fires due batches deterministically instead of waiting on wall-clock time.
 
@@ -45,14 +48,15 @@ Keyed recompose does not care who authored an operation. It cares that ids are s
 
 ## The user-input rule
 
-`src/noteInput.ts`: user-entered state is DOM state. `patch` relabels and never touches the textarea. `update` writes the textarea only when the **bound** value changed.
+`src/noteInput.ts`: user-entered state is DOM state. `patch` relabels and never touches the textarea. `update` writes the textarea only when the **bound** value changed — most Notes here are unbound (so `update` never fires for them); `App.bindNote()` binds `memo` directly to a live value so the bound-Note test above exercises the write.
 
 ## Files
 
-- `src/catalog.ts`: Metric, Collection, Status, and two app kinds outside loom's catalogue: Note → `NoteInput`, and Alert
+- `src/catalog.ts`: Metric, Collection, Status, and two app kinds outside loom's catalogue: Note (binding `optional`) → `NoteInput`, and Alert
 - `src/noteInput.ts`: the app renderers (`noteInput`, `alert`) and the rule
 - `src/planner.ts`: the scripted model (compose + two revisions, with STABLE ids) and an in-memory `decide`
 - `src/app.ts`: `createApp()`, which wires runtime + store + `HydrationController` (fake invoker) + `ReferencePlanner` + compile + `renderBlueprintDom`
   - `revise()` = planner ops, then the app's layout rules, replayed, then `controller.load` + `handle.update`
   - `retype()` = remove + insert with the same id
-- `test/recompose.test.ts`: the four tests above. `test/smoke.test.ts` checks that renderer-lit loads from the linked workspace
+  - `bindNote()` = binds `memo` to a live value directly, via the same `buildProviderSpec` the planner's own `materialize` uses
+- `test/recompose.test.ts`: the five tests above. `test/smoke.test.ts` checks that renderer-lit loads from the linked workspace

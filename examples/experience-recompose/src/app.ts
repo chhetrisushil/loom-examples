@@ -17,7 +17,7 @@ import {
   HydrationStore,
   type TransientInvoker,
 } from "@loom-ui/hydration";
-import { type CapabilityRef, ReferencePlanner } from "@loom-ui/planner";
+import { type CapabilityRef, ReferencePlanner, buildProviderSpec } from "@loom-ui/planner";
 import {
   type DomRegistry,
   type DomRenderHandle,
@@ -32,17 +32,16 @@ import { catalog } from "./catalog";
 import { alert, noteInput } from "./noteInput";
 import { memoryDecide, scriptedModel } from "./planner";
 
-export const capabilities: CapabilityRef[] = [
-  {
-    handle: "latency_summary",
-    toolName: "latency.summary",
-    toolVersion: "1.0.0",
-    toolSchemaHash: "sha256:latency-summary-1-0",
-    description: "p99 latency, phase and recent samples for a window",
-    inputSchema: { type: "object", properties: { window: { type: "string" } } },
-    sampleOutput: { p99Ms: 412, phase: "steady", recent: [{ at: "10:00", ms: 400 }] },
-  },
-];
+const latencySummary: CapabilityRef = {
+  handle: "latency_summary",
+  toolName: "latency.summary",
+  toolVersion: "1.0.0",
+  toolSchemaHash: "sha256:latency-summary-1-0",
+  description: "p99 latency, phase and recent samples for a window",
+  inputSchema: { type: "object", properties: { window: { type: "string" } } },
+  sampleOutput: { p99Ms: 412, phase: "steady", recent: [{ at: "10:00", ms: 400 }] },
+};
+export const capabilities: CapabilityRef[] = [latencySummary];
 
 const intent: Intent = {
   objective: "Watch checkout latency and leave a handoff note",
@@ -104,6 +103,12 @@ export interface App {
   compose(): Promise<void>;
   revise(text: string): Promise<RecomposeReport>;
   retype(nodeId: string, type: string, props: Record<string, unknown>): RecomposeReport;
+  /**
+   * Bind `memo`'s Note directly to a live value (the planner never does this — see
+   * `catalog.ts`'s comment on `Note`'s binding). Exercises `NoteInput.update`'s "write only when
+   * the bound value changed" branch, which nothing else here reaches.
+   */
+  bindNote(): RecomposeReport;
   /** Fire the controller's batch timers and wait until nothing is in flight. */
   settle(): Promise<void>;
   dispose(): void;
@@ -157,6 +162,18 @@ export function createApp(opts: { patchable?: boolean } = {}): App {
     if (findings.length > 0) throw new Error(`hydration refused: ${JSON.stringify(findings)}`);
   };
 
+  // `handle`/`experience`/`blueprint` don't exist until `compose()` runs (it's a method on the
+  // same `App`, called by the caller after `createApp()` returns), so the object literal below
+  // cannot supply real values for them up front. Backing them with `let`s the accessors below
+  // read and write needs no placeholder cast: reading before `compose()` throws instead of
+  // silently handing back a lie typed as the real thing.
+  let handleVal: DomRenderHandle | undefined;
+  let experienceVal: Experience | undefined;
+  let blueprintVal: Blueprint | undefined;
+  const notReady = (what: string): never => {
+    throw new Error(`${what} is not ready — call compose() first`);
+  };
+
   const app: App = {
     runtime,
     store,
@@ -165,9 +182,24 @@ export function createApp(opts: { patchable?: boolean } = {}): App {
     executionId: store.executionId,
     registry,
     host,
-    handle: undefined as unknown as DomRenderHandle,
-    experience: undefined as unknown as Experience,
-    blueprint: undefined as unknown as Blueprint,
+    get handle() {
+      return handleVal ?? notReady("handle");
+    },
+    set handle(h) {
+      handleVal = h;
+    },
+    get experience() {
+      return experienceVal ?? notReady("experience");
+    },
+    set experience(e) {
+      experienceVal = e;
+    },
+    get blueprint() {
+      return blueprintVal ?? notReady("blueprint");
+    },
+    set blueprint(b) {
+      blueprintVal = b;
+    },
     async compose() {
       const composed = await planner.compose({ intent, catalog, capabilities }, ctx);
       if (composed.ops.length === 0)
@@ -221,6 +253,30 @@ export function createApp(opts: { patchable?: boolean } = {}): App {
           parentId: root.id,
           node: { ...current, type, typeVersion: entry.version, props },
         },
+      ];
+      const a = replay(app.experience, ops);
+      if (!a.ok) throw new Error(a.finding.message);
+      return land(seal(a.value));
+    },
+    bindNote() {
+      // The same helper the planner's `materialize` uses to turn a capability + JSONPath into a
+      // `ProviderSpec` — reused directly, since the app is authoring this binding itself, the
+      // same way `retype` authors its own ops. `phase` is the same field the badge already
+      // reads; a different node can bind the same path under its own handle.
+      const built = buildProviderSpec(
+        latencySummary,
+        {
+          capability: "latency_summary",
+          arguments: { window: "1h" },
+          path: "phase",
+          priority: "P1",
+        },
+        "memo"
+      );
+      if (!built.ok) throw new Error(built.finding.message);
+      const ops: Operation[] = [
+        { type: "remapProvider", handle: built.spec.handle, spec: built.spec },
+        { type: "bindProvider", nodeId: "memo", handle: built.spec.handle, priority: "P1" },
       ];
       const a = replay(app.experience, ops);
       if (!a.ok) throw new Error(a.finding.message);
