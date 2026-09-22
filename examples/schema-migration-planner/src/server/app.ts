@@ -61,6 +61,7 @@ export function createApp(opts: {
   const catalog = buildCatalog();
   // Built before defineConfig so the timer service can be handed the same dispatcher the
   // branch orchestrator uses — one placement decision, honoured on both paths.
+  // biome-ignore lint/style/useConst: assigned once defineConfig returns; the dispatcher closure above reads it late
   let runtimeRef: WorkflowRuntime | undefined;
   const branchDispatcher =
     opts.branchWorkerUrl !== undefined
