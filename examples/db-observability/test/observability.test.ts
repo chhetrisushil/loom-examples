@@ -12,7 +12,14 @@ function widgetKinds(blueprint: Blueprint): string[] {
       kinds.push(node.kind);
       return;
     }
-    for (const child of (node as Layout).children) walk(child as Layout | Widget);
+    // IR 2.0.0: a grid's children are `GridCell`s (`{ span, node }`); unwrap before recursing.
+    for (const child of (node as Layout).children as readonly unknown[]) {
+      const inner =
+        typeof child === "object" && child !== null && "node" in child
+          ? (child as { node: Layout | Widget }).node
+          : child;
+      walk(inner as Layout | Widget);
+    }
   };
   walk(blueprint.layout);
   return kinds;
