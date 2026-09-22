@@ -2,7 +2,8 @@ import type { DecideContext, DecideOptionsLike, PlannerModel } from "@loom-ui/pl
 
 // The compose draft and two revisions, as a real model would return them. Ids are STABLE across
 // revisions — that is what keyed recompose keys on. Spans: a 12-column row. The planner appends
-// a NEW node at the end and never re-types or moves one; the app's layout rule does the moving.
+// a NEW node at the end and never re-types or moves one; the app's layout rules do the moving
+// ("alerts first", "metrics below the collections" — `layoutRules` in app.ts).
 const node = (
   id: string,
   type: string,
@@ -35,7 +36,7 @@ export const COMPOSE = JSON.stringify({
   ],
 });
 
-/** "add an alert about the degraded provider, show latency in seconds, drop the phase badge" */
+/** "add an alert above the note, move the metric below the list, show latency in seconds, drop the badge" — the model cannot move a node, so the move is left to the app's layout rule. */
 export const REVISE_MAIN = JSON.stringify({
   summary: "Alert added; latency in seconds; badge dropped.",
   nodes: [
