@@ -25,6 +25,11 @@ overrides:
   '@loom/analytics': link:../loom/packages/analytics
   '@loom/app': link:../loom/packages/app
   '@loom/blueprint-runtime': link:../loom/packages/blueprint-runtime
+  '@loom-ui/core': link:../loom-ui/packages/core
+  '@loom-ui/hydration': link:../loom-ui/packages/hydration
+  '@loom-ui/planner': link:../loom-ui/packages/planner
+  '@loom-ui/renderer-lit': link:../loom-ui/packages/renderer-lit
+  '@loom-ui/renderer-terminal': link:../loom-ui/packages/renderer-terminal
   '@loom/capability': link:../loom/packages/capability
   '@loom/classify': link:../loom/packages/classify
   '@loom/cli': link:../loom/tools/cli
@@ -430,6 +435,34 @@ importers:
       vite:
         specifier: ^6.0.0
         version: 6.4.3(@types/node@22.20.1)(sass@1.90.0)(tsx@4.23.1)
+
+  examples/blueprint-status:
+    dependencies:
+      '@loom/blueprint-runtime':
+        specifier: link:../../../loom/packages/blueprint-runtime
+        version: link:../../../loom/packages/blueprint-runtime
+      '@loom/core':
+        specifier: link:../../../loom/packages/core
+        version: link:../../../loom/packages/core
+      '@loom/plugin-renderer-terminal':
+        specifier: link:../../../loom/plugins/renderer-terminal
+        version: link:../../../loom/plugins/renderer-terminal
+      '@loom/projection-runtime':
+        specifier: link:../../../loom/packages/projection-runtime
+        version: link:../../../loom/packages/projection-runtime
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.1
+      tsx:
+        specifier: 'catalog:'
+        version: 4.23.1
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 2.1.9(@types/node@22.20.1)(jsdom@25.0.1)(sass@1.90.0)
 
   examples/child-orchestration:
     dependencies:
