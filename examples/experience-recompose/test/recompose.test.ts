@@ -173,6 +173,42 @@ describe("experience-recompose — an agent revision lands while the user types"
     app.dispose();
   });
 
+  it("the bound-Note rule: a patch never writes the textarea, a bound value change does", async () => {
+    const app = createApp();
+    await app.compose();
+
+    // Bind `memo` directly to a live value (the planner never does this — `App.bindNote()`).
+    const r0 = app.bindNote();
+    await app.settle();
+    expect(r0.findings).toEqual([]);
+    expect(r0.rebound).toEqual(["memo"]);
+    const handle = handleOf(app, "memo");
+    expect(app.store.status(handle)?.state).toBe("ready");
+
+    const ta = note(app);
+    // Nothing was typed yet: the bound value's arrival wrote the textarea through `update`.
+    expect(ta.value).toBe("steady");
+
+    typeInto(ta);
+
+    // A patch-only revision (the caption relabels; the binding is untouched) must not call
+    // `update` — the textarea stays exactly what the user typed.
+    const r = await app.revise("relabel the note for the on-call");
+    expect(r.remounted).toEqual([]);
+    expect(r.findings).toEqual([]);
+    expectUntouched(app, ta);
+    expect(handleOf(app, "memo")).toBe(handle); // the binding survived the revision, unchanged
+
+    // A genuine change to the BOUND value overwrites what the user typed — that is the rule:
+    // user-entered state stays only while the app's own idea of the value hasn't moved.
+    app.store.setValue(handle, "degraded", { state: "ready" });
+    expect(ta.value).toBe("degraded");
+    expect(document.activeElement).toBe(ta); // a value write, not a focus change
+
+    expectFreshMountParity(app);
+    app.dispose();
+  });
+
   it("changing a node's KIND (remove + insert with the same id) remounts only that node", async () => {
     const app = createApp();
     await app.compose();
@@ -187,11 +223,14 @@ describe("experience-recompose — an agent revision lands while the user types"
     expect(r.findings).toEqual([]);
     expect(r.identity.added).toEqual([]);
     expect(r.identity.findings).toEqual([]); // the id survived — nothing was dropped
-    expect(
-      ["latency", "phase", "recent"].map((id) =>
-        app.host.querySelector(`[data-widget-id='${id}'] > *`)
-      )
-    ).toEqual(others);
+    // Identity, not structural equality: vitest's `toEqual` short-circuits DOM nodes to
+    // `isEqualNode`, so a reconciler that remounted these with identical markup would pass a
+    // `toEqual` here. `toBe` per element (plus the length check below) is the real assertion.
+    const after = ["latency", "phase", "recent"].map((id) =>
+      app.host.querySelector(`[data-widget-id='${id}'] > *`)
+    );
+    expect(after).toHaveLength(others.length);
+    others.forEach((el, i) => expect(after[i]).toBe(el));
     expect(ta.isConnected).toBe(false);
     expect(app.host.querySelector("[data-widget-id='memo'] p")?.getAttribute("data-tone")).toBe(
       "info"

@@ -4,8 +4,11 @@ import type { DomWidgetRenderer } from "@loom-ui/renderer-lit/dom";
  * The app's NoteInput: a labelled <textarea>. Two rules from the loom-ui design (§2.2):
  *  • `patch` relabels — it never touches the textarea's value, caret or focus; what the user
  *    typed is DOM state and stays;
- *  • `update` writes the textarea only when the BOUND value changed (Note is unbound here, so
- *    it never does — the branch exists to show where the rule lives).
+ *  • `update` writes the textarea only when the BOUND value changed. Most Notes in this example
+ *    are unbound, so it never runs for them; `App.bindNote()` binds `memo` directly to a live
+ *    value (test/recompose.test.ts's "the bound-Note rule") so the branch actually executes:
+ *    a patch-only revision never calls it, and a genuine change to the bound value does, even
+ *    over text the user already typed.
  */
 export const noteInput =
   (opts: { patchable: boolean } = { patchable: true }): DomWidgetRenderer =>
