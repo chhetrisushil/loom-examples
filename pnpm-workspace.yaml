@@ -9,3 +9,5 @@ catalog:
   '@types/node': ^22.0.0
   vitest: ^2.1.8
   tsx: ^4.19.2
+  lit: ^3.2.1
+  happy-dom: ^20.11.12

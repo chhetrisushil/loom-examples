@@ -9,6 +9,12 @@ catalogs:
     '@types/node':
       specifier: ^22.0.0
       version: 22.20.1
+    happy-dom:
+      specifier: ^20.11.12
+      version: 20.14.5
+    lit:
+      specifier: ^3.2.1
+      version: 3.3.3
     tsx:
       specifier: ^4.19.2
       version: 4.23.1
@@ -168,7 +174,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 'catalog:'
-        version: 2.1.9(@types/node@22.20.1)(jsdom@25.0.1)(sass@1.90.0)
+        version: 2.1.9(@types/node@22.20.1)(happy-dom@20.14.5)(jsdom@25.0.1)(sass@1.90.0)
 
   examples/a2ui-dashboard:
     dependencies:
@@ -199,7 +205,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 'catalog:'
-        version: 2.1.9(@types/node@22.20.1)(jsdom@25.0.1)(sass@1.90.0)
+        version: 2.1.9(@types/node@22.20.1)(happy-dom@20.14.5)(jsdom@25.0.1)(sass@1.90.0)
 
   examples/a2ui-egress:
     dependencies:
@@ -233,7 +239,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 'catalog:'
-        version: 2.1.9(@types/node@22.20.1)(jsdom@25.0.1)(sass@1.90.0)
+        version: 2.1.9(@types/node@22.20.1)(happy-dom@20.14.5)(jsdom@25.0.1)(sass@1.90.0)
 
   examples/agent-network:
     dependencies:
@@ -367,7 +373,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 'catalog:'
-        version: 2.1.9(@types/node@22.20.1)(jsdom@25.0.1)(sass@1.90.0)
+        version: 2.1.9(@types/node@22.20.1)(happy-dom@20.14.5)(jsdom@25.0.1)(sass@1.90.0)
 
   examples/angular-command-center:
     dependencies:
@@ -462,7 +468,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 'catalog:'
-        version: 2.1.9(@types/node@22.20.1)(jsdom@25.0.1)(sass@1.90.0)
+        version: 2.1.9(@types/node@22.20.1)(happy-dom@20.14.5)(jsdom@25.0.1)(sass@1.90.0)
 
   examples/child-orchestration:
     dependencies:
@@ -502,7 +508,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 'catalog:'
-        version: 2.1.9(@types/node@22.20.1)(jsdom@25.0.1)(sass@1.90.0)
+        version: 2.1.9(@types/node@22.20.1)(happy-dom@20.14.5)(jsdom@25.0.1)(sass@1.90.0)
 
   examples/cloud-command-center:
     dependencies:
@@ -590,7 +596,7 @@ importers:
         version: 5.4.21(@types/node@22.20.1)(sass@1.90.0)
       vitest:
         specifier: 'catalog:'
-        version: 2.1.9(@types/node@22.20.1)(jsdom@25.0.1)(sass@1.90.0)
+        version: 2.1.9(@types/node@22.20.1)(happy-dom@20.14.5)(jsdom@25.0.1)(sass@1.90.0)
 
   examples/compute-cloudrun:
     dependencies:
@@ -642,7 +648,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 'catalog:'
-        version: 2.1.9(@types/node@22.20.1)(jsdom@25.0.1)(sass@1.90.0)
+        version: 2.1.9(@types/node@22.20.1)(happy-dom@20.14.5)(jsdom@25.0.1)(sass@1.90.0)
 
   examples/db-command-center:
     dependencies:
@@ -745,7 +751,7 @@ importers:
         version: 5.4.21(@types/node@22.20.1)(sass@1.90.0)
       vitest:
         specifier: 'catalog:'
-        version: 2.1.9(@types/node@22.20.1)(jsdom@25.0.1)(sass@1.90.0)
+        version: 2.1.9(@types/node@22.20.1)(happy-dom@20.14.5)(jsdom@25.0.1)(sass@1.90.0)
 
   examples/db-command-center-server:
     dependencies:
@@ -830,7 +836,7 @@ importers:
         version: 5.4.21(@types/node@22.20.1)(sass@1.90.0)
       vitest:
         specifier: 'catalog:'
-        version: 2.1.9(@types/node@22.20.1)(jsdom@25.0.1)(sass@1.90.0)
+        version: 2.1.9(@types/node@22.20.1)(happy-dom@20.14.5)(jsdom@25.0.1)(sass@1.90.0)
 
   examples/db-command-center-wc:
     dependencies:
@@ -912,7 +918,7 @@ importers:
         version: 5.4.21(@types/node@22.20.1)(sass@1.90.0)
       vitest:
         specifier: 'catalog:'
-        version: 2.1.9(@types/node@22.20.1)(jsdom@25.0.1)(sass@1.90.0)
+        version: 2.1.9(@types/node@22.20.1)(happy-dom@20.14.5)(jsdom@25.0.1)(sass@1.90.0)
 
   examples/db-observability:
     dependencies:
@@ -1003,7 +1009,7 @@ importers:
         version: 5.4.21(@types/node@22.20.1)(sass@1.90.0)
       vitest:
         specifier: 'catalog:'
-        version: 2.1.9(@types/node@22.20.1)(jsdom@25.0.1)(sass@1.90.0)
+        version: 2.1.9(@types/node@22.20.1)(happy-dom@20.14.5)(jsdom@25.0.1)(sass@1.90.0)
 
   examples/db-sentinel:
     dependencies:
@@ -1061,7 +1067,44 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 'catalog:'
-        version: 2.1.9(@types/node@22.20.1)(jsdom@25.0.1)(sass@1.90.0)
+        version: 2.1.9(@types/node@22.20.1)(happy-dom@20.14.5)(jsdom@25.0.1)(sass@1.90.0)
+
+  examples/experience-recompose:
+    dependencies:
+      '@loom-ui/core':
+        specifier: link:../../../loom-ui/packages/core
+        version: link:../../../loom-ui/packages/core
+      '@loom-ui/hydration':
+        specifier: link:../../../loom-ui/packages/hydration
+        version: link:../../../loom-ui/packages/hydration
+      '@loom-ui/planner':
+        specifier: link:../../../loom-ui/packages/planner
+        version: link:../../../loom-ui/packages/planner
+      '@loom-ui/renderer-lit':
+        specifier: link:../../../loom-ui/packages/renderer-lit
+        version: link:../../../loom-ui/packages/renderer-lit
+      '@loom/blueprint-runtime':
+        specifier: link:../../../loom/packages/blueprint-runtime
+        version: link:../../../loom/packages/blueprint-runtime
+      '@loom/projection-runtime':
+        specifier: link:../../../loom/packages/projection-runtime
+        version: link:../../../loom/packages/projection-runtime
+      lit:
+        specifier: 'catalog:'
+        version: 3.3.3
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.1
+      happy-dom:
+        specifier: 'catalog:'
+        version: 20.14.5
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 2.1.9(@types/node@22.20.1)(happy-dom@20.14.5)(jsdom@25.0.1)(sass@1.90.0)
 
   examples/incident-war-room:
     dependencies:
@@ -1149,7 +1192,7 @@ importers:
         version: 5.4.21(@types/node@22.20.1)(sass@1.90.0)
       vitest:
         specifier: 'catalog:'
-        version: 2.1.9(@types/node@22.20.1)(jsdom@25.0.1)(sass@1.90.0)
+        version: 2.1.9(@types/node@22.20.1)(happy-dom@20.14.5)(jsdom@25.0.1)(sass@1.90.0)
 
   examples/learning-router:
     dependencies:
@@ -1186,7 +1229,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 'catalog:'
-        version: 2.1.9(@types/node@22.20.1)(jsdom@25.0.1)(sass@1.90.0)
+        version: 2.1.9(@types/node@22.20.1)(happy-dom@20.14.5)(jsdom@25.0.1)(sass@1.90.0)
 
   examples/loom-starter:
     dependencies:
@@ -1244,7 +1287,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 'catalog:'
-        version: 2.1.9(@types/node@22.20.1)(jsdom@25.0.1)(sass@1.90.0)
+        version: 2.1.9(@types/node@22.20.1)(happy-dom@20.14.5)(jsdom@25.0.1)(sass@1.90.0)
 
   examples/mcp-app-release-approval:
     dependencies:
@@ -1299,7 +1342,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 'catalog:'
-        version: 2.1.9(@types/node@22.20.1)(jsdom@25.0.1)(sass@1.90.0)
+        version: 2.1.9(@types/node@22.20.1)(happy-dom@20.14.5)(jsdom@25.0.1)(sass@1.90.0)
 
   examples/runbook-recall:
     dependencies:
@@ -1342,7 +1385,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 'catalog:'
-        version: 2.1.9(@types/node@22.20.1)(jsdom@25.0.1)(sass@1.90.0)
+        version: 2.1.9(@types/node@22.20.1)(happy-dom@20.14.5)(jsdom@25.0.1)(sass@1.90.0)
 
   examples/saved-views:
     dependencies:
@@ -1379,7 +1422,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 'catalog:'
-        version: 2.1.9(@types/node@22.20.1)(jsdom@25.0.1)(sass@1.90.0)
+        version: 2.1.9(@types/node@22.20.1)(happy-dom@20.14.5)(jsdom@25.0.1)(sass@1.90.0)
 
   examples/schema-migration-planner:
     dependencies:
@@ -1473,7 +1516,7 @@ importers:
         version: 5.4.21(@types/node@22.20.1)(sass@1.90.0)
       vitest:
         specifier: 'catalog:'
-        version: 2.1.9(@types/node@22.20.1)(jsdom@25.0.1)(sass@1.90.0)
+        version: 2.1.9(@types/node@22.20.1)(happy-dom@20.14.5)(jsdom@25.0.1)(sass@1.90.0)
 
 packages:
 
@@ -2293,6 +2336,12 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
+  '@lit-labs/ssr-dom-shim@1.6.0':
+    resolution: {integrity: sha512-VHb0ALPMTlgKjM6yIxxoQNnpKyUKLD04VzeQdsiXkMqkvYlAHxq9glGLmgbb889/1GsohSOAjvQYoiBppXFqrQ==}
+
+  '@lit/reactive-element@2.1.2':
+    resolution: {integrity: sha512-pbCDiVMnne1lYUIaYNN5wrwQXDtHaYtg7YEFPeW+hws6U47WeFvISGUWekPGKWOP1ygrs0ef0o1VJMk1exos5A==}
+
   '@lmdb/lmdb-darwin-arm64@3.4.2':
     resolution: {integrity: sha512-NK80WwDoODyPaSazKbzd3NEJ3ygePrkERilZshxBViBARNz21rmediktGHExoj9n5t9+ChlgLlxecdFKLCuCKg==}
     cpu: [arm64]
@@ -3004,6 +3053,15 @@ packages:
   '@types/tough-cookie@4.0.5':
     resolution: {integrity: sha512-/Ad8+nIOV7Rl++6f1BdKxFSMgmoqEoYbHRpPcx3JEfv8VRsQe9Z4mCXeJBzxs7mbHY/XOZZuXlRNfhpVPbs6ZA==}
 
+  '@types/trusted-types@2.0.7':
+    resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
+
+  '@types/whatwg-mimetype@3.0.2':
+    resolution: {integrity: sha512-c2AKvDT8ToxLIOUlN51gTiHXflsfIFisS4pO7pDPoKouJCESkhZnEy623gwP9laCy5lnLDAw1vAzu2vM2YLOrA==}
+
+  '@types/ws@8.18.1':
+    resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
+
   '@vitejs/plugin-basic-ssl@2.1.0':
     resolution: {integrity: sha512-dOxxrhgyDIEUADhb/8OlV9JIqYLgos03YorAueTIeOUskLJSEsfwCByjbu98ctXitUN3znXKp0bYD/WHSudCeA==}
     engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
@@ -3116,6 +3174,10 @@ packages:
 
   buffer-from@1.1.2:
     resolution: {integrity: sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==}
+
+  buffer-image-size@0.6.4:
+    resolution: {integrity: sha512-nEh+kZOPY1w+gcCMobZ6ETUp9WfibndnosbpwB1iJk/8Gt5ZF2bhS6+B6bPYz424KtwsR6Rflc3tCz1/ghX2dQ==}
+    engines: {node: '>=4.0'}
 
   cac@6.7.14:
     resolution: {integrity: sha512-b6Ilus+c3RrdDk+JhLKUAQfzzgLEPy6wcXqS7f/xe1EETvsDP6GORG7SFuOs6cID5YkqchW/LXZbX5bc8j7ZcQ==}
@@ -3448,6 +3510,10 @@ packages:
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
 
+  happy-dom@20.14.5:
+    resolution: {integrity: sha512-x/RzkpWO40bTjIoT30iQtt64FLLmH/iRcUCN2X//bLx7H3ifkdfPXyqsro/OYtqzIAhiLMMA7mmiOR9C3NOKjQ==}
+    engines: {node: '>=20.0.0'}
+
   has-symbols@1.1.0:
     resolution: {integrity: sha512-1cDNdwJ2Jaohmb3sg4OmKaMBwuC48sYni5HUw2DvsC8LjGTLK9h+eb1X6RyuOHe4hT0ULCW68iomhjUoKUqlPQ==}
     engines: {node: '>= 0.4'}
@@ -3552,6 +3618,15 @@ packages:
   listr2@9.0.1:
     resolution: {integrity: sha512-SL0JY3DaxylDuo/MecFeiC+7pedM0zia33zl0vcjgwcq1q1FWWF1To9EIauPbl8GbMCU0R2e0uJ8bZunhYKD2g==}
     engines: {node: '>=20.0.0'}
+
+  lit-element@4.2.2:
+    resolution: {integrity: sha512-aFKhNToWxoyhkNDmWZwEva2SlQia+jfG0fjIWV//YeTaWrVnOxD89dPKfigCUspXFmjzOEUQpOkejH5Ly6sG0w==}
+
+  lit-html@3.3.3:
+    resolution: {integrity: sha512-el8M6jK2o3RXBnrSHX3ZKrsN8zEV63pSExTO1wYJz7QndGYZ8353e2a5PPX+qHe2aGayfnchQmkAojaWAREOIA==}
+
+  lit@3.3.3:
+    resolution: {integrity: sha512-fycuvZg/hkpozL00lm1pEJH5nN/lr9ZXd6mJI2HSN4+Bzc+LDNdEApJ6HFbPkdFNHLvOplIIuJvxkS4XUxqirw==}
 
   lmdb@3.4.2:
     resolution: {integrity: sha512-nwVGUfTBUwJKXd6lRV8pFNfnrCC1+l49ESJRM19t/tFb/97QfJEixe5DYRvug5JO7DSFKoKaVy7oGMt5rVqZvg==}
@@ -4145,6 +4220,10 @@ packages:
     resolution: {integrity: sha512-6qN4hJdMwfYBtE3YBTTHhoeuUrDBPZmbQaxWAqSALV/MeEnR5z1xd8UKud2RAkFoPkmB+hli1TZSnyi84xz1vQ==}
     engines: {node: '>=18'}
     deprecated: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+
+  whatwg-mimetype@3.0.0:
+    resolution: {integrity: sha512-nt+N2dzIutVRxARx1nghPKGv1xHikU7HKdfafKkLNLindmPU/ch3U31NOCGGA/dmPcmb1VlofO0vnKAcsm0o/Q==}
+    engines: {node: '>=12'}
 
   whatwg-mimetype@4.0.0:
     resolution: {integrity: sha512-QaKxh0eNIi2mE9p2vEdzfagOKHCcj1pJ56EEHGQOVxp8r9/iszLUUV7v89x9O1p/T+NlTM5W7jW6+cz4Fq1YVg==}
@@ -4815,6 +4894,12 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
+  '@lit-labs/ssr-dom-shim@1.6.0': {}
+
+  '@lit/reactive-element@2.1.2':
+    dependencies:
+      '@lit-labs/ssr-dom-shim': 1.6.0
+
   '@lmdb/lmdb-darwin-arm64@3.4.2':
     optional: true
 
@@ -5306,6 +5391,14 @@ snapshots:
 
   '@types/tough-cookie@4.0.5': {}
 
+  '@types/trusted-types@2.0.7': {}
+
+  '@types/whatwg-mimetype@3.0.2': {}
+
+  '@types/ws@8.18.1':
+    dependencies:
+      '@types/node': 22.20.1
+
   '@vitejs/plugin-basic-ssl@2.1.0(vite@7.3.6(@types/node@22.20.1)(sass@1.90.0)(tsx@4.23.1))':
     dependencies:
       vite: 7.3.6(@types/node@22.20.1)(sass@1.90.0)(tsx@4.23.1)
@@ -5427,6 +5520,10 @@ snapshots:
       update-browserslist-db: 1.2.3(browserslist@4.28.6)
 
   buffer-from@1.1.2: {}
+
+  buffer-image-size@0.6.4:
+    dependencies:
+      '@types/node': 22.20.1
 
   cac@6.7.14: {}
 
@@ -5798,6 +5895,19 @@ snapshots:
 
   graceful-fs@4.2.11: {}
 
+  happy-dom@20.14.5:
+    dependencies:
+      '@types/node': 22.20.1
+      '@types/whatwg-mimetype': 3.0.2
+      '@types/ws': 8.18.1
+      buffer-image-size: 0.6.4
+      entities: 7.0.1
+      whatwg-mimetype: 3.0.0
+      ws: 8.21.1
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
   has-symbols@1.1.0: {}
 
   has-tostringtag@1.0.2:
@@ -5917,6 +6027,22 @@ snapshots:
       log-update: 6.1.0
       rfdc: 1.4.1
       wrap-ansi: 9.0.2
+
+  lit-element@4.2.2:
+    dependencies:
+      '@lit-labs/ssr-dom-shim': 1.6.0
+      '@lit/reactive-element': 2.1.2
+      lit-html: 3.3.3
+
+  lit-html@3.3.3:
+    dependencies:
+      '@types/trusted-types': 2.0.7
+
+  lit@3.3.3:
+    dependencies:
+      '@lit/reactive-element': 2.1.2
+      lit-element: 4.2.2
+      lit-html: 3.3.3
 
   lmdb@3.4.2:
     dependencies:
@@ -6477,7 +6603,7 @@ snapshots:
       sass: 1.90.0
       tsx: 4.23.1
 
-  vitest@2.1.9(@types/node@22.20.1)(jsdom@25.0.1)(sass@1.90.0):
+  vitest@2.1.9(@types/node@22.20.1)(happy-dom@20.14.5)(jsdom@25.0.1)(sass@1.90.0):
     dependencies:
       '@vitest/expect': 2.1.9
       '@vitest/mocker': 2.1.9(vite@5.4.21(@types/node@22.20.1)(sass@1.90.0))
@@ -6501,6 +6627,7 @@ snapshots:
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 22.20.1
+      happy-dom: 20.14.5
       jsdom: 25.0.1
     transitivePeerDependencies:
       - less
@@ -6530,6 +6657,8 @@ snapshots:
   whatwg-encoding@3.1.1:
     dependencies:
       iconv-lite: 0.6.3
+
+  whatwg-mimetype@3.0.0: {}
 
   whatwg-mimetype@4.0.0: {}
 
