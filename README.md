@@ -32,6 +32,7 @@ pnpm --filter @loom/db-observability start   # run one end-to-end
 |---|---|
 | `loom-starter` | Minimal flow + human-in-the-loop approval |
 | `db-observability` | Transient hydration → durable repair (GenUI dashboards) |
+| `blueprint-status` | Blueprint IR 2.0.0 on plain loom: widgets bind a value AND a status channel in the app's own projection, spans ride in grid cells, a degraded widget carries `source`, and the app's value contract sits in the terminal renderer's `check` seam — the canonical status matrix walked from real projection state (ADR 0097) |
 | `incident-war-room` | Git-style execution branching (fork / simulate / promote) |
 | `schema-migration-planner` | Branching + live per-branch progress |
 | `agent-swarm` | Dynamic agent swarm wired from user intent |

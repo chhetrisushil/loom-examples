@@ -1,0 +1,24 @@
+{
+  "name": "@loom/blueprint-status",
+  "version": "0.0.1",
+  "description": "A plain loom app on Blueprint IR 2.0.0, no loom-ui: a service health board whose widgets bind a value AND a status channel in the app's own projection, whose spans ride in grid cells, and whose degraded widget says what it stands for — rendered headlessly through loom's terminal renderer with the app's value contract in the `check` seam. Proves loom alone gains the status channel.",
+  "private": true,
+  "scripts": {
+    "build": "tsc --build",
+    "start": "tsx src/main.ts",
+    "test": "vitest run",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@loom/blueprint-runtime": "*",
+    "@loom/core": "*",
+    "@loom/plugin-renderer-terminal": "*",
+    "@loom/projection-runtime": "*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "^5.6.3",
+    "vitest": "catalog:"
+  }
+}
