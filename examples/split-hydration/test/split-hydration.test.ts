@@ -1,3 +1,4 @@
+import type { HandleInventory } from "@loom-ui/hydration";
 import { describe, expect, it } from "vitest";
 import { openBoard } from "../src/client";
 import { StationServer } from "../src/server";
@@ -18,7 +19,10 @@ function boot(opts: { readOnly?: boolean; prepare?: (tools: WeatherTools) => voi
     clock: () => NOW,
     ...(opts.readOnly !== undefined && { readOnly: opts.readOnly }),
   });
-  const { blueprint, inventory } = server.open();
+  const { blueprint, inventory: served } = server.open();
+  // The inventory crosses the same JSON boundary as everything else the browser sees: round-trip
+  // it here too, so the simulated trust boundary is honest for it, not just for hydrate/loadMany.
+  const inventory = JSON.parse(JSON.stringify(served)) as HandleInventory;
   const board = openBoard(
     inventory,
     (body) => server.hydrate(body),
@@ -40,6 +44,7 @@ describe("split hydration: a weather-station board", () => {
       "current-kpi",
       "frost-kpi",
       "series-trend",
+      "alerts-table",
       "$now",
     ])
       expect(wire).not.toContain(secret);
@@ -108,7 +113,7 @@ describe("split hydration: a weather-station board", () => {
       since: "2026-09-16T12:00:00.000Z",
     });
     expect(store.value("current")).toMatchObject({ value: 14.5 });
-    expect(store.value("frost")).toMatchObject({ value: 0 }); // 14.5°C: no frost risk
+    expect(store.value("frost")).toMatchObject({ value: 0 }); // dew point 9.0°C: no frost risk
   });
 
   it("a client only ever receives a finding's PUBLIC form — never provider internals", async () => {
@@ -128,8 +133,9 @@ describe("split hydration: a weather-station board", () => {
     const wire = JSON.stringify(pub);
     for (const secret of ["stations.current", "sha256", "n/a", "read", "reshap"])
       expect(wire).not.toContain(secret);
-    // frost derives a 0/1 flag from the SAME raw reading: it tolerates the garbled value and
-    // stays ready — sharing an upstream call does not mean sharing the other's drift.
+    // frost reads a DIFFERENT field of the SAME raw reading (dew point, not air temperature): it
+    // is untouched by a garbled `tempC` and stays ready — sharing an upstream call does not mean
+    // sharing the other widget's drift.
     expect(store.status("frost")?.state).toBe("ready");
     // The full finding — naming the provider and the contract it failed — reaches only the
     // server's own log (`onFinding`), never the client.
@@ -139,6 +145,32 @@ describe("split hydration: a weather-station board", () => {
     expect(full?.finding.message).not.toBe(pub?.message);
     expect(full?.finding.message).toContain("Kpi");
     expect(server.drifts[0]?.drift[0]?.contractKind).toBe("Kpi");
+  });
+
+  it("FrostRisk drifts on its OWN field going bad — even when CurrentReading's field is fine", async () => {
+    const { store, server } = boot({
+      prepare: (t) => {
+        t.garbleFrost = true;
+      },
+    });
+    await settle();
+    // CurrentReading only reads `tempC`, which this scenario never touches: it stays ready.
+    expect(store.status("current")?.state).toBe("ready");
+    expect(store.value("current")).toEqual({ value: 9.25, unit: "°C", label: "Now" });
+    // FrostRisk reads the garbled `dewPointC`: its OWN Kpi contract fails, exactly like
+    // CurrentReading's does when its own field is bad — the reshaper never quietly answered
+    // "no risk" for a reading it could not actually read.
+    expect(store.status("frost")?.state).toBe("stale");
+    const pub = store.status("frost")?.finding;
+    expect(pub?.code).toBe("output-contract-drift");
+    const wire = JSON.stringify(pub);
+    for (const secret of ["stations.current", "sha256", "n/a", "dewPointC"])
+      expect(wire).not.toContain(secret);
+    const full = server.internalFindings.find(
+      (f) => f.handle === "frost" && f.finding.code === "output-contract-drift"
+    );
+    expect(full?.finding.message).not.toBe(pub?.message);
+    expect(full?.finding.message).toContain("Kpi");
   });
 
   it("an input-schema drift: the head goes stale, a read-only viewer proceeds — both are recorded", async () => {

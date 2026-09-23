@@ -21,8 +21,10 @@ interface McpCall {
 
 export class WeatherTools implements TransientInvoker {
   readonly calls: Array<{ toolName: string; args: Record<string, unknown> }> = [];
-  /** Make `stations.current` answer with a temperature the Kpi widget cannot draw. */
+  /** Garble `stations.current`'s `tempC` field only — CurrentReading's Kpi cannot draw it. */
   garbleCurrent = false;
+  /** Garble `stations.current`'s `dewPointC` field only — FrostRisk's Kpi cannot draw it. */
+  garbleFrost = false;
   private readonly pins = new Map<string, string>(Object.entries(TOOL_PINS));
 
   /** The tool server changed a tool's input schema: its pin moves. */
@@ -48,9 +50,13 @@ export class WeatherTools implements TransientInvoker {
   private answer(call: McpCall): unknown {
     const station = String(call.args.station);
     if (call.toolName === "stations.current")
+      // ONE reading, two fields: CurrentReading and FrostRisk both bind this exact step (see
+      // experience.ts) but each reshapes a DIFFERENT field of the one raw response, so garbling
+      // one field never silently answers for the other.
       return {
         station,
         tempC: this.garbleCurrent ? "n/a" : station === "harbour" ? 14.5 : 9.25,
+        dewPointC: this.garbleFrost ? "n/a" : station === "harbour" ? 9.0 : 1.5,
         observedAt: "2026-09-23T11:55:00.000Z",
       };
     if (call.toolName === "stations.series")

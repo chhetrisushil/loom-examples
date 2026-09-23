@@ -21,8 +21,9 @@ export const catalog: SemanticCatalog = defineSemanticCatalog({
       binding: "required",
       surfaces: { web: KPI },
     },
-    // Shares the SAME upstream reading as CurrentReading (see experience.ts): a second widget
-    // reading the temperature a different way, not a second call to the station.
+    // Shares the SAME upstream call as CurrentReading (see experience.ts): a second widget
+    // reading a DIFFERENT field of the one response (dew point, not air temperature) — not a
+    // second call to the station.
     { name: "FrostRisk", version: "1.0.0", props: [], binding: "required", surfaces: { web: KPI } },
     {
       name: "TemperatureTrend",

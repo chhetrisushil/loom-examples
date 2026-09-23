@@ -29,7 +29,9 @@ import type { WeatherTools } from "./tools";
 /**
  * DEMO ONLY: a fixed key baked into source so the example is deterministic and needs no secret
  * store. In production this key lives in server config or a secret manager — never in source —
- * and is rotated like any other credential (a rotation re-asks every client's inventory once).
+ * and is rotated like any other credential. A rotation (or any provider edit — a new tool, new
+ * arguments, a new reshaper) changes every handle's revision: a new inventory carries the new
+ * revisions, and `SplitHydrationController.load` on it re-asks each changed handle exactly once.
  */
 const DEMO_REVISION_KEY = "split-hydration-example-demo-key-do-not-use-in-production";
 
