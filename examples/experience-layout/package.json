@@ -1,0 +1,27 @@
+{
+  "name": "@loom/experience-layout",
+  "version": "0.0.1",
+  "description": "loom-ui placement and section titles for anyone: a branch-library board with two titled sections — one placing every node on explicit grid lines (a two-row notice beside stacked counts), one flowing — compiled for web (Lit) and terminal from one Experience, and a revision that moves widgets by restyling them in place.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --build",
+    "test": "vitest run",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@loom-ui/core": "*",
+    "@loom-ui/hydration": "*",
+    "@loom-ui/renderer-lit": "*",
+    "@loom-ui/renderer-terminal": "*",
+    "@loom/blueprint-runtime": "*",
+    "@loom/projection-runtime": "*",
+    "lit": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "happy-dom": "catalog:",
+    "typescript": "^5.6.3",
+    "vitest": "catalog:"
+  }
+}
