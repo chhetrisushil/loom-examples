@@ -90,10 +90,8 @@ export const THROUGHPUT: TimeSeriesValue = {
       })),
     },
     {
-      // A different unit on a different scale: its own axis, on the right. Kept short: the
-      // terminal pads/cuts a series label (with its " (R)" marker) to 12 characters, so a longer
-      // label would lose the marker there.
-      label: "Latency",
+      // A different unit on a different scale: its own axis, on the right.
+      label: "Pick latency",
       unit: "s",
       format: { semanticType: "decimal", maximumFractionDigits: 1 },
       axis: "right",
