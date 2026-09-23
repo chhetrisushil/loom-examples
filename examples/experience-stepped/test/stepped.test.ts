@@ -1,7 +1,14 @@
 import type { DomContainerRenderer } from "@loom-ui/renderer-lit/dom";
 import { RendererRegistry } from "@loom/blueprint-runtime";
 import { describe, expect, it } from "vitest";
-import { STEPS, appendStepOp, createApp, detailNodeId, highlightNodeId } from "../src/app";
+import {
+  STEPS,
+  appendStepOp,
+  createApp,
+  detailNodeId,
+  highlightNodeId,
+  kpiValueFor,
+} from "../src/app";
 
 // The container-renderer seam (Blueprint IR 2.2.0 `Layout.role`, loom ADR 0099), exercised by
 // this app's OWN `stepped` renderer (`src/steppedContainer.ts`), registered on
@@ -42,8 +49,13 @@ const stepSections = (host: HTMLElement): HTMLElement[] =>
   [...onboardingBody(host).children] as HTMLElement[];
 
 const BASE_STEPS = [STEPS.account, STEPS.payment, STEPS.pickup];
-const allWidgetIds = (): string[] =>
-  BASE_STEPS.flatMap((s) => [detailNodeId(s), highlightNodeId(s)]).sort();
+// `RecomposeReport.remounted`'s order is DOCUMENT order, not incidental: `remountedOf`'s own
+// TSDoc (loom-ui `packages/renderer-lit/src/dom/reconcile.ts`) says "Order is `next`'s DOCUMENT
+// order (`blueprintNodeIds` is pre-order)", and loom-ui's own `containers.test.ts` pins exactly
+// this literal order for its own onboarding fixture. So this is the literal expected order for
+// our tree (account → payment → pickup, each Detail before its Highlight), not a sorted set.
+const allWidgetIdsInDocumentOrder = (): string[] =>
+  BASE_STEPS.flatMap((s) => [detailNodeId(s), highlightNodeId(s)]);
 
 describe("paging: exactly one step shown at a time, the rest hidden accessibly", () => {
   it("shows step 1 only; Next/Back move the current step and update the chrome", () => {
@@ -93,11 +105,11 @@ describe("setRole toggles the container between chrome and plain", () => {
   it("setRole(null) falls back to plain — every step visible, chrome gone, widgets remounted; setRole('stepped') brings it back", () => {
     const app = createApp();
     try {
-      const ids = allWidgetIds();
+      const ids = allWidgetIdsInDocumentOrder();
 
       const removed = app.land([{ type: "setRole", nodeId: "onboarding", role: null }]);
       expect(removed.findings).toEqual([]);
-      expect([...removed.remounted].sort()).toEqual(ids);
+      expect(removed.remounted).toEqual(ids);
       expect(roleHost(app.host)).toBeNull();
       expect(nav(app.host)).toBeNull();
       const plain = stepSections(app.host);
@@ -110,7 +122,7 @@ describe("setRole toggles the container between chrome and plain", () => {
 
       const added = app.land([{ type: "setRole", nodeId: "onboarding", role: "stepped" }]);
       expect(added.findings).toEqual([]);
-      expect([...added.remounted].sort()).toEqual(ids);
+      expect(added.remounted).toEqual(ids);
       expect(roleHost(app.host)).not.toBeNull();
       expect(nav(app.host)).not.toBeNull();
       expect(stepSections(app.host).map((s) => s.hidden)).toEqual([false, true, true]);
@@ -187,6 +199,53 @@ describe("appending a step via ops", () => {
       expect(stepSections(app.host).length).toBe(4);
       expect(position(app.host).textContent).toBe("Step 1 of 4: Account"); // the current step is kept
       expect(dots(app.host)).toEqual(["Account", "Payment", "Pickup", "Confirm"]);
+    } finally {
+      app.dispose();
+    }
+  });
+});
+
+describe("a hidden step's widget still receives hydration updates", () => {
+  it("a projection update to a step behind the current one lands on the live element while it stays hidden", async () => {
+    const app = createApp();
+    try {
+      // Step 1 ("account") is current; "pickup" (step 3, the last section) is hidden.
+      const pickupHandle = highlightNodeId(STEPS.pickup);
+      const pickupEl = widgetEl(app.host, pickupHandle);
+      expect(pickupEl).not.toBeNull();
+      const pickupSection = stepSections(app.host)[2] as HTMLElement;
+      expect(pickupSection.hidden).toBe(true);
+      expect(pickupSection.getAttribute("inert")).toBe("");
+      expect(pickupSection.getAttribute("aria-hidden")).toBe("true");
+
+      app.store.setValue(
+        pickupHandle,
+        { ...kpiValueFor(STEPS.pickup), value: 9 },
+        { state: "ready" }
+      );
+      const lu = pickupEl?.querySelector("lu-kpi") as
+        | (HTMLElement & { updateComplete: Promise<unknown> })
+        | null;
+      expect(lu).not.toBeNull();
+      await lu?.updateComplete;
+
+      // Still the SAME element — a hidden step is never torn down or remounted for this.
+      expect(widgetEl(app.host, pickupHandle)).toBe(pickupEl);
+      expect(lu?.shadowRoot?.textContent).toContain("9");
+      // Still hidden accessibly: nothing paged there, so nothing un-hides it.
+      expect(pickupSection.hidden).toBe(true);
+      expect(pickupSection.getAttribute("inert")).toBe("");
+      expect(pickupSection.getAttribute("aria-hidden")).toBe("true");
+
+      // Paging there shows the value that was already delivered while it was hidden.
+      nextBtn(app.host).click();
+      nextBtn(app.host).click();
+      expect(position(app.host).textContent).toBe("Step 3 of 3: Pickup");
+      expect(pickupSection.hidden).toBe(false);
+      expect(pickupSection.hasAttribute("inert")).toBe(false);
+      expect(pickupSection.hasAttribute("aria-hidden")).toBe(false);
+      expect(widgetEl(app.host, pickupHandle)).toBe(pickupEl);
+      expect(lu?.shadowRoot?.textContent).toContain("9");
     } finally {
       app.dispose();
     }
