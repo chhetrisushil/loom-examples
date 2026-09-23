@@ -34,6 +34,7 @@ pnpm --filter @loom/db-observability start   # run one end-to-end
 | `db-observability` | Transient hydration → durable repair (GenUI dashboards) |
 | `blueprint-status` | Blueprint IR 2.0.0 on plain loom: widgets bind a value AND a status channel in the app's own projection, spans ride in grid cells, a degraded widget carries `source`, and the app's value contract sits in the terminal renderer's `check` seam — the canonical status matrix walked from real projection state (ADR 0097) |
 | `experience-recompose` | loom-ui slice 6a: an agent revision lands while the user types — `renderBlueprintDom`'s `handle.update` reconciles the revised Blueprint by widget id, the focused `<textarea>` keeps text/caret/focus, the kept metric keeps its Lit element and is relabelled through `DomWidgetHandle.patch`, the report is loom's identity report plus `remounted`/`rebound`/`findings` |
+| `experience-kinds` | loom-ui's framework kinds in an unrelated domain (a warehouse board): `Kpi` with a change badge, a columnar `Table` with per-column formats, a `StatusCard` with a polite live region, a localized `Note` via `textProps`, and a dual-axis `TimeSeries` — one Experience compiled for web (Lit, viewer's locale) and terminal (en-US) |
 | `incident-war-room` | Git-style execution branching (fork / simulate / promote) |
 | `schema-migration-planner` | Branching + live per-branch progress |
 | `agent-swarm` | Dynamic agent swarm wired from user intent |
