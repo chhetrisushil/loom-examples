@@ -1,0 +1,21 @@
+{
+  "name": "@loom/experience-board-edit",
+  "version": "0.0.1",
+  "description": "loom-ui operations and planner accounting on a small greenhouse board: a user resizes a widget with setPlacement, the app titles the board with setTitle, a provider cannot be retired while a widget binds it (and never from a widget), the reference planner retires the provider its own removal orphaned, and the planner's token usage is served from the recorded decision on replay. Headless.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --build",
+    "test": "vitest run",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@loom-ui/core": "*",
+    "@loom-ui/planner": "*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "^5.6.3",
+    "vitest": "catalog:"
+  }
+}
