@@ -1611,6 +1611,34 @@ importers:
         specifier: 'catalog:'
         version: 2.1.9(@types/node@22.20.1)(happy-dom@20.14.5)(jsdom@25.0.1)(sass@1.90.0)
 
+  examples/split-hydration:
+    dependencies:
+      '@loom-ui/core':
+        specifier: link:../../../loom-ui/packages/core
+        version: link:../../../loom-ui/packages/core
+      '@loom-ui/hydration':
+        specifier: link:../../../loom-ui/packages/hydration
+        version: link:../../../loom-ui/packages/hydration
+      '@loom/core':
+        specifier: link:../../../loom/packages/core
+        version: link:../../../loom/packages/core
+      '@loom/plugin-mcp':
+        specifier: link:../../../loom/plugins/mcp
+        version: link:../../../loom/plugins/mcp
+      '@loom/projection-runtime':
+        specifier: link:../../../loom/packages/projection-runtime
+        version: link:../../../loom/packages/projection-runtime
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.1
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 2.1.9(@types/node@22.20.1)(happy-dom@20.14.5)(jsdom@25.0.1)(sass@1.90.0)
+
 packages:
 
   '@ampproject/remapping@2.3.0':
