@@ -1,9 +1,11 @@
+import { compile } from "@loom-ui/core";
+import { HYDRATION_PROJECTION_ID, HYDRATION_PROJECTION_VERSION } from "@loom-ui/hydration";
 import { currentLocale, setLocale } from "@loom-ui/renderer-lit";
 import { frameworkKindContracts, litRegistry, renderBlueprintDom } from "@loom-ui/renderer-lit/dom";
 import { renderExperience, terminalRegistry } from "@loom-ui/renderer-terminal";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { PICK_LIST, TITLES, createApp } from "../src/app";
-import { KIND_CONTRACTS } from "../src/catalog";
+import { KIND_CONTRACTS, catalog } from "../src/catalog";
 
 type LitEl = HTMLElement & { updateComplete: Promise<unknown> };
 
@@ -34,6 +36,19 @@ describe("experience-kinds: a warehouse board on loom-ui's framework kinds", () 
     const app = createApp();
     expect(app.findings.web).toEqual([]);
     expect(app.findings.terminal).toEqual([]);
+  });
+
+  it("has a Lit renderer for every framework kind the web compile resolves to", () => {
+    const app = createApp();
+    const r = compile(app.experience, {
+      surface: "web",
+      catalog,
+      hydrationProjectionId: HYDRATION_PROJECTION_ID,
+      hydrationProjectionVersion: HYDRATION_PROJECTION_VERSION,
+      registry: litRegistry,
+    });
+    expect(r.findings.filter((f) => f.code === "renderer-coverage")).toEqual([]);
+    expect(r.ok).toBe(true);
   });
 
   it("mounts every kind once through litRegistry, each drawing its own contract", async () => {
@@ -96,7 +111,11 @@ describe("experience-kinds: a warehouse board on loom-ui's framework kinds", () 
     const frame = renderExperience(app.terminal, app.store, { registry: terminalRegistry() });
     for (const title of Object.values(TITLES)) expect(frame).toContain(title);
     expect(frame).toContain("▲ 4.2%");
-    expect(frame).toContain("(R)");
+    // The right-axis row keeps its marker even when the label fills the 12-character label
+    // column: loom-ui (e0ed543) cuts the LABEL to make room, so "Pick latency" (exactly 12
+    // characters) prints "Pick lat (R)". Before that fix the marker was the part cut off and the
+    // row read "Pick latency" with no marker, which this assertion refuses.
+    expect(frame).toMatch(/^\s+Pick lat \(R\) /m);
     // The terminal prints numbers exactly as the web does for en-US, whatever the viewer's locale.
     expect(frame).toContain("€1,234.50");
     expect(frame).toContain("Keep aisle 7 clear");
