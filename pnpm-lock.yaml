@@ -1199,6 +1199,43 @@ importers:
         specifier: 'catalog:'
         version: 2.1.9(@types/node@22.20.1)(happy-dom@20.14.5)(jsdom@25.0.1)(sass@1.90.0)
 
+  examples/experience-stepped:
+    dependencies:
+      '@loom-ui/core':
+        specifier: link:../../../loom-ui/packages/core
+        version: link:../../../loom-ui/packages/core
+      '@loom-ui/hydration':
+        specifier: link:../../../loom-ui/packages/hydration
+        version: link:../../../loom-ui/packages/hydration
+      '@loom-ui/renderer-lit':
+        specifier: link:../../../loom-ui/packages/renderer-lit
+        version: link:../../../loom-ui/packages/renderer-lit
+      '@loom-ui/renderer-terminal':
+        specifier: link:../../../loom-ui/packages/renderer-terminal
+        version: link:../../../loom-ui/packages/renderer-terminal
+      '@loom/blueprint-runtime':
+        specifier: link:../../../loom/packages/blueprint-runtime
+        version: link:../../../loom/packages/blueprint-runtime
+      '@loom/projection-runtime':
+        specifier: link:../../../loom/packages/projection-runtime
+        version: link:../../../loom/packages/projection-runtime
+      lit:
+        specifier: 'catalog:'
+        version: 3.3.3
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.1
+      happy-dom:
+        specifier: 'catalog:'
+        version: 20.14.5
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 2.1.9(@types/node@22.20.1)(happy-dom@20.14.5)(jsdom@25.0.1)(sass@1.90.0)
+
   examples/incident-war-room:
     dependencies:
       '@loom/agent':
