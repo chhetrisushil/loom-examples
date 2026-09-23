@@ -13,6 +13,13 @@ import { InMemoryProjectionRuntime } from "@loom/projection-runtime";
 // calls, one per endpoint). `loadMany` is REQUIRED by `SplitHydrationController` — not an
 // optimization it can fall back from — because the scheduler starts every P0 widget of one bind
 // (and every P1 of one batch window) as a GROUP, and a group leaves as one `loadMany` round trip.
+//
+// Both methods are handed the scheduler's `AbortSignal` and thread it straight through to the
+// transport: a real `send`/`sendBatch` passes it to `fetch`'s own `signal` option, so an aborted
+// group (every one of its callers gone — a superseded load, a disposed controller) cancels the
+// in-flight request instead of leaving it to finish unread. This demo's `send`/`sendBatch` are
+// synchronous simulations that never abort, so they ignore it — but the signature carries it so a
+// production transport can honor it without changing `JsonLoader` itself.
 
 export class JsonLoader implements HandleLoader {
   readonly sent: HandleLoadRequest[] = [];
@@ -20,26 +27,29 @@ export class JsonLoader implements HandleLoader {
   readonly batches: number[] = [];
 
   constructor(
-    private readonly send: (body: string) => Promise<string>,
-    private readonly sendBatch: (body: string) => Promise<string>
+    private readonly send: (body: string, signal: AbortSignal) => Promise<string>,
+    private readonly sendBatch: (body: string, signal: AbortSignal) => Promise<string>
   ) {}
 
-  async load(request: HandleLoadRequest): Promise<HandleLoadResult> {
+  async load(request: HandleLoadRequest, signal: AbortSignal): Promise<HandleLoadResult> {
     this.sent.push(request);
-    return JSON.parse(await this.send(JSON.stringify(request))) as HandleLoadResult;
+    return JSON.parse(await this.send(JSON.stringify(request), signal)) as HandleLoadResult;
   }
 
-  async loadMany(requests: readonly HandleLoadRequest[]): Promise<readonly HandleLoadResult[]> {
+  async loadMany(
+    requests: readonly HandleLoadRequest[],
+    signal: AbortSignal
+  ): Promise<readonly HandleLoadResult[]> {
     this.sent.push(...requests);
     this.batches.push(requests.length);
-    return JSON.parse(await this.sendBatch(JSON.stringify(requests))) as HandleLoadResult[];
+    return JSON.parse(await this.sendBatch(JSON.stringify(requests), signal)) as HandleLoadResult[];
   }
 }
 
 export function openBoard(
   inventory: HandleInventory,
-  send: (body: string) => Promise<string>,
-  sendBatch: (body: string) => Promise<string>
+  send: (body: string, signal: AbortSignal) => Promise<string>,
+  sendBatch: (body: string, signal: AbortSignal) => Promise<string>
 ) {
   const loader = new JsonLoader(send, sendBatch);
   const store = new HydrationStore(new InMemoryProjectionRuntime(), {

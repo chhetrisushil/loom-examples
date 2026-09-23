@@ -6,10 +6,13 @@ import { defineReshapers } from "@loom-ui/hydration";
 // then checked against the widget kind's value contract (`outputCheck: "contract"`).
 //
 // `current-kpi` and `frost-kpi` both read the SAME raw `stations.current` reading (see
-// experience.ts): two widgets, one upstream call. They needn't even agree on how strict they are
-// about it — `current-kpi` reports the reading as-is (and so drifts if it cannot be drawn),
-// `frost-kpi` only asks whether it is a number below freezing risk, so a garbled reading fails one
-// widget's contract without necessarily failing the other's.
+// experience.ts) — two widgets, one upstream call — but each reads a DIFFERENT field of it:
+// `current-kpi` the air temperature (`tempC`), `frost-kpi` the dew point (`dewPointC`). A garbled
+// `tempC` therefore fails only CurrentReading's contract, and a garbled `dewPointC` only
+// FrostRisk's — sharing a call is not sharing a fate. Neither reshaper ever COERCES a bad
+// reading into a confident answer: a non-number is passed straight through as `value`, so it
+// fails the Kpi contract exactly like a garbled `tempC` does, rather than quietly defaulting to
+// "no risk".
 
 export const reshapers = defineReshapers({
   "current-kpi": (raw): KpiValue => {
@@ -17,9 +20,12 @@ export const reshapers = defineReshapers({
     return { value: r.tempC, unit: "°C", label: "Now" };
   },
   "frost-kpi": (raw): KpiValue => {
-    const r = raw as { tempC: unknown };
-    const risk = typeof r.tempC === "number" && r.tempC < 10 ? 1 : 0;
-    return { value: risk, unit: "risk", label: "Frost risk" };
+    const r = raw as { dewPointC: unknown };
+    // Frost risk when the dew point is at or below ~2°C. A non-number dew point is never
+    // bucketed into a risk flag (that would silently answer "no risk" for bad data) — it is
+    // forwarded as-is, so the Kpi contract below catches it.
+    const value = typeof r.dewPointC === "number" ? (r.dewPointC <= 2 ? 1 : 0) : r.dewPointC;
+    return { value: value as number, unit: "risk", label: "Frost risk" };
   },
   "series-trend": (raw): TimeSeriesValue => {
     const r = raw as { samples: Array<{ at: string; tempC: number }> };
