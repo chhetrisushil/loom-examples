@@ -1,0 +1,27 @@
+{
+  "name": "@loom/experience-kinds",
+  "version": "0.0.1",
+  "description": "loom-ui framework kinds for anyone: a small warehouse-operations board — a stock Kpi with a change badge, a columnar pick-list Table with per-column formats, a loading-dock StatusCard, a localized shift Note and a dual-axis orders/latency TimeSeries — compiled for web (Lit) and terminal from one Experience.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --build",
+    "test": "vitest run",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@loom-ui/core": "*",
+    "@loom-ui/hydration": "*",
+    "@loom-ui/renderer-lit": "*",
+    "@loom-ui/renderer-terminal": "*",
+    "@loom/blueprint-runtime": "*",
+    "@loom/projection-runtime": "*",
+    "lit": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "happy-dom": "catalog:",
+    "typescript": "^5.6.3",
+    "vitest": "catalog:"
+  }
+}
