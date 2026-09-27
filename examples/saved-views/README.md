@@ -56,7 +56,13 @@ Four more properties, each an assertion in the suite:
   from a return value.
 - **The sweep reclaims the draft and keeps the promoted view.** `sweepUnpinnedContent` pins on
   `BLUEPRINT_COMPOSED`, so promotion is literally what makes an artifact outlive content GC —
-  the failure that does not show up until production.
+  the failure that does not show up until production. Reclaiming the draft at all depends on
+  *how* it is cited: [ADR 0055 D4](https://github.com/chhetrisushil/loom/blob/main/docs/adr/0055-k10-6-pin-seam-content-gc.md)
+  made a **bare** ref load-bearing forever, regardless of which event cites it, because the
+  sweep cannot tell an app's own bare citation from an ADR 0046 externalized field a live
+  execution still resolves. Only a ref reached exclusively inside a claim-check envelope is
+  still TTL-reclaimable — so `VIEW_DRAFTED` cites its ref that way, and `BLUEPRINT_COMPOSED`
+  doesn't need to (it is pinned by event kind either way).
 
 ## What is deliberately absent
 

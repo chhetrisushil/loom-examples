@@ -13,6 +13,7 @@
     "@loom/app": "*",
     "@loom/blueprint-runtime": "*",
     "@loom/core": "*",
+    "@loom/middleware": "*",
     "@loom/plugin-content": "*",
     "@loom/projection-runtime": "*",
     "@loom/workflow-runtime": "*",
