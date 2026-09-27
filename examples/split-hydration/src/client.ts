@@ -5,7 +5,7 @@ import {
   type HandleLoader,
   HydrationStore,
   SplitHydrationController,
-} from "@loom-ui/hydration";
+} from "@loom-ui/hydration/client";
 import { InMemoryProjectionRuntime } from "@loom/projection-runtime";
 
 // The browser side. It knows handles, priorities and param NAMES — nothing else. The transport is
