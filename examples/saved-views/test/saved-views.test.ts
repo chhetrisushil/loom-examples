@@ -192,6 +192,11 @@ describe("pinning — promotion is what survives the sweep", () => {
     const drafted = draftLog.find((e) => e.eventType === VIEW_DRAFTED);
     expect(isClaimCheck((drafted?.payload as { ref: unknown } | undefined)?.ref)).toBe(true);
 
+    // A TTL of 0 means "untouched since strictly before the sweep started". Since ContentStore SPI
+    // 1.3.0 the sweep only erases a blob whose touch time is older than that cutoff (ADR 0055
+    // D5), so a draft put in the same millisecond is correctly kept. Let the clock move past it.
+    await new Promise((resolve) => setTimeout(resolve, 5));
+
     const report = await sweepUnpinnedContent({
       eventStores: [app.app.stores.eventStore],
       contentStore: content,
