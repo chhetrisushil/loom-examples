@@ -21,12 +21,18 @@ export interface SentinelWorld {
   contentStore: InMemoryContentStore;
 }
 
-export function newWorld(): SentinelWorld {
+/**
+ * @param now The simulation clock. The content store stamps its touch times with it (ContentStore
+ * SPI 1.3.0, ADR 0055 D5): the content sweep's race guard compares touch times against a cutoff
+ * on the STORE's clock, so a store on the wall clock inside a simulated year would look freshly
+ * touched to every sweep, and nothing the simulation aged would ever be reclaimed.
+ */
+export function newWorld(now?: () => number): SentinelWorld {
   return {
     eventStore: new InMemoryAsyncEventStore(),
     snapshotStore: new InMemoryAsyncSnapshotStore(),
     stateStore: new InMemoryDurableStateStore(),
-    contentStore: new InMemoryContentStore(),
+    contentStore: new InMemoryContentStore(now !== undefined ? { now } : {}),
   };
 }
 

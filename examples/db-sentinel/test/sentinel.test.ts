@@ -31,9 +31,9 @@ interface YearRun {
 }
 
 async function runYear(): Promise<YearRun> {
-  const world = newWorld();
   const clock = virtualClock(SIM_START); // event timestamps carry SIMULATED time
   const now = (): number => clock.now();
+  const world = newWorld(now); // ...and so do the content store's touch times
   let deploy = deploySentinel(world, 1, { outages: [OUTAGE] }, now);
   const ids: string[] = [];
   let expectedFindings = 0;
