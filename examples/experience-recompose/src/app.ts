@@ -2,6 +2,7 @@ import {
   type Experience,
   type ExperienceNode,
   type Intent,
+  type LocalizedText,
   type Operation,
   compile,
   genesis,
@@ -103,6 +104,22 @@ export interface App {
   compose(): Promise<void>;
   revise(text: string): Promise<RecomposeReport>;
   retype(nodeId: string, type: string, props: Record<string, unknown>): RecomposeReport;
+  /**
+   * G6 setup: wrap an existing top-level node into a NEW titled container carrying `sectionId` —
+   * the node keeps its own id, so once wrapped, a sibling inserted around it is a pure container
+   * op that never reaches inside (`insertSectionBefore`). This call itself DOES remount the node
+   * once (it moves to a new parent — README's own rule); it exists only to give G6 something id'd
+   * to insert above.
+   */
+  wrapInSection(nodeId: string, sectionId: string, title: LocalizedText): RecomposeReport;
+  /**
+   * G6 (Blueprint IR 2.4.0, loom ADR 0101 D2): insert a brand-new, titled sibling container
+   * directly BEFORE an existing one. Containers are keyed by their layout id (plus type and
+   * role) — not by ordinal — so `beforeId`'s id, type and role are untouched by this insert, and
+   * neither it nor anything inside it (a focused, typed-in control included) is remounted, even
+   * though its position among its siblings shifts.
+   */
+  insertSectionBefore(beforeId: string, sectionId: string, title: LocalizedText): RecomposeReport;
   /**
    * Bind `memo`'s Note directly to a live value (the planner never does this — see
    * `catalog.ts`'s comment on `Note`'s binding). Exercises `NoteInput.update`'s "write only when
@@ -252,6 +269,70 @@ export function createApp(opts: { patchable?: boolean } = {}): App {
           type: "insertNode",
           parentId: root.id,
           node: { ...current, type, typeVersion: entry.version, props },
+        },
+      ];
+      const a = replay(app.experience, ops);
+      if (!a.ok) throw new Error(a.finding.message);
+      return land(seal(a.value));
+    },
+    wrapInSection(nodeId, sectionId, title) {
+      const root = app.experience.root;
+      if (!isContainer(root)) throw new Error("root is not a container");
+      const current = root.children.find((c) => c.id === nodeId);
+      if (current === undefined) throw new Error(`no node "${nodeId}"`);
+      const ops: Operation[] = [
+        { type: "removeNode", nodeId },
+        {
+          type: "insertNode",
+          parentId: root.id,
+          node: {
+            id: sectionId,
+            order: current.order,
+            kind: "container",
+            direction: "column",
+            span: current.span,
+            title,
+            children: [{ ...current, order: orderKeyBetween(null, null) }],
+          },
+        },
+      ];
+      const a = replay(app.experience, ops);
+      if (!a.ok) throw new Error(a.finding.message);
+      return land(seal(a.value));
+    },
+    insertSectionBefore(beforeId, sectionId, title) {
+      const root = app.experience.root;
+      if (!isContainer(root)) throw new Error("root is not a container");
+      const siblings = [...root.children].sort(byOrder);
+      const idx = siblings.findIndex((c) => c.id === beforeId);
+      if (idx < 0) throw new Error(`no node "${beforeId}"`);
+      const before = siblings[idx] as ExperienceNode;
+      const prev = siblings[idx - 1];
+      const order = orderKeyBetween(prev?.order ?? null, before.order);
+      const ops: Operation[] = [
+        {
+          type: "insertNode",
+          parentId: root.id,
+          node: {
+            id: sectionId,
+            order,
+            kind: "container",
+            direction: "column",
+            span: 12,
+            title,
+            children: [
+              {
+                id: `${sectionId}-alert`,
+                order: orderKeyBetween(null, null),
+                kind: "semantic",
+                type: "Alert",
+                typeVersion: "1.0.0",
+                span: 12,
+                label: title,
+                props: { tone: "info" },
+              },
+            ],
+          },
         },
       ];
       const a = replay(app.experience, ops);
