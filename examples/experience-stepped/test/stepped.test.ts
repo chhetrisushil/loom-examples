@@ -7,6 +7,7 @@ import {
   createApp,
   detailNodeId,
   highlightNodeId,
+  insertStepBeforeOp,
   kpiValueFor,
 } from "../src/app";
 
@@ -205,6 +206,40 @@ describe("appending a step via ops", () => {
   });
 });
 
+describe("inserting a step MID-LIST via ops (gap G6)", () => {
+  it("remounts none of the existing steps' widgets — containers are kept by ID, never by ordinal (Blueprint IR 2.4.0, loom ADR 0101)", () => {
+    const app = createApp();
+    try {
+      const before = new Map(
+        BASE_STEPS.flatMap((s) => [
+          [detailNodeId(s), widgetEl(app.host, detailNodeId(s))] as const,
+          [highlightNodeId(s), widgetEl(app.host, highlightNodeId(s))] as const,
+        ])
+      );
+      const paymentSection = app.host.querySelector("section[aria-label='Payment']") as HTMLElement;
+      expect(paymentSection).not.toBeNull();
+
+      // "insurance" lands BETWEEN "account" and "payment" — every step from "payment" on shifts
+      // one ordinal to the right.
+      const ops = insertStepBeforeOp(app.experience, STEPS.confirm, "payment");
+      const report = app.land(ops);
+
+      expect(report.remounted).toEqual([]);
+      expect(report.findings).toEqual([]);
+      for (const [id, el] of before) expect(widgetEl(app.host, id)).toBe(el);
+      // The SAME "Payment" section element — kept by id, not recreated despite moving right.
+      expect(app.host.querySelector("section[aria-label='Payment']")).toBe(paymentSection);
+
+      expect(stepSections(app.host).length).toBe(4);
+      expect(dots(app.host)).toEqual(["Account", "Confirm", "Payment", "Pickup"]);
+      expect(widgetEl(app.host, detailNodeId(STEPS.confirm))).not.toBeNull();
+      expect(widgetEl(app.host, highlightNodeId(STEPS.confirm))).not.toBeNull();
+    } finally {
+      app.dispose();
+    }
+  });
+});
+
 describe("a hidden step's widget still receives hydration updates", () => {
   it("a projection update to a step behind the current one lands on the live element while it stays hidden", async () => {
     const app = createApp();
@@ -300,7 +335,9 @@ describe("a container renderer that throws", () => {
       expect(report.findings).toEqual([
         {
           code: "patch-failed",
-          nodeId: "",
+          // Blueprint IR 2.4.0 (loom ADR 0101): every container's layout now carries its node id,
+          // "onboarding" included — no longer "" the way an id-less layout used to report here.
+          nodeId: "onboarding",
           message: expect.stringMatching(/"stepped".*chrome update exploded/),
         },
       ]);

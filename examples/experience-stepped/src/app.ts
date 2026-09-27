@@ -1,5 +1,6 @@
 import {
   type Experience,
+  type ExperienceNode,
   type KpiValue,
   type LocalizedText,
   type Operation,
@@ -207,10 +208,8 @@ function initialOperations(): Operation[] {
 }
 
 /**
- * Appends `step` as the LAST step under the root container — the ordinal every existing step
- * container already holds is unchanged, so nothing under them remounts (a MID-list insert would
- * shift later containers' ordinals and remount their widgets — a known limitation, gap G6 — this
- * app only ever appends). Pure: reads `experience`, returns the op; does not mutate anything.
+ * Appends `step` as the LAST step under the root container. Pure: reads `experience`, returns the
+ * op; does not mutate anything.
  */
 export function appendStepOp(experience: Experience, step: StepContent): Operation[] {
   const parent = findNode(experience.root, ROOT_CONTAINER_ID);
@@ -219,6 +218,37 @@ export function appendStepOp(experience: Experience, step: StepContent): Operati
   }
   const handle = highlightNodeId(step);
   const order = orderKeyAfterAll(parent.children);
+  return [
+    { type: "remapProvider", handle, spec: providerFor(handle) },
+    { type: "insertNode", parentId: ROOT_CONTAINER_ID, node: stepNode(step, order) },
+  ];
+}
+
+/**
+ * Inserts `step` as a NEW step directly BEFORE an existing one, named by id — a MID-list insert,
+ * shifting every later step's ORDINAL among its siblings. Under Blueprint IR 2.4.0 (loom ADR
+ * 0101) that shift remounts nothing: every step container carries its own node id, so a step
+ * container is kept by ID (plus type and role), never by its position among siblings — gap G6,
+ * closed. (Before 2.4.0 a hand-built, id-less layout fell back to keying by ordinal, and a
+ * mid-list insert there WOULD have remounted every later step's widgets — see the README's
+ * "Recomposing" section.) Pure: reads `experience`, returns the ops; does not mutate anything.
+ */
+export function insertStepBeforeOp(
+  experience: Experience,
+  step: StepContent,
+  beforeId: string
+): Operation[] {
+  const parent = findNode(experience.root, ROOT_CONTAINER_ID);
+  if (parent === undefined || !isContainer(parent)) {
+    throw new Error(`"${ROOT_CONTAINER_ID}" is missing or not a container`);
+  }
+  const siblings = [...parent.children].sort((a, b) => (a.order < b.order ? -1 : 1));
+  const idx = siblings.findIndex((c) => c.id === beforeId);
+  if (idx < 0) throw new Error(`no step "${beforeId}"`);
+  const before = siblings[idx] as ExperienceNode;
+  const prev = siblings[idx - 1];
+  const order = orderKeyBetween(prev?.order ?? null, before.order);
+  const handle = highlightNodeId(step);
   return [
     { type: "remapProvider", handle, spec: providerFor(handle) },
     { type: "insertNode", parentId: ROOT_CONTAINER_ID, node: stepNode(step, order) },

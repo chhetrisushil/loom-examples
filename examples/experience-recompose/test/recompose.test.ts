@@ -1,4 +1,10 @@
-import { type SemanticNode, findNode, loomCatalogFor } from "@loom-ui/core";
+import {
+  type SemanticNode,
+  findNode,
+  loomCatalogFor,
+  orderKeyBetween,
+  replay,
+} from "@loom-ui/core";
 import { renderBlueprintDom } from "@loom-ui/renderer-lit/dom";
 import { validateBlueprint } from "@loom/blueprint-runtime";
 import { describe, expect, it } from "vitest";
@@ -237,6 +243,65 @@ describe("experience-recompose — an agent revision lands while the user types"
     );
     expect(gridIds(app)).toEqual(["latency", "phase", "memo", "recent"]);
     expectFreshMountParity(app);
+    app.dispose();
+  });
+
+  it("G6: a NEW section inserted ABOVE the one holding a focused, typed-in note is never remounted — same element, value and focus kept; section ids and widget ids share one namespace but never collide", async () => {
+    const app = createApp();
+    await app.compose();
+
+    // Setup: wrap `memo` in its own titled section (Blueprint IR 2.4.0, loom ADR 0101 — every
+    // container's layout now carries its node id). This one call DOES remount `memo` once, since
+    // it moves to a new parent; G6 is about what happens AFTER that, not this step.
+    app.wrapInSection("memo", "notes", { key: "board.notes.title", fallback: "Notes" });
+    await app.settle();
+    const notesSection = app.host.querySelector("section[aria-label='Notes']") as HTMLElement;
+    expect(notesSection).not.toBeNull();
+
+    const ta = note(app);
+    typeInto(ta);
+
+    const r = app.insertSectionBefore("notes", "urgent", {
+      key: "board.urgent.title",
+      fallback: "Urgent",
+    });
+
+    expect(r.remounted).toEqual([]);
+    expect(r.findings).toEqual([]);
+    // The SAME container element — kept by id, type and role, not re-created despite a new
+    // sibling landing right above it.
+    expect(app.host.querySelector("section[aria-label='Notes']")).toBe(notesSection);
+    expectUntouched(app, ta);
+
+    const urgentSection = app.host.querySelector("section[aria-label='Urgent']") as HTMLElement;
+    expect(urgentSection).not.toBeNull();
+    // Really ABOVE it: "Urgent" precedes "Notes" in document order.
+    expect(
+      urgentSection.compareDocumentPosition(notesSection) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+
+    expectFreshMountParity(app);
+
+    // Container ids and widget ids share ONE namespace (loom ADR 0101 D2) — `insertNode` refuses
+    // a collision with a WIDGET's id exactly as it would with another container's, proving the
+    // two are never allowed to be mistaken for each other.
+    const collision = replay(app.experience, [
+      {
+        type: "insertNode",
+        parentId: app.experience.root.id,
+        node: {
+          id: "memo", // already a widget id
+          order: orderKeyBetween(null, null),
+          kind: "container",
+          direction: "column",
+          span: 12,
+          children: [],
+        },
+      },
+    ]);
+    expect(collision.ok).toBe(false);
+    expect(!collision.ok && collision.finding.code).toBe("duplicate-node-id");
+
     app.dispose();
   });
 
