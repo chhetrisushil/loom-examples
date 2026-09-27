@@ -21,6 +21,7 @@ import {
   HYDRATION_PROJECTION_VERSION,
   HydrationStore,
 } from "@loom-ui/hydration";
+import { type DomRenderHandle, litRegistry, renderBlueprintDom } from "@loom-ui/renderer-lit/dom";
 import type { Blueprint } from "@loom/blueprint-runtime";
 import { InMemoryProjectionRuntime } from "@loom/projection-runtime";
 import { catalog } from "./catalog";
@@ -221,6 +222,50 @@ export function createApp(options: { resolveLabel?: (l: LocalizedText) => string
     store.setValue(handle, value, { state: "ready" });
   }
   return { experience, web, terminal, findings: { web: [], terminal: [] }, runtime, store };
+}
+
+export interface Page {
+  /** The page's own element: the host's heading, then the mount region. */
+  readonly page: HTMLElement;
+  /** The app's OWN `<h1>` (loom-ui ADR: `DomRenderOptions.title: "none"` mounts none of its own) — the page already has a heading, so the Blueprint's is suppressed rather than doubled. */
+  readonly heading: HTMLHeadingElement;
+  /** Where `renderBlueprintDom` mounts, named from `heading` (`aria-labelledby`) since it carries no heading of its own under `title: "none"`. */
+  readonly mount: HTMLElement;
+  readonly handle: DomRenderHandle;
+  dispose(): void;
+}
+
+/**
+ * G1: a host page that already has its own heading (this one) never wants the Blueprint's own
+ * `<h1>` too — `title: "none"` mounts none, and the mount region gets its accessible name from
+ * the page's heading via `aria-labelledby` (README, "The Blueprint's own title").
+ */
+export function mountPage(app: App): Page {
+  const page = document.createElement("div");
+  const heading = document.createElement("h1");
+  heading.id = "branch-board-title";
+  heading.textContent = app.web.title;
+  const mount = document.createElement("div");
+  mount.setAttribute("role", "region");
+  mount.setAttribute("aria-labelledby", heading.id);
+  page.append(heading, mount);
+  document.body.appendChild(page);
+  const handle = renderBlueprintDom(mount, app.web, {
+    projectionRuntime: app.runtime,
+    executionId: app.store.executionId,
+    registry: litRegistry,
+    title: "none",
+  });
+  return {
+    page,
+    heading,
+    mount,
+    handle,
+    dispose() {
+      handle.dispose();
+      page.remove();
+    },
+  };
 }
 
 /**
