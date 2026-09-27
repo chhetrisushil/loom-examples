@@ -107,8 +107,23 @@ describe("db-sentinel — guidance from a corpus that changes mid-year", () => {
     const knowledge = openRunbooks();
     await knowledge.sync(RUNBOOKS_V1, { source: "wiki" });
 
+    // What each run of the wake RETRIEVED — the value the finding's guidance is built from.
+    // A replay no longer re-appends the finding (loom ADR 0102: a flow-level emit appends once
+    // per execution), so the reconstruction is observed where it happens: at the retrieval.
+    const retrieved: string[][] = [];
+    const observed = new Proxy(knowledge, {
+      get(target, prop, receiver) {
+        if (prop !== "retrieve") return Reflect.get(target, prop, receiver);
+        return async (...args: Parameters<KnowledgeBase["retrieve"]>) => {
+          const passages = await target.retrieve(...args);
+          retrieved.push(passages.map((p) => p.docId));
+          return passages;
+        };
+      },
+    });
+
     const clock = virtualClock(EARLY_WAKE);
-    const deploy = deploySentinel(world, 1, { knowledge }, () => clock.now());
+    const deploy = deploySentinel(world, 1, { knowledge: observed }, () => clock.now());
     const { state } = await fireOccurrence(deploy, EARLY_WAKE);
     expect(state.status).toBe("completed");
 
@@ -132,20 +147,23 @@ describe("db-sentinel — guidance from a corpus that changes mid-year", () => {
     expect(
       await knowledge.retrieve("replication lag", { decide: async (_k, compute) => compute() })
     ).toEqual([]);
+    const before = retrieved.length;
 
     const restored = await deploy.runtime.restoreFromState(
       (await deploy.runtime.loadState(occurrenceId(EARLY_WAKE))) ?? state
     );
     await restored.waitForCompletion();
-    const replayedFindings = (await world.eventStore.read(occurrenceId(EARLY_WAKE)))
+    // The replay re-ran the wake and retrieved again — and got the MARCH passages, served
+    // from the recorded decision, over a corpus that no longer contains a single document.
+    expect(retrieved.length).toBe(before + 1);
+    expect(retrieved.at(-1)).toEqual(retrieved[0]);
+    expect(retrieved.at(-1)).toContain("RB-101");
+    // …and the finding it rebuilt is the one already in the log: served, not appended again.
+    const findings = (await world.eventStore.read(occurrenceId(EARLY_WAKE)))
       .filter((e) => e.eventType === FINDING_RECORDED)
       .map((e) => e.payload as unknown as Finding);
-    // The replay re-emits the domain event onto the same log, so what matters is that the
-    // later one is IDENTICAL to the first — reconstructed from the recorded decision, over
-    // a corpus that no longer contains a single document.
-    expect(replayedFindings.length).toBeGreaterThan(1);
-    expect(replayedFindings.at(-1)).toEqual(replayedFindings[0]);
-    expect(replayedFindings.at(-1)?.guidance.map((g) => g.docId)).toContain("RB-101");
+    expect(findings).toHaveLength(1);
+    expect(findings[0]?.guidance.map((g) => g.docId)).toEqual([...new Set(retrieved[0])]);
   });
 
   it("writes back what it learned, and the wiki reconcile does not delete it", async () => {
