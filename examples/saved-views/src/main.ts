@@ -148,6 +148,10 @@ async function main(): Promise<void> {
 
   section("7. Pin it, or the sweep reclaims it");
   const draft = await promote(before, "a question I asked once", { promote: false });
+  // A TTL of 0 means "untouched since strictly before the sweep started". Since ContentStore SPI
+  // 1.3.0 the sweep only erases a blob whose touch time is older than that cutoff (ADR 0055
+  // D5), so a draft put in the same millisecond is correctly kept. Let the clock move past it.
+  await new Promise((resolve) => setTimeout(resolve, 5));
   const report = await sweepUnpinnedContent({
     eventStores: [before.app.stores.eventStore],
     contentStore: content,
