@@ -1,8 +1,10 @@
 import type { EventEnvelope } from "@loom/core";
+import { isClaimCheck } from "@loom/middleware";
 import { InMemoryContentStore, sweepUnpinnedContent } from "@loom/plugin-content";
 import type { ContentStore } from "@loom/plugin-content";
 import { beforeEach, describe, expect, it } from "vitest";
 import { type SavedViewsApp, buildApp } from "../src/app";
+import { CATALOG_ID } from "../src/catalogue";
 import { composeOffCatalogue, composeSpendView } from "../src/compose";
 import { BLUEPRINT_COMPOSED, type PromoteOutput, VIEW_DRAFTED, openView } from "../src/flow";
 import {
@@ -183,6 +185,13 @@ describe("pinning — promotion is what survives the sweep", () => {
     const draft = await promote(app, "a question I asked once", { promote: false });
     expect(draft.ref).not.toBe(saved.ref);
 
+    // The draft's ref must be cited as a REAL claim-check envelope (ADR 0054's shape,
+    // `@loom/middleware`'s `isClaimCheck`), not a vendored look-alike — that's the one form
+    // ADR 0055 D4 still lets the sweep reclaim.
+    const draftLog = await app.app.stores.eventStore.read(draft.executionId);
+    const drafted = draftLog.find((e) => e.eventType === VIEW_DRAFTED);
+    expect(isClaimCheck((drafted?.payload as { ref: unknown } | undefined)?.ref)).toBe(true);
+
     const report = await sweepUnpinnedContent({
       eventStores: [app.app.stores.eventStore],
       contentStore: content,
@@ -193,8 +202,49 @@ describe("pinning — promotion is what survives the sweep", () => {
 
     expect(report.refsSeen).toBe(2);
     expect(report.refsPinned).toBe(1);
+    // The promoted ref is cited bare, so it is load-bearing too (ADR 0055 D4) — that is
+    // belt-and-braces here since BLUEPRINT_COMPOSED already pins it. The draft's ref is
+    // NOT load-bearing: VIEW_DRAFTED cites it only inside a claim-check envelope, the one
+    // form D4 still lets the sweep reclaim once nothing pins it.
+    expect(report.refsLoadBearing).toBe(1);
     expect(report.reclaimed).toEqual([draft.ref]);
     expect(await content.get({ __loomContent: saved.ref as string })).not.toBeNull();
     expect(await content.get({ __loomContent: draft.ref as string })).toBeNull();
+  });
+
+  it("a draft cited BARE would never be reclaimed, regardless of TTL (ADR 0055 D4)", async () => {
+    // The regression this whole example is one call from re-introducing: if VIEW_DRAFTED
+    // cited its ref the same way BLUEPRINT_COMPOSED does — bare — the draft would be
+    // load-bearing forever and "pin it, or the sweep reclaims it" would be false. Proven
+    // directly against the sweep with a synthetic bare-cited event, since the flow's whole
+    // point (after this fix) is that it never produces one.
+    const content = new InMemoryContentStore();
+    const ref = await content.put(new TextEncoder().encode(JSON.stringify({ some: "draft" })));
+    const bareDrafted: EventEnvelope = {
+      id: "bare-draft-0",
+      workflowId: "bare-draft",
+      executionId: "bare-draft",
+      eventType: VIEW_DRAFTED,
+      sequence: 0,
+      timestamp: Date.now() - 1_000,
+      payload: { ref, catalogId: CATALOG_ID, intent: "a question I asked once" },
+    };
+
+    const report = await sweepUnpinnedContent({
+      eventStores: [
+        {
+          listExecutions: async () => ["bare-draft"],
+          read: async () => [bareDrafted],
+        },
+      ],
+      contentStore: content,
+      pinnedEventTypes: [BLUEPRINT_COMPOSED],
+      olderThanMs: 0,
+      now: Date.now(),
+    });
+
+    expect(report.refsLoadBearing).toBe(1);
+    expect(report.reclaimed).toEqual([]);
+    expect(await content.get(ref)).not.toBeNull();
   });
 });

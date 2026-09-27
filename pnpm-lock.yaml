@@ -1568,6 +1568,9 @@ importers:
       '@loom/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
+      '@loom/middleware':
+        specifier: link:../../../loom/packages/middleware
+        version: link:../../../loom/packages/middleware
       '@loom/plugin-content':
         specifier: link:../../../loom/plugins/content
         version: link:../../../loom/plugins/content

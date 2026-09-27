@@ -6,6 +6,7 @@ import type {
   VersionPins,
 } from "@loom/blueprint-runtime";
 import { flow$ } from "@loom/core";
+import type { ClaimCheckEnvelope } from "@loom/middleware";
 import { decodeValue, encodeValue } from "@loom/plugin-content";
 import type { ContentRef, ContentStore } from "@loom/plugin-content";
 import type { FlowRunner, RegisteredFlow } from "@loom/workflow-runtime";
@@ -18,8 +19,15 @@ export const BLUEPRINT_COMPOSED = "BLUEPRINT_COMPOSED";
 
 /**
  * The same artifact, not promoted. A composition nobody saved is ephemeral by design — and
- * the difference between the two tiers is *which event cites the ref*, because that is what
- * the content sweep pins on (ADR 0055). Provenance and lifecycle stage, not technology.
+ * which event cites the ref is what the content sweep pins on (ADR 0055). Provenance and
+ * lifecycle stage, not technology.
+ *
+ * The ref this event carries is cited through a claim-check envelope, not bare, because ADR
+ * 0055 D4 (2026-09-27) made a BARE ref load-bearing forever, regardless of which event cites
+ * it — the sweep can no longer tell an app's own bare citation from an ADR 0046 externalized
+ * field it must not erase out from under a running execution. Only a ref reached exclusively
+ * inside an envelope is still TTL-reclaimable once nothing pins it. A promoted view doesn't
+ * need this: `BLUEPRINT_COMPOSED` is itself a pinned event kind, so citing it bare is fine.
  */
 export const VIEW_DRAFTED = "VIEW_DRAFTED";
 
@@ -71,12 +79,23 @@ export function promoteViewRunner(
 
     // The address IS the semantic identity, so "the view I was looking at" is a precise
     // statement and two identical compositions collapse to one blob.
-    const ref = await content.put(encodeValue(view));
+    const bytes = encodeValue(view);
+    const ref = await content.put(bytes);
 
     // The log holds a 60-byte address, an intent and a catalogue id — never the tree.
-    // Which EVENT carries it is the promotion decision, and the only thing standing between
-    // this artifact and the next content sweep.
-    ctx.emit(promote ? BLUEPRINT_COMPOSED : VIEW_DRAFTED, { ref, catalogId: CATALOG_ID, intent });
+    // Which EVENT carries it is the promotion decision. A promoted view cites the ref bare
+    // (BLUEPRINT_COMPOSED is itself a pinned event kind, so it needs nothing else to
+    // survive). A draft cites it through a claim-check envelope instead — the ONLY form
+    // ADR 0055 D4 still lets the sweep reclaim — because an abandoned draft is exactly what
+    // this example means to show going away.
+    const citedRef: ContentRef | ClaimCheckEnvelope = promote
+      ? ref
+      : { __loomClaimCheck: true, ref, size: bytes.byteLength };
+    ctx.emit(promote ? BLUEPRINT_COMPOSED : VIEW_DRAFTED, {
+      ref: citedRef,
+      catalogId: CATALOG_ID,
+      intent,
+    });
 
     return { ref: ref.__loomContent, findings: [], widgets: report.widgets };
   };
