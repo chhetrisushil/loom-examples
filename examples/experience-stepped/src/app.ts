@@ -207,21 +207,30 @@ function initialOperations(): Operation[] {
   ];
 }
 
+/** Shared by `appendStepOp`/`insertStepBeforeOp`: the two ops that add `step` at `order`. */
+function insertStepOps(step: StepContent, order: string): Operation[] {
+  const handle = highlightNodeId(step);
+  return [
+    { type: "remapProvider", handle, spec: providerFor(handle) },
+    { type: "insertNode", parentId: ROOT_CONTAINER_ID, node: stepNode(step, order) },
+  ];
+}
+
+/** The root container's step children, in `order`. Throws if `ROOT_CONTAINER_ID` is missing. */
+function stepSiblings(experience: Experience): ExperienceNode[] {
+  const parent = findNode(experience.root, ROOT_CONTAINER_ID);
+  if (parent === undefined || !isContainer(parent)) {
+    throw new Error(`"${ROOT_CONTAINER_ID}" is missing or not a container`);
+  }
+  return [...parent.children].sort((a, b) => (a.order < b.order ? -1 : 1));
+}
+
 /**
  * Appends `step` as the LAST step under the root container. Pure: reads `experience`, returns the
  * op; does not mutate anything.
  */
 export function appendStepOp(experience: Experience, step: StepContent): Operation[] {
-  const parent = findNode(experience.root, ROOT_CONTAINER_ID);
-  if (parent === undefined || !isContainer(parent)) {
-    throw new Error(`"${ROOT_CONTAINER_ID}" is missing or not a container`);
-  }
-  const handle = highlightNodeId(step);
-  const order = orderKeyAfterAll(parent.children);
-  return [
-    { type: "remapProvider", handle, spec: providerFor(handle) },
-    { type: "insertNode", parentId: ROOT_CONTAINER_ID, node: stepNode(step, order) },
-  ];
+  return insertStepOps(step, orderKeyAfterAll(stepSiblings(experience)));
 }
 
 /**
@@ -231,28 +240,20 @@ export function appendStepOp(experience: Experience, step: StepContent): Operati
  * container is kept by ID (plus type and role), never by its position among siblings — gap G6,
  * closed. (Before 2.4.0 a hand-built, id-less layout fell back to keying by ordinal, and a
  * mid-list insert there WOULD have remounted every later step's widgets — see the README's
- * "Recomposing" section.) Pure: reads `experience`, returns the ops; does not mutate anything.
+ * "Recomposing" section, and `experience-recompose`'s CONTROL test.) Pure: reads `experience`,
+ * returns the ops; does not mutate anything.
  */
 export function insertStepBeforeOp(
   experience: Experience,
   step: StepContent,
   beforeId: string
 ): Operation[] {
-  const parent = findNode(experience.root, ROOT_CONTAINER_ID);
-  if (parent === undefined || !isContainer(parent)) {
-    throw new Error(`"${ROOT_CONTAINER_ID}" is missing or not a container`);
-  }
-  const siblings = [...parent.children].sort((a, b) => (a.order < b.order ? -1 : 1));
+  const siblings = stepSiblings(experience);
   const idx = siblings.findIndex((c) => c.id === beforeId);
   if (idx < 0) throw new Error(`no step "${beforeId}"`);
   const before = siblings[idx] as ExperienceNode;
   const prev = siblings[idx - 1];
-  const order = orderKeyBetween(prev?.order ?? null, before.order);
-  const handle = highlightNodeId(step);
-  return [
-    { type: "remapProvider", handle, spec: providerFor(handle) },
-    { type: "insertNode", parentId: ROOT_CONTAINER_ID, node: stepNode(step, order) },
-  ];
+  return insertStepOps(step, orderKeyBetween(prev?.order ?? null, before.order));
 }
 
 function compileFor(experience: Experience, surface: Surface): Blueprint {

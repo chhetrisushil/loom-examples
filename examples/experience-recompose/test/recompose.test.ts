@@ -6,9 +6,15 @@ import {
   replay,
 } from "@loom-ui/core";
 import { renderBlueprintDom } from "@loom-ui/renderer-lit/dom";
-import { validateBlueprint } from "@loom/blueprint-runtime";
+import {
+  type Blueprint,
+  type Layout,
+  type Widget,
+  validateBlueprint,
+} from "@loom/blueprint-runtime";
+import { InMemoryProjectionRuntime } from "@loom/projection-runtime";
 import { describe, expect, it } from "vitest";
-import { type App, createApp } from "../src/app";
+import { type App, appRegistryFor, createApp } from "../src/app";
 import { catalog } from "../src/catalog";
 
 type LitEl = HTMLElement & { updateComplete: Promise<unknown>; value: unknown };
@@ -303,6 +309,78 @@ describe("experience-recompose — an agent revision lands while the user types"
     expect(!collision.ok && collision.finding.code).toBe("duplicate-node-id");
 
     app.dispose();
+  });
+
+  it("CONTROL — G6 without a container id: the SAME insert-above DOES remount, losing the typed value and focus (proves id-keying, not something else, keeps the case above)", () => {
+    // Hand-built Blueprints, never `compile()` — `compile()` always emits a container id (ADR
+    // 0101), so an id-LESS container (the pre-2.4.0 shape) can only be constructed by hand. Both
+    // versions' "Notes" section is otherwise IDENTICAL (same type, same role — both absent, same
+    // child) to isolate ONE variable: the id.
+    const memoWidget = (): Widget => ({
+      _tag: "Widget",
+      id: "memo",
+      kind: "NoteInput",
+      props: { label: "Handoff note" },
+    });
+    const notesSection = (): Layout => ({
+      type: "flex",
+      direction: "column",
+      title: "Notes",
+      children: [memoWidget()],
+    });
+    const blueprintOf = (children: Array<{ span: number; node: Layout }>): Blueprint => ({
+      _tag: "Blueprint",
+      id: "control",
+      title: "Control",
+      layout: { type: "grid", columns: 12, children },
+      projections: [],
+    });
+    const v1 = blueprintOf([{ span: 12, node: notesSection() }]);
+    // "Urgent" lands ABOVE "Notes" — same op as the id'd case above (insertSectionBefore) — but
+    // BOTH sections are id-less here, of the SAME type ("column") and role (neither has one).
+    const v2 = blueprintOf([
+      {
+        span: 12,
+        node: {
+          type: "flex",
+          direction: "column",
+          title: "Urgent",
+          children: [{ _tag: "Widget", id: "urgentAlert", kind: "Alert", props: { tone: "info" } }],
+        },
+      },
+      { span: 12, node: notesSection() },
+    ]);
+
+    const runtime = new InMemoryProjectionRuntime();
+    const registry = appRegistryFor({ patchable: true });
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const handle = renderBlueprintDom(host, v1, {
+      projectionRuntime: runtime,
+      executionId: "control-exec",
+      registry,
+    });
+    try {
+      const ta = host.querySelector("textarea[data-note='memo']") as HTMLTextAreaElement;
+      typeInto(ta);
+
+      const report = handle.update(v2);
+
+      // Without an id, a container is keyed by ORDINAL among id-less siblings (the k-th id-less
+      // ↔ the k-th id-less — loom-ui's `reconcile.ts`): the OLD "Notes" (ordinal 0) is matched
+      // against the NEW "Urgent" spec (also ordinal 0, same type, same absent role) — its
+      // identity is stolen, `memo` is dropped inside it, and a FRESH "Notes" + a FRESH `memo`
+      // mounts one ordinal later. `remounted` is non-empty and the user's text and focus are gone.
+      expect(report.remounted).toContain("memo");
+      const after = host.querySelector("textarea[data-note='memo']") as HTMLTextAreaElement;
+      expect(after).not.toBe(ta);
+      expect(ta.isConnected).toBe(false);
+      expect(after.value).toBe(""); // never "ship the fix before the retro" — typeInto's text
+      expect(document.activeElement).not.toBe(ta);
+    } finally {
+      handle.dispose();
+      host.remove();
+    }
   });
 
   it("an app renderer without patch is remounted and reported, not silently re-created", async () => {
