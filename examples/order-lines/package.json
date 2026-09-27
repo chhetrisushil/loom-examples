@@ -1,0 +1,27 @@
+{
+  "name": "@loom/order-lines",
+  "version": "0.0.1",
+  "description": "loom-ui's empty binding state for anyone (loom ADR 0100, gap G5): an order-detail board where a dependent widget's own step chains off an upstream 'top orders' step by a {{steps.…}} template. When there is no top order the template indexes past the end of a real (empty) array — the upstream answered, just with no such row — and the widget shows 'No data' (web: role=\"status\"; terminal: the ○ row), never an error and never repaired. A genuinely bad template path (a typo'd key, not an index) still errors, on a non-empty upstream, so the two are never confused.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --build",
+    "test": "vitest run",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@loom-ui/core": "*",
+    "@loom-ui/hydration": "*",
+    "@loom-ui/renderer-lit": "*",
+    "@loom-ui/renderer-terminal": "*",
+    "@loom/blueprint-runtime": "*",
+    "@loom/projection-runtime": "*",
+    "lit": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "happy-dom": "catalog:",
+    "typescript": "^5.6.3",
+    "vitest": "catalog:"
+  }
+}
