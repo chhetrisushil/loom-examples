@@ -10,6 +10,7 @@ import {
   TODAY_PLACEMENT,
   compileFor,
   createApp,
+  mountPage,
   swapCounts,
 } from "../src/app";
 import { KIND_CONTRACTS, catalog } from "../src/catalog";
@@ -99,6 +100,31 @@ describe("experience-layout: placement and section titles on a branch-library bo
     } finally {
       handle.dispose();
       host.remove();
+    }
+  });
+
+  it('G1: title "none" mounts no Blueprint <h1>; the page\'s own header names the mount region', () => {
+    const app = createApp();
+    const { page, heading, mount, dispose } = mountPage(app);
+    try {
+      // The app's own header, outside the mount — never a second one from the renderer.
+      expect(heading.tagName).toBe("H1");
+      expect(heading.textContent).toBe(app.web.title);
+      expect(page.querySelectorAll("h1")).toHaveLength(1);
+      expect(mount.querySelector("h1")).toBeNull();
+      // The mount region is named FROM that heading — a real accessible-name relationship, not
+      // just two elements that happen to sit near each other.
+      expect(mount.getAttribute("role")).toBe("region");
+      expect(mount.getAttribute("aria-labelledby")).toBe(heading.id);
+      expect(page.querySelector(`#${heading.id}`)).toBe(heading);
+      // Section titles are a SEPARATE concern (per-container `<h2>`s) and are unaffected.
+      expect(mount.querySelectorAll("h2")).toHaveLength(2);
+      expect(
+        mount.querySelector(`section[aria-label="${SECTION_TITLES.today.fallback}"] h2`)
+          ?.textContent
+      ).toBe(SECTION_TITLES.today.fallback);
+    } finally {
+      dispose();
     }
   });
 
