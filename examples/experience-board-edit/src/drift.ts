@@ -137,10 +137,10 @@ export const meta: Experience["meta"] = {
 
 /**
  * One Metric, bound to the two-step trend provider. Authored directly with `remapProvider` +
- * an embedded `binding` (the same recipe `experience-stepped`'s `initialOperations` uses) — a
- * planner's `materialize` only ever builds a SINGLE-step provider from a capability, so a
- * multi-step one (an inlined upstream dependency) is always either hand-authored, like here, or
- * produced by a planner richer than the reference one.
+ * an embedded `binding` (the same recipe `experience-stepped`'s `initialOperations` uses). A
+ * planner's `materialize` builds a single-step provider from a fresh capability, but when a repair
+ * keeps a call it rebuilds the upstream steps that call depends on, so the repaired provider
+ * stays multi-step and runnable.
  */
 export function trendBoard(): Experience {
   const g = genesis({ experienceId: "greenhouse-trend", intent, meta });
@@ -167,7 +167,7 @@ export function trendBoard(): Experience {
   return seal(r.value);
 }
 
-/** The scripted repair reply: the same node, its path re-authored one level deeper. */
+/** The scripted repair reply: the same node and call, its path re-authored one level deeper. */
 export function repairReplyFor(board: Experience): string {
   const node = isContainer(board.root) ? board.root.children[0] : undefined;
   if (node === undefined || node.kind !== "semantic" || node.binding === undefined)
@@ -183,7 +183,8 @@ export function repairReplyFor(board: Experience): string {
         props: node.props,
         binding: {
           capability: "trend_now",
-          arguments: {},
+          // Keep the observed call's argument: the drift sample belongs to this exact call.
+          arguments: { baselineC: `{{steps.${STATION_STEP}.output.raw.c}}` },
           path: "trend.pct.value",
           priority: "P0",
         },
