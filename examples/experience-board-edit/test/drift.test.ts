@@ -12,6 +12,7 @@ import {
   repairPlanner,
   repairReplyFor,
   reviseForDrift,
+  stationTool,
   trend,
   trendBoard,
   trendProviderSpec,
@@ -112,8 +113,18 @@ describe("a multi-step provider's drift keys and repairs on its OWN terminal ste
     // The repaired provider, executed against the SAME sensor (still returning the nested
     // shape — a tool that drifted does not drift back), now succeeds: the path was re-authored
     // one level deeper, exactly matching what the tool now actually returns.
+    // The repair kept the call, so it kept the upstream step that call depends on.
+    expect(newSpec.executionGraph.map((s) => [s.stepId, s.dependsOn ?? []])).toEqual([
+      [STATION_STEP, []],
+      [TREND_STEP, [STATION_STEP]],
+    ]);
+    sensor.calls.length = 0;
+    sensor.args.length = 0;
     const rerun = await executeProvider(newSpec, { invoker: sensor });
     expect(rerun.ok).toBe(true);
     expect(rerun.ok && rerun.value).toBe(3.2);
+    // Both steps ran, in order, and the station's reading reached the trend call.
+    expect(sensor.calls).toEqual([stationTool.toolName, trend.toolName]);
+    expect(sensor.args[1]).toEqual({ baselineC: 24.5 });
   });
 });
