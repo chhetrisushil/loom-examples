@@ -1,6 +1,7 @@
 # blueprint-status
 
-A plain loom app on **Blueprint IR 2.0.0** — no loom-ui, no LLM, headless. A service health
+A plain loom app on **Blueprint IR 2** (the status channel, grid cells and `source` provenance
+all arrived in 2.0.0) — no loom-ui, no LLM, headless. A service health
 board whose Blueprint says everything a renderer needs, so loom's terminal renderer reads status,
 spans and provenance from the Blueprint alone (ADR 0097).
 
