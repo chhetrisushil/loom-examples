@@ -114,10 +114,13 @@ export function trendProviderSpec(): ProviderSpec {
  */
 export class GreenhouseSensor implements TransientInvoker {
   readonly calls: string[] = [];
+  /** Each call's resolved arguments, so a test can prove a `{{steps…}}` template really flowed. */
+  readonly args: unknown[] = [];
   constructor(private readonly opts: { garbleTrend?: boolean } = {}) {}
   async invokeTransient<TIn, TOut>(_toolId: string, input: TIn): Promise<TOut> {
-    const { toolName } = input as { toolName: string };
+    const { toolName, args } = input as { toolName: string; args?: unknown };
     this.calls.push(toolName);
+    this.args.push(args);
     if (toolName === stationTool.toolName) return { raw: { c: 24.5 } } as unknown as TOut;
     if (toolName === trend.toolName) {
       return (this.opts.garbleTrend

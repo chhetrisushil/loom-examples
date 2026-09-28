@@ -12,7 +12,7 @@ import {
 } from "@loom/blueprint-runtime";
 import { HEALTH_PROJECTION_ID } from "./health";
 
-// ── The Blueprint says everything the renderer needs (IR 2.0.0) ───────────────
+// ── The Blueprint says everything the renderer needs (IR 2 — ADR 0097) ───────────────
 // • spans are grid CELLS (`cell(span, widget)`), never a prop the catalogue would refuse;
 // • a bound widget names its value path AND its status path in the same projection state;
 // • a widget that stands for something the surface cannot draw says so in `source`.
