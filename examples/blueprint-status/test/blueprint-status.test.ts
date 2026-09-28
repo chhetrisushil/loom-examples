@@ -15,10 +15,14 @@ const line = (frame: string, title: string): string | undefined =>
   frame.split("\n").find((l) => l.includes(title));
 
 describe("blueprint-status — the Blueprint says everything the renderer needs", () => {
-  it("is IR 2.0.0: spans ride in grid cells (never props), every channelled widget declares status.path, source names the degradation, and loom's validator accepts it", () => {
+  it("is IR 2.x: spans ride in grid cells (never props), every channelled widget declares status.path, source names the degradation, and loom's validator accepts it", () => {
     const { blueprint } = createBoard();
+    // Stamped with loom's CURRENT IR version — never a hand-copied literal, which went stale the
+    // first time a minor bump landed (2.1–2.4 only added optional fields; ADRs 0098–0101). What
+    // this board actually depends on is the MAJOR: grid cells, `status.path` and `source` are
+    // IR 2 (ADR 0097), so a major bump must fail here and be reviewed, not pass silently.
     expect(blueprintIrVersion(blueprint)).toBe(BLUEPRINT_IR_VERSION);
-    expect(blueprintIrVersion(blueprint)).toBe("2.0.0");
+    expect(BLUEPRINT_IR_VERSION.split(".")[0]).toBe("2");
 
     const grid = blueprint.layout as GridLayout;
     expect(grid.type).toBe("grid");
