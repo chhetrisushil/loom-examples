@@ -14,10 +14,12 @@
     "@loom-ui/hydration": "*",
     "@loom-ui/planner": "*",
     "@loom/compiler": "*",
+    "@loom/app": "*",
     "@loom/core": "*",
     "@loom/effect-runtime": "*",
     "@loom/event-runtime": "*",
     "@loom/snapshot-runtime": "*",
+    "@loom/verify": "*",
     "@loom/workflow-runtime": "*",
     "zod": "catalog:"
   },

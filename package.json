@@ -72,6 +72,7 @@
       "@loom/snapshot-runtime": "link:../loom/packages/snapshot-runtime",
       "@loom/telemetry": "link:../loom/packages/telemetry",
       "@loom/testing": "link:../loom/tools/testing",
+      "@loom/verify": "link:../loom/packages/verify",
       "@loom/worker-runtime": "link:../loom/packages/worker-runtime",
       "@loom/worker-runtime-local": "link:../loom/packages/worker-runtime-local",
       "@loom/workflow-runtime": "link:../loom/packages/workflow-runtime",

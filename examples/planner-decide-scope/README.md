@@ -51,6 +51,26 @@ transient (the plan is the one record in the log) but is stamped with the decidi
 - Register the LLM as an **effect** and let the model reach it only via the scope. A model that
   closes over an `EffectRuntime` directly would bypass the stamped identity.
 
+## Declaring and wiring reach
+
+The planner cannot know which tool its `model` factory calls, so the app that wrote the factory
+declares it, and verify is told which object a flow's `planner` is:
+
+```ts
+// src/planner.ts: the declaration rides on the planner instance (Symbol.for("loom.verify.reach"))
+new ReferencePlanner({ model: modelFor, modelId: "fake-llm@1", reach: { transient: [LLM_TOOL_ID] } });
+
+// src/verify.ts: map the callee text used in the flow source to that real object
+defineConfig({ ..., checks: { verify: { reach: { planner } } } });
+```
+
+Declared tools then join the flow's reachable effects, so `capability-compat` checks the flow's
+grant for `llm.complete`, `replay-safety` refuses it if it were registered `journaled`, and an
+unregistered tool is a warn. A declaration is a claim about the library, so it is tested on both
+sides: `checkReach: true` in the planner conformance run, and `recordReach()` +
+`assertReachMatches()` against a real run. `src/verify.ts` reads the runner's source with
+`analyzeRunnerReach` for brevity; a project gets the same input from the compiler's manifest.
+
 ## What the tests prove
 
 1. **Stamped identity.** The authorizer and the middleware see `llm.complete` with `workflowId`,
@@ -64,10 +84,19 @@ transient (the plan is the one record in the log) but is stamped with the decidi
 3. **Replay.** Suspend, then resume (also on a FRESH `WorkflowRuntime` over the same stores):
    the model count stays at 1 and no second authorizer call.
 4. **Conformance.** `checkPlannerConformance` with a `scopeProbe` over the *real* runtime (the
-   probe reads what the authorizer saw) returns zero findings: compose and revise each call
-   through the scope once, as the deciding execution, and a second compose calls nothing.
-5. **Verify (L31).** `analyzeRunnerReach` counts a literal `scope.invokeTransient` written in the
-   flow, but not the one made by a planner the flow merely hands `ctx` to (see gaps).
+   probe reads what the authorizer saw, and each call carries its `toolId`) and `checkReach: true`
+   returns zero findings: compose and revise each call through the scope once, as the deciding
+   execution, a second compose calls nothing, and the planner's declared reach covers every tool
+   seen. The same run over a planner built without `reach` yields `reach-undeclared`.
+5. **Declared reach for verify (L31 + L32 + G23).** The compiler's `analyzeRunnerReach` counts a
+   literal `scope.invokeTransient` written in the flow, and records `planner.compose(.., ctx)` as
+   an escape. Driving the real `defineConfig` + `app.verify()` over the example's own flow:
+   (a) with no `verify.reach` mapping the hand-off is an unresolved `capability-compat` warn
+   naming `verify.reach["planner"]`; (b) with `reach: { planner }` the LLM tool is counted: clean
+   when the flow is granted, a `capability-compat` error when it is not; (c) a planner built
+   without `reach` stays unresolved even when mapped.
+   Also: a RECORDING ctx (`recordReach()`) run through the planner sees `transient:
+   ["llm.complete"]`, and `assertReachMatches` accepts the declaration and refuses an empty one.
 6. **Limit / no memo / cancel.** Five distinct concurrent requests peak at 2 in flight; identical
    requests are not deduped; cancelling mid-call gives `ExecutionCancelledError` (`kind: "cancel"`).
 
@@ -77,8 +106,3 @@ transient (the plan is the one record in the log) but is stamped with the decidi
   now rethrows control-plane errors (`CapabilityDeniedError`, quota, abort, cancellation, ...)
   without retry or recording, so a denial fails the execution and a re-run after fixing the grant
   decides afresh (test 2). Only model/parse failures become findings.
-- **`@loom/verify` cannot see a planner's scope call.** A flow that hands `ctx` to a library
-  planner is neither counted nor reported unresolved (only the `{ decide: ctx.decide }` idiom is),
-  so `capability-compat` / `effect-class` see a flow that reaches no tool.
-  Test 5 pins this; loom L32 (PR #483, verify sees a `ctx` handed to a declared library) will
-  flip it, at which point update that test and this note.

@@ -11,6 +11,7 @@ import {
 } from "@loom/effect-runtime";
 import { InMemoryAsyncEventStore } from "@loom/event-runtime";
 import { InMemoryAsyncSnapshotStore } from "@loom/snapshot-runtime";
+import { recordReach } from "@loom/verify";
 import { type FlowRunner, WorkflowRuntime } from "@loom/workflow-runtime";
 import { z } from "zod";
 import { capabilities, triageCatalog } from "./catalog";
@@ -25,6 +26,7 @@ export const UNGRANTED_FLOW = "ticket-triage-ungranted";
 export const CONFORMANCE_FLOW = "planner-conformance";
 export const MEMO_FLOW = "memo-probe";
 export const FANOUT_FLOW = "fan-out-probe";
+export const RECORDED_FLOW = "reach-recorded";
 const SECRET = "example-delegation-secret";
 
 /** The principal a request arrives with: a tenant, an actor, and a token attenuated to the LLM effect. */
@@ -36,7 +38,7 @@ export const delegatedPrincipal = {
 
 const intent = { objective: "Triage the billing queue", source: "user" as const };
 
-export function createTriageApp() {
+export function createTriageApp(opts: { reach?: boolean } = {}) {
   const llm = fakeLlm();
   // What the effect runtime saw: the authorizer's request and the middleware's context, per call.
   const requests: CapabilityRequest[] = [];
@@ -50,6 +52,7 @@ export function createTriageApp() {
     [CONFORMANCE_FLOW]: [LLM_TOOL_ID],
     [MEMO_FLOW]: [LLM_TOOL_ID],
     [FANOUT_FLOW]: [LLM_TOOL_ID],
+    [RECORDED_FLOW]: [LLM_TOOL_ID],
   };
   let grants = new GrantTable(granted);
   const inner = new DelegationAuthorizer({
@@ -79,7 +82,7 @@ export function createTriageApp() {
     effectRuntime: effects,
     onWarn: () => {},
   });
-  const planner = createPlanner();
+  const planner = createPlanner(opts);
 
   const define = (id: string): FlowDefinition<Json, Json> => ({
     _tag: "FlowDefinition",
@@ -110,12 +113,14 @@ export function createTriageApp() {
       revision: { text: "add an insight explaining the growth" },
       ctx,
       modelCalls: () => llm.state.calls,
+      // reach contract (L32/G23): the planner's declaration must cover every tool the probe saw
+      checkReach: true,
       scopeProbe: {
         identity: ctx.executionId,
         calls: () =>
           requests
             .filter((r) => r.executionId === ctx.executionId)
-            .map((r) => ({ identity: r.executionId })),
+            .map((r) => ({ identity: r.executionId, toolId: r.toolId })),
       },
     });
     return { findings } as unknown as Json;
@@ -153,6 +158,15 @@ export function createTriageApp() {
     return {};
   };
 
+  // The test-side half of declared reach: run the planner against a RECORDING ctx and keep what it
+  // actually reached, so a test can compare it with the declaration (`assertReachMatches`).
+  const recorder = recordReach();
+  const recorded: FlowRunner<Json, Json> = async (ctx) => {
+    await planner.compose({ intent, catalog: triageCatalog, capabilities }, recorder.ctx(ctx));
+    return {};
+  };
+
+  runtime.registerFlow(define(RECORDED_FLOW), recorded);
   runtime.registerFlow(define(MEMO_FLOW), memoProbe);
   runtime.registerFlow(define(FANOUT_FLOW), fanOut);
   runtime.registerFlow(define(TRIAGE_FLOW), triage);
@@ -185,6 +199,11 @@ export function createTriageApp() {
       rt.registerFlow(define(TRIAGE_FLOW), triage);
       return rt;
     },
+    /** The planner a flow hands `ctx` to: the object `verify.reach` maps `planner` to. */
+    planner,
+    /** The triage runner, so its SOURCE can be analysed for what it hands `ctx` to. */
+    triageRunner: triage,
+    reachRecorder: recorder,
     llm: llm.state,
     requests,
     contexts,
@@ -194,6 +213,7 @@ export function createTriageApp() {
       [CONFORMANCE_FLOW]: define(CONFORMANCE_FLOW),
       [MEMO_FLOW]: define(MEMO_FLOW),
       [FANOUT_FLOW]: define(FANOUT_FLOW),
+      [RECORDED_FLOW]: define(RECORDED_FLOW),
     },
     eventTypes: async (executionId: string) =>
       (await eventStore.read(executionId)).map((e) => e.eventType),

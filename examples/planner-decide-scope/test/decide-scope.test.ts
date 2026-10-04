@@ -1,17 +1,21 @@
+import { readPlannerReach } from "@loom-ui/planner";
 import { analyzeRunnerReach } from "@loom/compiler";
 import { CapabilityDeniedError } from "@loom/effect-runtime";
+import { assertReachMatches } from "@loom/verify";
 import { ExecutionCancelledError } from "@loom/workflow-runtime";
 import { describe, expect, it } from "vitest";
 import {
   CONFORMANCE_FLOW,
   FANOUT_FLOW,
   MEMO_FLOW,
+  RECORDED_FLOW,
   TRIAGE_FLOW,
   UNGRANTED_FLOW,
   createTriageApp,
   delegatedPrincipal,
 } from "../src/app";
 import { LLM_TOOL_ID } from "../src/llm";
+import { verifyTriage } from "../src/verify";
 
 const startTriage = (app: ReturnType<typeof createTriageApp>, flow: string, executionId: string) =>
   app.runtime.start(
@@ -164,7 +168,40 @@ describe("the planner decides through loom's decide scope", () => {
     expect(app.llm.calls).toBe(2);
   });
 
-  it("verify (L31): a scope call written in the flow is counted; the same call made by a planner the flow hands `ctx` to is INVISIBLE", () => {
+  it("conformance with checkReach: the planner's declaration covers every tool the probe saw, and a planner WITHOUT one is reach-undeclared", async () => {
+    // Positive: the conformance test above runs with checkReach: true and is clean. Here, the
+    // negative: the same flow over a planner built without `reach`.
+    const bare = createTriageApp({ reach: false });
+    const h = await bare.runtime.start(
+      bare.definitions[CONFORMANCE_FLOW],
+      {},
+      { executionId: "c2", principal: delegatedPrincipal }
+    );
+    const done = await h.waitForCompletion();
+    const findings = (done.variables._output as { findings: { code: string }[] }).findings;
+    expect(findings.map((f) => f.code)).toEqual(["reach-undeclared"]);
+  });
+
+  it("assertReachMatches: what the planner ACTUALLY reached through a recording ctx is covered by its declaration", async () => {
+    const app = createTriageApp();
+    await (
+      await app.runtime.start(
+        app.definitions[RECORDED_FLOW],
+        {},
+        { executionId: "r1", principal: delegatedPrincipal }
+      )
+    ).waitForCompletion();
+    expect(app.reachRecorder.recorded).toEqual({ run: [], transient: [LLM_TOOL_ID] });
+    const declared = readPlannerReach(app.planner);
+    expect(declared).toEqual({ transient: [LLM_TOOL_ID] });
+    expect(() => assertReachMatches(declared ?? {}, app.reachRecorder.recorded)).not.toThrow();
+    // not vacuous: a declaration that omits the tool is refused
+    expect(() => assertReachMatches({ transient: [] }, app.reachRecorder.recorded)).toThrow(
+      /transient tool "llm\.complete" ran but is not declared/
+    );
+  });
+
+  it("verify (L31 + L32): a scope call written in the flow is counted; the call made by a planner the flow hands `ctx` to is an unresolved warn until `verify.reach` maps it", () => {
     const direct = analyzeRunnerReach(`
       const r = async (ctx) => {
         await ctx.decide("plan", (scope) => scope.invokeTransient("llm.complete", {}));
@@ -172,16 +209,48 @@ describe("the planner decides through loom's decide scope", () => {
     `);
     expect(direct.steps).toEqual([{ toolId: "llm.complete", viaDecider: true }]);
 
-    // This is the shape of src/app.ts: the decider lives in the planner LIBRARY. Nothing is counted
-    // AND nothing is reported unresolved (only the `{ decide: ctx.decide }` idiom is), so
-    // capability-compat / effect-class see a flow that reaches no tool. GAP, reported not worked
-    // around: if this starts returning llm.complete or an unresolved entry, update the README (L32, loom PR #483, is expected to make verify see it).
+    // The shape of src/app.ts: the decider lives in the planner LIBRARY. The compiler records the
+    // hand-off as an escape instead of dropping it.
     const viaPlanner = analyzeRunnerReach(`
       const r = async (ctx) => {
         const plan = await planner.compose({ intent, catalog, capabilities }, ctx);
       };
     `);
     expect(viaPlanner.steps).toEqual([]);
-    expect(viaPlanner.unresolved).toEqual([]);
+    expect(viaPlanner.escapes).toHaveLength(1);
+  });
+
+  it("verify (a): without the mapping, the REAL flow's hand-off is an unresolved warn naming the key to add", () => {
+    const app = createTriageApp();
+    const report = verifyTriage(app, { mapReach: false, grantLlm: true });
+    const warns = report.findings.filter(
+      (f) => f.rule === "capability-compat" && f.severity === "warn"
+    );
+    expect(warns).toHaveLength(1);
+    expect(warns[0]?.message).toContain("ctx handed to planner.compose");
+    expect(warns[0]?.message).toContain('verify.reach["planner"]');
+  });
+
+  it("verify (b): with `verify.reach: { planner }` the LLM tool is counted against the flow's grants (clean when granted, capability-compat ERROR when not)", () => {
+    const granted = verifyTriage(createTriageApp(), { mapReach: true, grantLlm: true });
+    expect(granted.findings.filter((f) => f.severity !== "info")).toEqual([]);
+    // counted, not merely quiet: the same mapping now FAILS the flow that lacks the grant
+    const denied = verifyTriage(createTriageApp(), { mapReach: true, grantLlm: false });
+    const errors = denied.findings.filter(
+      (f) => f.rule === "capability-compat" && f.severity === "error"
+    );
+    expect(errors).toHaveLength(1);
+    expect(JSON.stringify(errors[0])).toContain(LLM_TOOL_ID);
+    expect(denied.ok).toBe(false);
+  });
+
+  it("verify (c): a planner built WITHOUT `reach` stays unresolved even when mapped (an empty claim is no claim)", () => {
+    const bare = createTriageApp({ reach: false });
+    const report = verifyTriage(bare, { mapReach: true, grantLlm: true });
+    const warns = report.findings.filter(
+      (f) => f.rule === "capability-compat" && f.severity === "warn"
+    );
+    expect(warns).toHaveLength(1);
+    expect(warns[0]?.message).toContain('verify.reach["planner"]');
   });
 });
