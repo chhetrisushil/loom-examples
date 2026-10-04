@@ -162,12 +162,19 @@ export function createTriageApp() {
   return {
     runtime,
     eventStore,
-    /** Widen the flow-keyed grant table: later starts of `workflowId` may use the LLM effect. */
+    /**
+     * Widen the flow-keyed grant table: later starts of `workflowId` may use the LLM effect.
+     * A DEMO/TEST affordance: in production the grant table is policy/config, and `grant()` stands
+     * in for an operator changing it.
+     */
     grant: (workflowId: string) => {
       granted[workflowId] = [LLM_TOOL_ID];
       grants = new GrantTable(granted);
     },
-    /** A second runtime over the SAME stores and effects: what a process restart looks like. */
+    /**
+     * A second runtime over the SAME stores and effects: what a process restart looks like. It
+     * registers only the triage flow (the one the resume test needs).
+     */
     freshRuntime: () => {
       const rt = new WorkflowRuntime({
         eventStore,

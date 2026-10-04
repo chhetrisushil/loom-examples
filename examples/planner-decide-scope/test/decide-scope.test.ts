@@ -81,7 +81,7 @@ describe("the planner decides through loom's decide scope", () => {
     expect((await app.eventTypes("t2b")).filter((t) => t === "DECISION_RECORDED")).toHaveLength(1);
   });
 
-  it("NO MEMO: memoInvoker only dedupes mcp.invoke, so identical LLM requests each run (and no result is shared across deciders or executions)", async () => {
+  it("identical LLM requests are not coalesced, and nothing is shared across deciders or executions (memoInvoker only dedupes mcp.invoke, so the planner does not use it)", async () => {
     const app = createTriageApp();
     await (await startTriage(app, MEMO_FLOW, "m1")).waitForCompletion();
     // 2 decisions x 2 identical requests. A memo over llm.complete would give 2 (or 1 if shared);
