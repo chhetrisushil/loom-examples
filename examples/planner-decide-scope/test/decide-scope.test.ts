@@ -253,4 +253,45 @@ describe("the planner decides through loom's decide scope", () => {
     expect(warns).toHaveLength(1);
     expect(warns[0]?.message).toContain('verify.reach["planner"]');
   });
+
+  it("verify (d): a declared tool registered `journaled` is a replay-safety ERROR naming the declarer; without the mapping nothing flags it", () => {
+    const mapped = verifyTriage(createTriageApp(), {
+      mapReach: true,
+      grantLlm: true,
+      llm: "journaled",
+    });
+    const errs = mapped.findings.filter(
+      (f) => f.rule === "replay-safety" && f.severity === "error"
+    );
+    expect(errs).toHaveLength(1);
+    expect(errs[0]?.message).toContain(LLM_TOOL_ID);
+    expect(errs[0]?.message).toContain("declared by");
+    expect(errs[0]?.message).toContain("planner");
+    expect(mapped.ok).toBe(false);
+    // fails without the reach mapping: the journaled effect is invisible to the rule
+    const unmapped = verifyTriage(createTriageApp(), {
+      mapReach: false,
+      grantLlm: true,
+      llm: "journaled",
+    });
+    expect(unmapped.findings.filter((f) => f.rule === "replay-safety")).toEqual([]);
+  });
+
+  it("verify (e): a declared tool that is NOT registered is a warn, not a silent pass; without the mapping there is no such finding", () => {
+    const mapped = verifyTriage(createTriageApp(), {
+      mapReach: true,
+      grantLlm: true,
+      llm: "unregistered",
+    });
+    const hits = mapped.findings.filter(
+      (f) => f.severity === "warn" && JSON.stringify(f).includes(LLM_TOOL_ID)
+    );
+    expect(hits.length).toBeGreaterThanOrEqual(1);
+    const unmapped = verifyTriage(createTriageApp(), {
+      mapReach: false,
+      grantLlm: true,
+      llm: "unregistered",
+    });
+    expect(unmapped.findings.filter((f) => JSON.stringify(f).includes(LLM_TOOL_ID))).toEqual([]);
+  });
 });

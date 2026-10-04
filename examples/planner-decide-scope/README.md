@@ -68,8 +68,10 @@ Declared tools then join the flow's reachable effects, so `capability-compat` ch
 grant for `llm.complete`, `replay-safety` refuses it if it were registered `journaled`, and an
 unregistered tool is a warn. A declaration is a claim about the library, so it is tested on both
 sides: `checkReach: true` in the planner conformance run, and `recordReach()` +
-`assertReachMatches()` against a real run. `src/verify.ts` reads the runner's source with
-`analyzeRunnerReach` for brevity; a project gets the same input from the compiler's manifest.
+`assertReachMatches()` against a real run. `src/verify.ts` parses the real text of `src/app.ts`
+with TypeScript and hands only the `triage` runner to the compiler's `analyzeReachNode` (not a
+transpiled `fn.toString()`, whose rewritten imports could stop matching the `reach` key); a project
+gets the equivalent result from the `loom-manifest.json` the compiler emits.
 
 ## What the tests prove
 
@@ -94,7 +96,9 @@ sides: `checkReach: true` in the planner conformance run, and `recordReach()` +
    (a) with no `verify.reach` mapping the hand-off is an unresolved `capability-compat` warn
    naming `verify.reach["planner"]`; (b) with `reach: { planner }` the LLM tool is counted: clean
    when the flow is granted, a `capability-compat` error when it is not; (c) a planner built
-   without `reach` stays unresolved even when mapped.
+   without `reach` stays unresolved even when mapped; (d) the LLM effect registered `journaled`
+   plus the mapping is a `replay-safety` error naming the declarer (nothing flagged without the
+   mapping); (e) a declared tool that is not registered is a warn (nothing without the mapping).
    Also: a RECORDING ctx (`recordReach()`) run through the planner sees `transient:
    ["llm.complete"]`, and `assertReachMatches` accepts the declaration and refuses an empty one.
 6. **Limit / no memo / cancel.** Five distinct concurrent requests peak at 2 in flight; identical
