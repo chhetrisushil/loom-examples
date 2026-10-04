@@ -15,7 +15,7 @@ import { type FlowRunner, WorkflowRuntime } from "@loom/workflow-runtime";
 import { z } from "zod";
 import { capabilities, triageCatalog } from "./catalog";
 import { LLM_TOOL_ID, fakeLlm } from "./llm";
-import { createPlanner } from "./planner";
+import { createPlanner, modelFor } from "./planner";
 
 type Json = Record<string, unknown>;
 const io = z.object({}).passthrough() as z.ZodSchema<Json>;
@@ -23,6 +23,8 @@ const io = z.object({}).passthrough() as z.ZodSchema<Json>;
 export const TRIAGE_FLOW = "ticket-triage";
 export const UNGRANTED_FLOW = "ticket-triage-ungranted";
 export const CONFORMANCE_FLOW = "planner-conformance";
+export const MEMO_FLOW = "memo-probe";
+export const FANOUT_FLOW = "fan-out-probe";
 const SECRET = "example-delegation-secret";
 
 /** The principal a request arrives with: a tenant, an actor, and a token attenuated to the LLM effect. */
@@ -43,11 +45,18 @@ export function createTriageApp() {
   // A flow-scoped grant (keyed by workflowId). DelegationAuthorizer also verifies the token, and
   // may only NARROW what the base grants. The recorder wraps it so the example can show what the
   // authorizer was asked; a production authorizer needs no recorder.
-  const grants = new GrantTable({
+  const granted: Record<string, string[]> = {
     [TRIAGE_FLOW]: [LLM_TOOL_ID],
     [CONFORMANCE_FLOW]: [LLM_TOOL_ID],
+    [MEMO_FLOW]: [LLM_TOOL_ID],
+    [FANOUT_FLOW]: [LLM_TOOL_ID],
+  };
+  let grants = new GrantTable(granted);
+  const inner = new DelegationAuthorizer({
+    secret: SECRET,
+    // read through `grants` on every call so `grant()` below takes effect for later executions
+    base: { authorize: (req: CapabilityRequest) => grants.authorize(req) },
   });
-  const inner = new DelegationAuthorizer({ secret: SECRET, base: grants });
   const authorizer = {
     authorize(req: CapabilityRequest) {
       requests.push(req);
@@ -63,9 +72,10 @@ export function createTriageApp() {
   effects.register(LLM_TOOL_ID, llm.effect);
 
   const eventStore = new InMemoryAsyncEventStore();
+  const snapshotStore = new InMemoryAsyncSnapshotStore();
   const runtime = new WorkflowRuntime({
     eventStore,
-    snapshotStore: new InMemoryAsyncSnapshotStore(),
+    snapshotStore,
     effectRuntime: effects,
     onWarn: () => {},
   });
@@ -111,6 +121,40 @@ export function createTriageApp() {
     return { findings } as unknown as Json;
   };
 
+  // Two decisions, each making the SAME model request twice through its own factory-built stack.
+  // The memo dedupes within a decider; nothing is shared between deciders.
+  const memoProbe: FlowRunner<Json, Json> = async (ctx) => {
+    const request = { system: "probe", messages: [{ role: "user", content: "same" }] };
+    for (const id of ["first", "second"]) {
+      await ctx.decide(id, async (scope) => {
+        const model = modelFor(scope);
+        await model.complete(request as never);
+        await model.complete(request as never);
+        return id;
+      });
+    }
+    return {};
+  };
+
+  // Several DISTINCT requests at once inside one decider: the limiter caps what is in flight.
+  const fanOut: FlowRunner<Json, Json> = async (ctx) => {
+    await ctx.decide("fan-out", async (scope) => {
+      const model = modelFor(scope);
+      await Promise.all(
+        [1, 2, 3, 4, 5].map((n) =>
+          model.complete({
+            system: "probe",
+            messages: [{ role: "user", content: `q${n}` }],
+          } as never)
+        )
+      );
+      return "done";
+    });
+    return {};
+  };
+
+  runtime.registerFlow(define(MEMO_FLOW), memoProbe);
+  runtime.registerFlow(define(FANOUT_FLOW), fanOut);
   runtime.registerFlow(define(TRIAGE_FLOW), triage);
   runtime.registerFlow(define(UNGRANTED_FLOW), triage);
   runtime.registerFlow(define(CONFORMANCE_FLOW), conformance);
@@ -118,6 +162,22 @@ export function createTriageApp() {
   return {
     runtime,
     eventStore,
+    /** Widen the flow-keyed grant table: later starts of `workflowId` may use the LLM effect. */
+    grant: (workflowId: string) => {
+      granted[workflowId] = [LLM_TOOL_ID];
+      grants = new GrantTable(granted);
+    },
+    /** A second runtime over the SAME stores and effects: what a process restart looks like. */
+    freshRuntime: () => {
+      const rt = new WorkflowRuntime({
+        eventStore,
+        snapshotStore,
+        effectRuntime: effects,
+        onWarn: () => {},
+      });
+      rt.registerFlow(define(TRIAGE_FLOW), triage);
+      return rt;
+    },
     llm: llm.state,
     requests,
     contexts,
@@ -125,6 +185,8 @@ export function createTriageApp() {
       [TRIAGE_FLOW]: define(TRIAGE_FLOW),
       [UNGRANTED_FLOW]: define(UNGRANTED_FLOW),
       [CONFORMANCE_FLOW]: define(CONFORMANCE_FLOW),
+      [MEMO_FLOW]: define(MEMO_FLOW),
+      [FANOUT_FLOW]: define(FANOUT_FLOW),
     },
     eventTypes: async (executionId: string) =>
       (await eventStore.read(executionId)).map((e) => e.eventType),
