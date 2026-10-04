@@ -1,0 +1,30 @@
+{
+  "name": "@loom/planner-decide-scope",
+  "version": "0.0.1",
+  "description": "A planner that decides THROUGH loom's decide scope: a support-ticket triage flow calls a loom-ui ReferencePlanner with the real ctx, whose model reaches the LLM effect via scopeInvoker, so the call is authorized and observed as the deciding execution (workflowId, executionId, delegated principal), a flow without the grant is denied, and a replay serves the plan from the log without calling the model.",
+  "private": true,
+  "scripts": {
+    "build": "tsc --build",
+    "start": "tsx src/main.ts",
+    "test": "vitest run",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@loom-ui/core": "*",
+    "@loom-ui/hydration": "*",
+    "@loom-ui/planner": "*",
+    "@loom/compiler": "*",
+    "@loom/core": "*",
+    "@loom/effect-runtime": "*",
+    "@loom/event-runtime": "*",
+    "@loom/snapshot-runtime": "*",
+    "@loom/workflow-runtime": "*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "^5.6.3",
+    "vitest": "catalog:"
+  }
+}
