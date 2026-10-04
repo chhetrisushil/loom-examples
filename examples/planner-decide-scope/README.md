@@ -58,8 +58,9 @@ transient (the plan is the one record in the log) but is stamped with the decidi
    `STEP_STARTED`.
 2. **Deny, then re-plan.** The same flow body under a flow id with no grant is refused by the
    authorizer as the deciding execution; the execution FAILS with `CapabilityDeniedError`, the
-   effect never runs and no `DECISION_RECORDED` is left. After the grant is widened, a fresh run
-   decides and calls the model (nothing stale to replay).
+   effect never runs and no `DECISION_RECORDED` is left. The failed execution is terminal; after
+   the grant is widened (`app.grant()`, a stand-in for an operator changing policy/config), a NEW
+   start of the flow decides and calls the model (nothing stale to replay).
 3. **Replay.** Suspend, then resume (also on a FRESH `WorkflowRuntime` over the same stores):
    the model count stays at 1 and no second authorizer call.
 4. **Conformance.** `checkPlannerConformance` with a `scopeProbe` over the *real* runtime (the
