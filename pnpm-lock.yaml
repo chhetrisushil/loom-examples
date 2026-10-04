@@ -80,6 +80,7 @@ overrides:
   '@loom/snapshot-runtime': link:../loom/packages/snapshot-runtime
   '@loom/telemetry': link:../loom/packages/telemetry
   '@loom/testing': link:../loom/tools/testing
+  '@loom/verify': link:../loom/packages/verify
   '@loom/worker-runtime': link:../loom/packages/worker-runtime
   '@loom/worker-runtime-local': link:../loom/packages/worker-runtime-local
   '@loom/workflow-runtime': link:../loom/packages/workflow-runtime
@@ -1525,6 +1526,9 @@ importers:
       '@loom-ui/planner':
         specifier: link:../../../loom-ui/packages/planner
         version: link:../../../loom-ui/packages/planner
+      '@loom/app':
+        specifier: link:../../../loom/packages/app
+        version: link:../../../loom/packages/app
       '@loom/compiler':
         specifier: link:../../../loom/tools/compiler
         version: link:../../../loom/tools/compiler
@@ -1540,6 +1544,9 @@ importers:
       '@loom/snapshot-runtime':
         specifier: link:../../../loom/packages/snapshot-runtime
         version: link:../../../loom/packages/snapshot-runtime
+      '@loom/verify':
+        specifier: link:../../../loom/packages/verify
+        version: link:../../../loom/packages/verify
       '@loom/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime

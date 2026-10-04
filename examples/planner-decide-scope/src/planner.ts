@@ -31,4 +31,15 @@ export const modelFor = (scope: DecideScope): PlannerModel => {
   };
 };
 
-export const createPlanner = () => new ReferencePlanner({ model: modelFor, modelId: "fake-llm@1" });
+/**
+ * `reach` is the planner's DECLARED REACH for `@loom/verify` (loom L32 / loom-ui G23): the planner
+ * cannot know which tool its `model` factory calls, so the app that wrote the factory says so. It
+ * names the tool the factory reaches through `scope.invokeTransient`. Pass `reach: false` to build
+ * the undeclared planner the negative tests use.
+ */
+export const createPlanner = (opts: { reach?: boolean } = {}) =>
+  new ReferencePlanner({
+    model: modelFor,
+    modelId: "fake-llm@1",
+    ...(opts.reach !== false && { reach: { transient: [LLM_TOOL_ID] } }),
+  });
