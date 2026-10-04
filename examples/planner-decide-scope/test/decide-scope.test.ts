@@ -1,19 +1,17 @@
 import { analyzeRunnerReach } from "@loom/compiler";
 import { CapabilityDeniedError } from "@loom/effect-runtime";
+import { ExecutionCancelledError } from "@loom/workflow-runtime";
 import { describe, expect, it } from "vitest";
 import {
   CONFORMANCE_FLOW,
+  FANOUT_FLOW,
+  MEMO_FLOW,
   TRIAGE_FLOW,
   UNGRANTED_FLOW,
   createTriageApp,
   delegatedPrincipal,
 } from "../src/app";
 import { LLM_TOOL_ID } from "../src/llm";
-
-interface PlanChoice {
-  ops: unknown[];
-  findings: { code: string; message: string }[];
-}
 
 const startTriage = (app: ReturnType<typeof createTriageApp>, flow: string, executionId: string) =>
   app.runtime.start(
@@ -51,29 +49,74 @@ describe("the planner decides through loom's decide scope", () => {
     expect(types).not.toContain("STEP_STARTED");
   });
 
-  it("NEGATIVE: a flow WITHOUT the grant is DENIED by the authorizer and the model never runs", async () => {
+  it("NEGATIVE: a flow WITHOUT the grant FAILS with CapabilityDeniedError, records no plan, and a re-run after widening the grant re-plans", async () => {
     const app = createTriageApp();
     const h = await startTriage(app, UNGRANTED_FLOW, "t2");
-    const state = await h.waitForSuspend();
+    // G22: the planner rethrows a control-plane error, so the denial fails the execution.
+    const failure = await h.waitForCompletion().then(
+      () => undefined,
+      (e: unknown) => e
+    );
+    expect(failure).toBeInstanceOf(CapabilityDeniedError);
+    expect((failure as Error).name).toBe("CapabilityDeniedError");
     // The effect never ran: the denial is real enforcement, not an absent check.
     expect(app.llm.calls).toBe(0);
-    // The authorizer WAS asked, as the deciding execution, and refused (twice: the planner retries).
-    expect(app.requests.map((r) => [r.workflowId, r.executionId])).toEqual([
-      [UNGRANTED_FLOW, "t2"],
-      [UNGRANTED_FLOW, "t2"],
-    ]);
-    // GAP (loom-ui planner): ReferencePlanner turns the CapabilityDeniedError into a `model-error`
-    // finding and RECORDS the empty plan as the decision, instead of letting the denial fail the
-    // execution. The kernel raised CapabilityDeniedError; what the flow sees is a failed plan.
-    const decisions = state.variables._decisions as Record<string, { choice: PlanChoice }>;
-    const [recorded] = Object.values(decisions);
-    expect(recorded?.choice.ops).toEqual([]);
-    expect(recorded?.choice.findings.map((f) => f.code)).toEqual(["model-error", "plan-failed"]);
-    expect(recorded?.choice.findings[0]?.message).toMatch(
-      /Capability denied: effect "llm.complete"/
+    // The authorizer WAS asked, as the deciding execution (no pinned retry count).
+    expect(app.requests.length).toBeGreaterThanOrEqual(1);
+    for (const r of app.requests) {
+      expect(r).toMatchObject({
+        workflowId: UNGRANTED_FLOW,
+        executionId: "t2",
+        toolId: LLM_TOOL_ID,
+      });
+    }
+    // Nothing was recorded: no failed plan is left behind to be replayed.
+    expect(await app.eventTypes("t2")).not.toContain("DECISION_RECORDED");
+
+    // Fix the grant. A fresh start of the same flow decides afresh (no stale failed plan).
+    app.grant(UNGRANTED_FLOW);
+    const rerun = await startTriage(app, UNGRANTED_FLOW, "t2b");
+    await rerun.waitForSuspend();
+    expect(app.llm.calls).toBe(1);
+    expect((await app.eventTypes("t2b")).filter((t) => t === "DECISION_RECORDED")).toHaveLength(1);
+  });
+
+  it("NO MEMO: memoInvoker only dedupes mcp.invoke, so identical LLM requests each run (and no result is shared across deciders or executions)", async () => {
+    const app = createTriageApp();
+    await (await startTriage(app, MEMO_FLOW, "m1")).waitForCompletion();
+    // 2 decisions x 2 identical requests. A memo over llm.complete would give 2 (or 1 if shared);
+    // it is a pass-through for non-MCP effects, so the stack deliberately omits it.
+    expect(app.llm.calls).toBe(4);
+    expect(app.requests.filter((r) => r.executionId === "m1")).toHaveLength(4);
+    await (await startTriage(app, MEMO_FLOW, "m2")).waitForCompletion();
+    expect(app.requests.filter((r) => r.executionId === "m2")).toHaveLength(4);
+  });
+
+  it("LIMIT: five distinct concurrent requests in one decider never exceed 2 in flight", async () => {
+    const app = createTriageApp();
+    await (await startTriage(app, FANOUT_FLOW, "f1")).waitForCompletion();
+    expect(app.llm.calls).toBe(5);
+    expect(app.llm.maxInflight).toBe(2);
+  });
+
+  it("CANCEL: cancelling while the LLM effect is in flight rejects with ExecutionCancelledError and records no plan", async () => {
+    const app = createTriageApp();
+    let release!: () => void;
+    app.llm.gate = new Promise<void>((r) => {
+      release = r;
+    });
+    const h = await startTriage(app, TRIAGE_FLOW, "x1");
+    const outcome = h.waitForCompletion().then(
+      () => undefined,
+      (e: unknown) => e
     );
-    expect(recorded?.choice.findings[0]?.message).toMatch(/has no grants/);
-    expect(await app.eventTypes("t2")).toContain("DECISION_RECORDED");
+    while (app.llm.inflight === 0) await new Promise((r) => setTimeout(r, 1));
+    await app.runtime.cancel("x1", "stop");
+    release();
+    const err = await outcome;
+    expect(err).toBeInstanceOf(ExecutionCancelledError);
+    expect((err as ExecutionCancelledError).kind).toBe("cancel");
+    expect(await app.eventTypes("x1")).not.toContain("DECISION_RECORDED");
   });
 
   it("REPLAY: resuming serves the plan from the log; the model is not called again", async () => {
@@ -91,6 +134,20 @@ describe("the planner decides through loom's decide scope", () => {
     expect(done.variables._output).toMatchObject({ findings: 0, modelId: "fake-llm@1" });
     expect(done.variables._output).toHaveProperty("nodes", expect.any(Number));
     expect((await app.eventTypes("t3")).filter((t) => t === "DECISION_RECORDED")).toHaveLength(1);
+  });
+
+  it("REPLAY across a restart: a FRESH WorkflowRuntime over the same stores serves the plan from the log", async () => {
+    const app = createTriageApp();
+    await (await startTriage(app, TRIAGE_FLOW, "t4")).waitForSuspend();
+    expect(app.llm.calls).toBe(1);
+
+    const done = await (
+      await app.freshRuntime().resume("t4", { eventType: "reviewed", payload: {} })
+    ).waitForCompletion();
+    expect(done.status).toBe("completed");
+    expect(app.llm.calls).toBe(1);
+    expect(app.requests).toHaveLength(1);
+    expect((await app.eventTypes("t4")).filter((t) => t === "DECISION_RECORDED")).toHaveLength(1);
   });
 
   it("checkPlannerConformance with a scopeProbe over the real runtime passes with zero findings", async () => {
@@ -118,7 +175,7 @@ describe("the planner decides through loom's decide scope", () => {
     // This is the shape of src/app.ts: the decider lives in the planner LIBRARY. Nothing is counted
     // AND nothing is reported unresolved (only the `{ decide: ctx.decide }` idiom is), so
     // capability-compat / effect-class see a flow that reaches no tool. GAP, reported not worked
-    // around: if this starts returning llm.complete or an unresolved entry, update the README.
+    // around: if this starts returning llm.complete or an unresolved entry, update the README (L32, loom PR #483, is expected to make verify see it).
     const viaPlanner = analyzeRunnerReach(`
       const r = async (ctx) => {
         const plan = await planner.compose({ intent, catalog, capabilities }, ctx);

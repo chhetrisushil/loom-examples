@@ -29,18 +29,29 @@ async function main() {
     {},
     { executionId: "triage-2", principal: delegatedPrincipal }
   );
-  const state = await denied.waitForSuspend();
-  const [decision] = Object.values(
-    state.variables._decisions as Record<string, { choice: { findings: { message: string }[] } }>
+  const failure = await denied.waitForCompletion().then(
+    () => undefined,
+    (e: unknown) => e
   );
   console.log(
-    "ungranted flow: total model calls (unchanged) =",
+    "ungranted flow:",
+    failure instanceof Error ? failure.name : "no error",
+    "| model calls (unchanged) =",
     app.llm.calls,
     "| authorizer asked",
-    app.requests.length - 1,
-    "time(s)"
+    app.requests.filter((r) => r.workflowId === UNGRANTED_FLOW).length,
+    "time(s) | decision recorded:",
+    (await app.eventTypes("triage-2")).includes("DECISION_RECORDED")
   );
-  console.log("                recorded plan finding:", decision?.choice.findings[0]?.message);
+
+  app.grant(UNGRANTED_FLOW);
+  const again = await app.runtime.start(
+    app.definitions[UNGRANTED_FLOW],
+    {},
+    { executionId: "triage-3", principal: delegatedPrincipal }
+  );
+  await again.waitForSuspend();
+  console.log("after widening the grant: a fresh run decides, model calls =", app.llm.calls);
 }
 
 main().catch((e) => {

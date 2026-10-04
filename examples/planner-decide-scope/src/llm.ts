@@ -33,9 +33,22 @@ const why = node("why", "Insight", "Why the queue grew", 12);
  * the authorizer and middleware chain. `calls` counts real executions.
  */
 export function fakeLlm() {
-  const state = { calls: 0 };
+  const state: {
+    calls: number;
+    inflight: number;
+    maxInflight: number;
+    /** When set, each call parks here (after counting itself in flight) until it resolves. */
+    gate?: Promise<void>;
+  } = { calls: 0, inflight: 0, maxInflight: 0 };
   const effect = new ToolEffect(async (req: { system?: string }): Promise<{ content: string }> => {
     state.calls += 1;
+    state.inflight += 1;
+    state.maxInflight = Math.max(state.maxInflight, state.inflight);
+    try {
+      await (state.gate ?? new Promise<void>((r) => setTimeout(r, 2)));
+    } finally {
+      state.inflight -= 1;
+    }
     const nodes = req.system === REVISE_SYSTEM ? [open, list, why] : [open, list];
     return { content: JSON.stringify({ summary: "billing queue triage", nodes }) };
   });
