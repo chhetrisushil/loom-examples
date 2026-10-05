@@ -1,6 +1,6 @@
 import { McpClient } from "@loom/plugin-mcp";
 import { JSDOM } from "jsdom";
-import { APP_CHANNEL_HEADER } from "./server";
+import { APP_CHANNEL_HEADER, DEMO_AUTH_HEADERS } from "./server";
 
 // ── A minimal MCP Apps HOST ──────────────────────────────────────────────────
 //
@@ -61,6 +61,7 @@ export async function startHost(options: HostOptions): Promise<McpAppHost> {
     transport: "http",
     url: options.serverUrl,
     headers: {
+      ...DEMO_AUTH_HEADERS,
       [APP_CHANNEL_HEADER]: "app",
       ...(options.userGrant !== undefined && { "x-loom-user-grant": options.userGrant }),
     },
