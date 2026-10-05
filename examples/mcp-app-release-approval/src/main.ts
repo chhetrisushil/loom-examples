@@ -6,7 +6,7 @@ import { RegisteredReleaseFlow } from "./flow";
 import { RELEASE_SIGNAL } from "./flow";
 import type { ReleaseInput, ReleaseSignal } from "./flow";
 import { startHost } from "./host";
-import { APP_CHANNEL_HEADER, buildMcpServer } from "./server";
+import { APP_CHANNEL_HEADER, DEMO_AUTH_HEADERS, buildMcpServer } from "./server";
 
 // A Loom agent surface served as an MCP App, driven end to end: a real MCP server
 // over HTTP, the real published template executed in jsdom as the View, and an
@@ -43,11 +43,11 @@ async function main(): Promise<void> {
   // ── 2. Audience scoping ────────────────────────────────────────────────────
   // The model and a rendered View see DIFFERENT tool lists. The cursor is the
   // View's refresh channel, not a capability the agent should reason about.
-  const asModel = new McpClient({ transport: "http", url: server.url });
+  const asModel = new McpClient({ transport: "http", url: server.url, headers: DEMO_AUTH_HEADERS });
   const asApp = new McpClient({
     transport: "http",
     url: server.url,
-    headers: { [APP_CHANNEL_HEADER]: "app" },
+    headers: { ...DEMO_AUTH_HEADERS, [APP_CHANNEL_HEADER]: "app" },
   });
   console.log("── 2. Audience-scoped tool lists ────────────────────────────────");
   console.log(

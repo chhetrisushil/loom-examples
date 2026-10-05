@@ -10,7 +10,7 @@ import { RELEASE_SIGNAL, RegisteredReleaseFlow } from "../src/flow";
 import type { ReleaseSignal } from "../src/flow";
 import { startHost } from "../src/host";
 import type { McpAppHost } from "../src/host";
-import { APP_CHANNEL_HEADER, buildMcpServer } from "../src/server";
+import { APP_CHANNEL_HEADER, DEMO_AUTH_HEADERS, buildMcpServer } from "../src/server";
 
 interface Harness {
   app: ReturnType<typeof buildApp>;
@@ -49,11 +49,12 @@ async function harness(opts: { userGrant?: string } = {}): Promise<Harness> {
     transport: "http",
     url: server.url,
     headers: {
+      ...DEMO_AUTH_HEADERS,
       [APP_CHANNEL_HEADER]: "app",
       ...(opts.userGrant !== undefined && { "x-loom-user-grant": opts.userGrant }),
     },
   });
-  const asModel = new McpClient({ transport: "http", url: server.url });
+  const asModel = new McpClient({ transport: "http", url: server.url, headers: DEMO_AUTH_HEADERS });
 
   const resource = await asApp.readUiResource(SURFACE_HOST_URI);
   const host = await startHost({
@@ -92,6 +93,16 @@ afterEach(async () => {
 });
 
 describe("the app is a real MCP App", () => {
+  it("refuses a caller that presents no credential (R12: authenticated by default)", async () => {
+    h = await harness();
+    const res = await fetch(h.server.url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list" }),
+    });
+    expect(res.status).toBe(401);
+  });
+
   it("serves the pinned template, and the client recomputes the same pin", async () => {
     h = await harness();
     const resource = await h.asApp.readUiResource(SURFACE_HOST_URI);

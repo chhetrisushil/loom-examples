@@ -13,6 +13,17 @@ import { RELEASE_SIGNAL } from "./flow";
 import type { ReleaseSignal } from "./flow";
 import { RELEASE_VIEW } from "./view";
 
+/**
+ * Demo bearer token the host and model clients present. R12: a server refuses to be created
+ * unauthenticated, so `authenticate` below admits only this and names the caller. A real
+ * deployment verifies a signed token / mTLS peer. It is separate from the audience header
+ * (which View is calling) and the user grant (may the View journal), which are authorization
+ * layers on top of an identified caller.
+ */
+export const DEMO_AUTH_HEADERS: Readonly<Record<string, string>> = {
+  authorization: "Bearer demo-mcp-token",
+};
+
 /** Header the demo host uses to identify itself as the app channel. */
 export const APP_CHANNEL_HEADER = "x-loom-audience";
 
@@ -82,6 +93,12 @@ export function buildMcpServer(deps: ServerDeps): McpServer {
   return createMcpServer({
     port: 0,
     serverInfo: { name: "loom-release-approval", version: "1.0.0" },
+
+    // Who is calling at all (401 otherwise); the principal reaches tool handlers as ctx.principal.
+    authenticate: (req: http.IncomingMessage) =>
+      req.headers.authorization === DEMO_AUTH_HEADERS.authorization
+        ? { actor: "release-operator" }
+        : undefined,
 
     // The ui:// app, verified against the plan-time pin before it is ever served.
     // A drifted template would throw here rather than silently render different

@@ -6,13 +6,17 @@ import { buildBranchWorkerRuntime } from "./worker";
 // with BRANCH_WORKER_URL and every forked branch is dispatched here instead of running
 // inside the web server.
 //
-// Unauthenticated by design for a local demo: `createWorkerServer` without `authorize` will
-// run any registered flow for any caller, so this belongs on a trusted network only.
+// Loopback-only by default (R12): `createWorkerServer` binds 127.0.0.1 unless `host` widens it.
+// It has no `authorize` here, so it will run any registered flow for any caller that can reach
+// it; if you set `HOST` to expose it, add an `authorize` gate (a boolean check of a credential).
 const dataDir = process.env.LOOM_DATA_DIR ?? "./.data";
 const port = Number(process.env.PORT ?? 7071);
 
 const runtime = buildBranchWorkerRuntime(dataDir);
-const server = createWorkerServer(new LocalWorkerRuntime(runtime), { port });
+const server = createWorkerServer(new LocalWorkerRuntime(runtime), {
+  port,
+  ...(process.env.HOST !== undefined && { host: process.env.HOST }),
+});
 
 async function main(): Promise<void> {
   await server.start();

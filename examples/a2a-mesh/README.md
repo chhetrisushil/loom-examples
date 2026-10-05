@@ -47,9 +47,19 @@ const myAgent = agent$({ id: "orchestrator", name: "Orchestrator", tools: [tool]
 ```ts
 import { createA2AServer, toAgentCard } from "@loom/plugin-a2a";
 
-const server = createA2AServer(workflowRuntime, myFlow, toAgentCard(myAgent), { port: 8080 });
+const server = createA2AServer(workflowRuntime, myFlow, toAgentCard(myAgent), {
+  port: 8080,
+  // Required: the server refuses to be created without `authenticate` (or `authorize`).
+  // It admits the caller AND names it — the principal's `actor` scopes task ownership,
+  // so one client cannot read another's task. Verify a real token / mTLS peer here.
+  authenticate: (req) => (isValidBearer(req.headers.authorization) ? { actor: "adk-client" } : undefined),
+  // publicUrl: "https://agents.example.com", // behind a proxy; binds 127.0.0.1 unless `host` is set
+});
 await server.start(); // ADK/LangGraph/etc. can now discover and call it
 ```
+
+The caller sends the same credential: `createA2AClientEffect(url, { headers: { authorization: "Bearer …" } })`
+(or `headers` on `A2APeerClient`). Only a same-process throwaway demo should opt out with `insecure: true`.
 
 ## Pointing at a real framework
 

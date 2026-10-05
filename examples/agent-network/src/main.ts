@@ -31,6 +31,9 @@ import { ScriptedLlmProvider } from "./ScriptedLlmProvider";
 import { incidentBlueprint, investigateCapability, scaleCapability } from "./capabilities";
 import { startFakeMcpServer } from "./fakeMcpServer";
 
+/** Demo-only shared secret for the inbound A2A server; a real deployment verifies a signed token. */
+const DEMO_TOKEN = "demo-a2a-token";
+
 function section(title: string): void {
   console.log(`\n${"─".repeat(64)}\n  ${title}\n${"─".repeat(64)}`);
 }
@@ -190,12 +193,20 @@ async function main(): Promise<void> {
   });
   const server = createA2AServer(serverApp.runtime, triageFlow, toAgentCard(triageAgent), {
     port: 0,
+    // R12: a server refuses to start unauthenticated. `authenticate` both admits the caller and
+    // says WHO it is (the principal's `actor` scopes task ownership). A real deployment verifies
+    // a signed token or mTLS peer; this demo accepts one shared bearer token.
+    authenticate: (req) =>
+      req.headers.authorization === `Bearer ${DEMO_TOKEN}` ? { actor: "demo-client" } : undefined,
   });
   await server.start();
   console.log(`A2A agent card: ${server.url}/.well-known/agent.json`);
 
   // The client is just another effect — call the remote agent by URL.
-  const a2aEffect = createA2AClientEffect(server.url, { pollIntervalMs: 50 });
+  const a2aEffect = createA2AClientEffect(server.url, {
+    pollIntervalMs: 50,
+    headers: { authorization: `Bearer ${DEMO_TOKEN}` },
+  });
   const result = await a2aEffect.execute(
     { id: "task-1", message: { role: "user", parts: [{ type: "text", text: "DB at 87% CPU" }] } },
     { executionId: "demo", stepId: "call", workflowId: "demo", attempt: 1, emit: () => {} }

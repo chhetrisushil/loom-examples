@@ -33,6 +33,9 @@ import { startMockExternalAgent } from "./mockExternalAgent";
  * Run with:  pnpm --filter @loom/plugin-a2a-mesh start
  */
 
+/** Demo-only shared secret for the inbound A2A server; a real deployment verifies a signed token. */
+const DEMO_TOKEN = "demo-a2a-token";
+
 function section(title: string): void {
   console.log(`\n${"─".repeat(64)}\n  ${title}\n${"─".repeat(64)}`);
 }
@@ -168,12 +171,20 @@ async function main(): Promise<void> {
   });
   const server = createA2AServer(app.runtime, remediateFlow, toAgentCard(remediateAgent), {
     port: 0,
+    // R12: a server refuses to start unauthenticated. `authenticate` both admits the caller and
+    // says WHO it is (the principal's `actor` scopes task ownership). A real deployment verifies
+    // a signed token or mTLS peer; this demo accepts one shared bearer token.
+    authenticate: (req) =>
+      req.headers.authorization === `Bearer ${DEMO_TOKEN}` ? { actor: "demo-client" } : undefined,
   });
   await server.start();
   console.log(`Loom agent card served at ${server.url}/.well-known/agent.json`);
 
   // The "external framework" calling in — here, a plain A2A client effect.
-  const inbound = createA2AClientEffect(server.url, { pollIntervalMs: 50 });
+  const inbound = createA2AClientEffect(server.url, {
+    pollIntervalMs: 50,
+    headers: { authorization: `Bearer ${DEMO_TOKEN}` },
+  });
   const result = await inbound.execute(
     {
       id: "task-in-1",
