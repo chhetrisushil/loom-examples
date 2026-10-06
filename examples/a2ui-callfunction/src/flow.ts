@@ -1,3 +1,4 @@
+import { surface } from "@loom/agent-surface";
 import { flow$, handler$, step$ } from "@loom/core";
 import type { ExecutableTask } from "@loom/core";
 import { A2UI_CALL_FUNCTION_TOOL_ID } from "@loom/plugin-a2ui";
@@ -71,10 +72,10 @@ export const CheckoutFlow = flow$({
 });
 
 const runner: FlowRunner<CheckoutInput, CheckoutOutput> = async (ctx, input) => {
-  ctx.ui.set("cartId", input.cartId);
-  ctx.ui.set("status", "pricing");
+  surface(ctx).set("cartId", input.cartId);
+  surface(ctx).set("status", "pricing");
   const priced = await ctx.run(PriceStep, { amount: input.amount });
-  ctx.ui.merge("summary", { total: priced.total });
+  surface(ctx).merge("summary", { total: priced.total });
 
   // ── Grain A — read a client value through a suspend/resume gate ──────────────
   // The callId must be both deterministic (never random, so a crash-recovered
@@ -84,27 +85,27 @@ const runner: FlowRunner<CheckoutInput, CheckoutOutput> = async (ctx, input) => 
   // step-identity rule, ADR 0061). Grain B below gets uniqueness for free via
   // ctx.idempotencyKey (= executionId:stepId).
   const localeCallId = `${ctx.executionId}:getLocale#1`;
-  ctx.ui.set("status", "awaiting-locale");
+  surface(ctx).set("status", "awaiting-locale");
   // Announce the pending call so the driver knows what to ask the client.
-  ctx.ui.set("pendingCall", { callId: localeCallId, name: "getLocale", args: {} });
+  surface(ctx).set("pendingCall", { callId: localeCallId, name: "getLocale", args: {} });
   const localePayload = await ctx.suspend<FunctionResult>({
     on: "A2UIFunctionResult",
     correlationKey: localeCallId,
   });
   const locale = localePayload.result?.locale ?? "en-US";
-  ctx.ui.remove("pendingCall");
-  ctx.ui.merge("summary", { locale });
+  surface(ctx).remove("pendingCall");
+  surface(ctx).merge("summary", { locale });
 
   // ── Grain B — side-effecting client call through a delegated effect ──────────
-  ctx.ui.set("status", "confirming");
+  surface(ctx).set("status", "confirming");
   const submit = await ctx.execute(ConfirmSubmitTask, {
     surfaceId: `ui:${ctx.executionId}`,
     name: "confirmSubmit",
     args: { total: priced.total, locale },
   });
 
-  ctx.ui.set("status", "done");
-  ctx.ui.merge("summary", { confirmationId: submit.confirmationId });
+  surface(ctx).set("status", "done");
+  surface(ctx).merge("summary", { confirmationId: submit.confirmationId });
 
   return {
     cartId: input.cartId,

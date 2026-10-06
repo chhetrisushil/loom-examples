@@ -1,3 +1,4 @@
+import { surface } from "@loom/agent-surface";
 import { flow$, handler$, step$ } from "@loom/core";
 import type { FlowRunner, RegisteredFlow } from "@loom/workflow-runtime";
 import { z } from "zod";
@@ -58,9 +59,9 @@ const ApprovalDecision = z.object({ approved: z.boolean(), approvedBy: z.string(
 type ApprovalDecision = z.infer<typeof ApprovalDecision>;
 
 const runner: FlowRunner<In, Out> = async (ctx, input) => {
-  ctx.ui.set("phase", "assessing");
+  surface(ctx).set("phase", "assessing");
   const risk = await ctx.run(assessStep, input);
-  ctx.ui.merge("assessment", {
+  surface(ctx).merge("assessment", {
     service: input.service,
     level: risk.level,
     rationale: risk.rationale,
@@ -68,14 +69,14 @@ const runner: FlowRunner<In, Out> = async (ctx, input) => {
 
   // Low-risk changes ship without a gate; everything else pauses for a human.
   if (risk.level === "low") {
-    ctx.ui.set("phase", "applying");
+    surface(ctx).set("phase", "applying");
     await ctx.run(applyStep, { service: input.service });
-    ctx.ui.set("phase", "released");
+    surface(ctx).set("phase", "released");
     return { released: true, risk: risk.level };
   }
 
   await ctx.run(notifyStep, { service: input.service, level: risk.level });
-  ctx.ui.set("phase", "awaiting-approval");
+  surface(ctx).set("phase", "awaiting-approval");
 
   // Durable checkpoint — persists, hands control back to the caller until resumed.
   const decision = await ctx.suspend<ApprovalDecision>({
@@ -85,13 +86,13 @@ const runner: FlowRunner<In, Out> = async (ctx, input) => {
   });
 
   if (!decision.approved) {
-    ctx.ui.set("phase", "rejected");
+    surface(ctx).set("phase", "rejected");
     return { released: false, risk: risk.level, approvedBy: decision.approvedBy };
   }
 
-  ctx.ui.set("phase", "applying");
+  surface(ctx).set("phase", "applying");
   await ctx.run(applyStep, { service: input.service });
-  ctx.ui.set("phase", "released");
+  surface(ctx).set("phase", "released");
   return { released: true, risk: risk.level, approvedBy: decision.approvedBy };
 };
 

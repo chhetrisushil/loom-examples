@@ -44,7 +44,7 @@ const runtime = new WorkflowRuntime({
 });
 ```
 
-The runtime `await`s the store; the synchronous `ctx.emit`/`ctx.ui` API is unchanged. A runnable Postgres reference (schema + `LISTEN/NOTIFY`) lives in `loom/docs/examples/postgres-backend/README.md`.
+The runtime `await`s the store; the synchronous `ctx.emit`/`surface(ctx)` API is unchanged. A runnable Postgres reference (schema + `LISTEN/NOTIFY`) lives in `loom/docs/examples/postgres-backend/README.md`.
 
 ## Wire protocol (`src/wire.ts`)
 

@@ -24,7 +24,7 @@ projectionRuntime.register(IncidentProjection);
 const app = defineConfig({
   storage: { kind: "memory" },
   projectionRuntime,
-  // A2UI: fold the "ui" surface so ctx.ui.* patches (phase badge, streamed AI
+  // A2UI: fold the "ui" surface so surface(ctx).* patches (phase badge, streamed AI
   // analysis) reach the widgets bound to { projectionId: "ui", … }.
   surfaces: ["ui"],
   flows: [InvestigateIncidentFlow as RegisteredFlow],

@@ -6,7 +6,7 @@ import { RegisteredCheckoutFlow } from "./flow";
 // ── Composition root ──────────────────────────────────────────────────────────
 //
 // `surfaces: ["ui"]` registers the native agent surface the flow drives via
-// `ctx.ui.*` (also what the A2UISurfaceBridge bridges by default). The
+// `surface(ctx).*` (also what the A2UISurfaceBridge bridges by default). The
 // `execution.registerEffects` hook wires the grain-B `a2ui.callFunction` effect to an
 // injected transport — the plugin stays transport-agnostic, the app chooses the
 // wire (here an in-process client; in production a WebSocket).

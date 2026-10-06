@@ -1,3 +1,4 @@
+import { surface } from "@loom/agent-surface";
 import {
   MetricCard,
   StatusBadge,
@@ -28,14 +29,14 @@ const investigateRunner: FlowRunner<{ target: string }, { summary: string }> = a
   ctx,
   input
 ) => {
-  ctx.ui.set("phase", "investigating");
-  ctx.ui.set("target", input.target);
-  ctx.ui.merge("metrics", { cpu: 87, memoryMb: 14000 });
-  ctx.ui.append("timeline", "collected metrics");
+  surface(ctx).set("phase", "investigating");
+  surface(ctx).set("target", input.target);
+  surface(ctx).merge("metrics", { cpu: 87, memoryMb: 14000 });
+  surface(ctx).append("timeline", "collected metrics");
   const result = await ctx.run(investigateStep, { target: input.target });
-  ctx.ui.append("timeline", "root cause found");
-  ctx.ui.set("summary", result.summary);
-  ctx.ui.set("phase", "done");
+  surface(ctx).append("timeline", "root cause found");
+  surface(ctx).set("summary", result.summary);
+  surface(ctx).set("phase", "done");
   return result;
 };
 

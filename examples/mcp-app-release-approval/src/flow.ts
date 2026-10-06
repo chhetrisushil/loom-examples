@@ -1,3 +1,4 @@
+import { surface } from "@loom/agent-surface";
 import { flow$, handler$, step$ } from "@loom/core";
 import type { FlowRunner, RegisteredFlow } from "@loom/workflow-runtime";
 import { z } from "zod";
@@ -79,15 +80,15 @@ export const ReleaseFlow = flow$({
 });
 
 const runner: FlowRunner<ReleaseInput, ReleaseOutput> = async (ctx, input) => {
-  ctx.ui.set("title", input.title);
-  ctx.ui.set("releaseId", input.releaseId);
-  ctx.ui.set("status", "scanning");
+  surface(ctx).set("title", input.title);
+  surface(ctx).set("releaseId", input.releaseId);
+  surface(ctx).set("status", "scanning");
 
   const scanned = await ctx.run(ScanChecksStep, { releaseId: input.releaseId });
-  ctx.ui.set("checks", scanned.checks);
-  ctx.ui.set("failing", 0);
-  ctx.ui.set("status", "awaiting-approval");
-  ctx.ui.set("notice", "");
+  surface(ctx).set("checks", scanned.checks);
+  surface(ctx).set("failing", 0);
+  surface(ctx).set("status", "awaiting-approval");
+  surface(ctx).set("notice", "");
 
   let approver = "";
   let reviewRounds = 0;
@@ -103,9 +104,9 @@ const runner: FlowRunner<ReleaseInput, ReleaseOutput> = async (ctx, input) => {
     if (signal.kind === "check-failed") {
       // CI reported while the human was deliberating. The surface moves; anyone
       // holding a rendered view is now looking at history.
-      ctx.ui.append("checks", `${signal.check} ✗`);
-      ctx.ui.increment("failing");
-      ctx.ui.set("notice", `New failure: ${signal.check}`);
+      surface(ctx).append("checks", `${signal.check} ✗`);
+      surface(ctx).increment("failing");
+      surface(ctx).set("notice", `New failure: ${signal.check}`);
       continue;
     }
 
@@ -115,8 +116,8 @@ const runner: FlowRunner<ReleaseInput, ReleaseOutput> = async (ctx, input) => {
       // The decision was made against an older surface. Refusing is a DOMAIN
       // choice — this release gate holds that an approval must be based on the
       // current check set. A different flow could legitimately accept it.
-      ctx.ui.set("status", "re-review");
-      ctx.ui.set(
+      surface(ctx).set("status", "re-review");
+      surface(ctx).set(
         "notice",
         `Approval ignored — it was based on revision ${signal.seenSequence ?? "unknown"}, ` +
           `but the checks changed (now at ${signal.headSequence}). Please re-review.`
@@ -128,10 +129,10 @@ const runner: FlowRunner<ReleaseInput, ReleaseOutput> = async (ctx, input) => {
     break;
   }
 
-  ctx.ui.set("status", "shipping");
-  ctx.ui.set("notice", "");
+  surface(ctx).set("status", "shipping");
+  surface(ctx).set("notice", "");
   const shipped = await ctx.run(ShipStep, { releaseId: input.releaseId });
-  ctx.ui.set("status", "shipped");
+  surface(ctx).set("status", "shipped");
 
   return {
     releaseId: input.releaseId,

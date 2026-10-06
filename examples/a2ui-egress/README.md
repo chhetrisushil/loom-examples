@@ -1,6 +1,6 @@
 # a2ui-egress — project a Loom surface onto the Google A2UI wire protocol (`@loom/plugin-a2ui`)
 
-A Loom flow drives an **agent surface** with durable delta patches (`ctx.ui.set` /
+A Loom flow drives an **agent surface** with durable delta patches (`surface(ctx).set` /
 `merge` / `append` / `increment`). `@loom/plugin-a2ui`'s **`A2UISurfaceBridge`**
 projects that same event stream onto the Google **A2UI (Agent-to-UI) wire protocol
 v1.0** — `createSurface` / `updateDataModel` / `deleteSurface` — so any A2UI-compliant
