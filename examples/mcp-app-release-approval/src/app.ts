@@ -47,7 +47,7 @@ export const releaseResumeAuthenticator: ResumeAuthenticator = {
 // ── Composition root ─────────────────────────────────────────────────────────
 //
 // In-memory stores, the WorkflowRuntime, and the native "ui" agent surface the
-// flow drives via `ctx.ui.*`.
+// flow drives via `surface(ctx).*`.
 //
 // The log is HASH-CHAINED (`@loom/plugin-audit-chain`), which belongs here rather
 // than in a generic example: this app's entire output is a record of who approved

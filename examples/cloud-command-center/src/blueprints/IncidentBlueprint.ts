@@ -15,7 +15,7 @@ export const IncidentBlueprint = blueprint$({
   layout: stack({
     gap: 16,
     children: [
-      // A2UI: the flow drives this badge with ctx.ui.set("phase", …) patches.
+      // A2UI: the flow drives this badge with surface(ctx).set("phase", …) patches.
       StatusBadge({
         title: "Workflow Phase",
         binding: { projectionId: "ui", path: "phase" },

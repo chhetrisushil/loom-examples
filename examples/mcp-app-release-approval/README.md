@@ -97,7 +97,7 @@ await runtime.resume(executionId, { eventType: RELEASE_SIGNAL, payload: { ...sig
 
 ```ts
 // src/flow.ts — the policy stays in the domain
-if (signal.stale) { ctx.ui.set("status", "re-review"); continue; }
+if (signal.stale) { surface(ctx).set("status", "re-review"); continue; }
 ```
 
 **Evidence at the boundary, policy in the flow.** Whether a lag invalidates a decision is

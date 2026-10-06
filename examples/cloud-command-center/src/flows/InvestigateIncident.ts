@@ -1,3 +1,4 @@
+import { surface } from "@loom/agent-surface";
 import { flow$ } from "@loom/core";
 import type { FlowRunner, RegisteredFlow } from "@loom/workflow-runtime";
 import { z } from "zod";
@@ -38,7 +39,7 @@ export const investigateIncidentRunner: FlowRunner<InvestigateInput, Investigate
   ctx.emit("INCIDENT_INVESTIGATION_STARTED", { incidentId: input.incidentId });
   // A2UI: patch the UI surface directly from the flow. These durable, replayable
   // patches drive the Workflow Phase badge without any bespoke event/projection.
-  ctx.ui.set("phase", "investigating");
+  surface(ctx).set("phase", "investigating");
 
   const metrics = await ctx.run(FetchMetricsStep, { incidentId: input.incidentId });
   const logs = await ctx.run(FetchLogsStep, { incidentId: input.incidentId });
@@ -47,10 +48,10 @@ export const investigateIncidentRunner: FlowRunner<InvestigateInput, Investigate
 
   // AI triage: the configured LLM streams a root-cause analysis to the UI
   // (A2UI) and the final text is durably memoized on the step frame.
-  ctx.ui.set("phase", "triaging");
+  surface(ctx).set("phase", "triaging");
   const triage = await ctx.run(AiTriageStep, { metrics, logs });
 
-  ctx.ui.set("phase", "awaiting-approval");
+  surface(ctx).set("phase", "awaiting-approval");
   ctx.emit("APPROVAL_REQUESTED", {
     incidentId: input.incidentId,
     metrics,
@@ -64,10 +65,10 @@ export const investigateIncidentRunner: FlowRunner<InvestigateInput, Investigate
     timeout: 24 * 60 * 60 * 1000,
   });
 
-  ctx.ui.set("phase", "remediating");
+  surface(ctx).set("phase", "remediating");
   const remediation = await ctx.run(ApplyRemediationStep, { incidentId: input.incidentId });
 
-  ctx.ui.set("phase", "resolved");
+  surface(ctx).set("phase", "resolved");
   ctx.emit("INCIDENT_RESOLVED", {
     incidentId: input.incidentId,
     summary: remediation.summary,

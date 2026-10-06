@@ -1,3 +1,4 @@
+import { surface } from "@loom/agent-surface";
 import { flow$, handler$, step$ } from "@loom/core";
 import type { FlowRunner, RegisteredFlow } from "@loom/workflow-runtime";
 import { z } from "zod";
@@ -5,7 +6,7 @@ import { z } from "zod";
 // ── An expense-approval flow that drives an agent surface ─────────────────────
 //
 // The point of this example is NOT the domain — it is the surface. Every
-// `ctx.ui.*` call below emits one durable, replayable `SURFACE_PATCH` event as a
+// `surface(ctx).*` call below emits one durable, replayable `SURFACE_PATCH` event as a
 // *delta* (set / merge / append / increment). `@loom/plugin-a2ui` folds that same
 // event stream into the Google A2UI wire protocol, where the semantics are
 // *absolute* value-replacement. The driver (src/main.ts) prints both sides.
@@ -82,34 +83,34 @@ export const ExpenseFlow = flow$({
 
 const runner: FlowRunner<ExpenseInput, ExpenseOutput> = async (ctx, input) => {
   // Seed the surface. `set` replaces a path; `append` pushes onto an array.
-  ctx.ui.set("title", input.title);
-  ctx.ui.set("status", "fetching");
-  ctx.ui.append("progressLog", `Fetching ${input.expenseId}`);
+  surface(ctx).set("title", input.title);
+  surface(ctx).set("status", "fetching");
+  surface(ctx).append("progressLog", `Fetching ${input.expenseId}`);
 
   const fetched = await ctx.run(FetchExpenseStep, { expenseId: input.expenseId });
-  ctx.ui.merge("stats", { lineItems: fetched.lineItems, category: fetched.category });
-  ctx.ui.increment("stepsCompleted");
-  ctx.ui.set("status", "totalling");
-  ctx.ui.append("progressLog", `${fetched.lineItems} line items (${fetched.category})`);
+  surface(ctx).merge("stats", { lineItems: fetched.lineItems, category: fetched.category });
+  surface(ctx).increment("stepsCompleted");
+  surface(ctx).set("status", "totalling");
+  surface(ctx).append("progressLog", `${fetched.lineItems} line items (${fetched.category})`);
 
   const totalled = await ctx.run(TotalExpenseStep, { lineItems: fetched.lineItems });
-  ctx.ui.merge("stats", { amount: totalled.amount });
-  ctx.ui.increment("stepsCompleted");
-  ctx.ui.append("progressLog", `Total $${totalled.amount}`);
+  surface(ctx).merge("stats", { amount: totalled.amount });
+  surface(ctx).increment("stepsCompleted");
+  surface(ctx).append("progressLog", `Total $${totalled.amount}`);
 
   // Suspend for human approval — resumed when an "ExpenseApproved" event arrives.
   // In this example that event is raised by an inbound A2UI `action` (see main.ts).
-  ctx.ui.set("status", "awaiting-approval");
+  surface(ctx).set("status", "awaiting-approval");
   await ctx.suspend({ on: "ExpenseApproved", correlationKey: input.expenseId });
 
-  ctx.ui.set("status", "reimbursing");
+  surface(ctx).set("status", "reimbursing");
   const done = await ctx.run(ReimburseStep, {
     expenseId: input.expenseId,
     amount: totalled.amount,
   });
-  ctx.ui.increment("stepsCompleted");
-  ctx.ui.set("status", "done");
-  ctx.ui.append("progressLog", done.summary);
+  surface(ctx).increment("stepsCompleted");
+  surface(ctx).set("status", "done");
+  surface(ctx).append("progressLog", done.summary);
 
   return { expenseId: input.expenseId, summary: done.summary, applied: done.applied };
 };

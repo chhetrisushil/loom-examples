@@ -9,7 +9,7 @@ import { flowModules } from "../app/loom.gen";
 
 export type LoomApp = ReturnType<typeof defineConfig>;
 
-// `ctx.ui.*` in a flow targets the default A2UI surface, "ui".
+// `surface(ctx).*` in a flow targets the default A2UI surface, "ui".
 export const SURFACES = ["ui"];
 
 /**

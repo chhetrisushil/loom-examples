@@ -1367,6 +1367,9 @@ importers:
 
   examples/loom-starter:
     dependencies:
+      '@loom/agent-surface':
+        specifier: link:../../../loom/packages/agent-surface
+        version: link:../../../loom/packages/agent-surface
       '@loom/app':
         specifier: link:../../../loom/packages/app
         version: link:../../../loom/packages/app
