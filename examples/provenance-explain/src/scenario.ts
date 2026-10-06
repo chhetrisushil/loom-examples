@@ -1,6 +1,7 @@
 import {
   type Experience,
   type Provenance,
+  type ReadPolicy,
   type RecordedOperation,
   type Viewer,
   snapshotSeen,
@@ -25,6 +26,8 @@ import {
   catalog,
   exposureCap,
   genesisBoard,
+  handleFor,
+  readPolicy as hostPolicy,
   intent,
   memoryDecide,
   newPlanner,
@@ -51,7 +54,9 @@ export const MAX_VIEWS = 3;
  * both live in it, content-addressed), the lineage, and the per-viewer seen log with its key store.
  * Time is a fake clock so retention, `until` and the collector's grace period are deterministic.
  */
-export function createRig() {
+export function createRig(opts: { readPolicy?: ReadPolicy | null } = {}) {
+  // Bound ONCE, here, on every read surface. `null` builds the control rig that binds nothing.
+  const readPolicy = opts.readPolicy === null ? undefined : (opts.readPolicy ?? hostPolicy);
   const clock = { t: Date.parse("2026-10-07T09:00:00Z") };
   const iso = () => new Date(clock.t).toISOString();
   const tick = (ms = 60_000) => {
@@ -59,7 +64,12 @@ export function createRig() {
     return iso();
   };
   const content = new InMemoryContentStore({ now: () => clock.t });
-  const lineage = new Lineage({ events: new InMemoryLineageStore(), content, now: iso });
+  const lineage = new Lineage({
+    events: new InMemoryLineageStore(),
+    content,
+    now: iso,
+    ...(readPolicy && { readPolicy }),
+  });
   const keys = new InMemorySeenKeyStore();
   // The seen log lives in a store (and a reserved stream namespace) of its own, never the lineage's.
   const seenEvents = eventStoreLineageStore(new InMemoryAsyncEventStore(), seenStoreOptions);
@@ -69,11 +79,12 @@ export function createRig() {
     lineage,
     keys,
     now: iso,
+    ...(readPolicy && { readPolicy }),
     retention: { maxViews: MAX_VIEWS, maxSkewMs: 0 },
   });
   const world: World = { open: 7, primary: "Dana Ruiz", accounts: 1200 };
   const invoker = new WorldInvoker(world);
-  return { clock, iso, tick, content, lineage, keys, seenEvents, log, world, invoker };
+  return { readPolicy, clock, iso, tick, content, lineage, keys, seenEvents, log, world, invoker };
 }
 export type Rig = ReturnType<typeof createRig>;
 
@@ -89,11 +100,11 @@ export const headOf = async (rig: Rig): Promise<Experience> =>
 
 export async function composeBoard(
   rig: Rig,
-  opts: { experienceId?: string; withExposure?: boolean } = {}
+  opts: { experienceId?: string; withExposure?: boolean; proposal?: "internal" } = {}
 ) {
   const experienceId = opts.experienceId ?? EXPERIENCE_ID;
   const withExposure = opts.withExposure ?? true;
-  const planner = newPlanner(withExposure);
+  const planner = newPlanner(withExposure, opts.proposal);
   // The lite board never offers the classified capability: its summary is of an internal class.
   const offered = withExposure ? capabilities : capabilities.filter((c) => c !== exposureCap);
   const composed = await planner.compose(
@@ -149,14 +160,18 @@ export async function editThenRevert(rig: Rig, composedVersion: string) {
 // ── 4. what a viewer was shown ───────────────────────────────────────────────────────────────
 
 /** Open the board as `who`: hydrate through the fake invoker, snapshot what was delivered, record it. */
-export async function openBoard(rig: Rig, who: { id: string; viewer: Viewer }) {
-  const exp = await headOf(rig);
-  const read = await hydrateFor(exp, who, rig.invoker);
+export async function openBoard(
+  rig: Rig,
+  who: { id: string; viewer: Viewer },
+  experienceId: string = EXPERIENCE_ID
+) {
+  const exp = must(await rig.lineage.resolveLatest(experienceId));
+  const read = await hydrateFor(exp, who, rig.invoker, rig.readPolicy);
   const snapshot = snapshotSeen(exp, { viewer: who.viewer, read });
   const at = rig.iso();
   const result = must(
     await rig.log.record({
-      experienceId: EXPERIENCE_ID,
+      experienceId,
       viewerId: who.id,
       snapshot,
       viewer: who.viewer,
@@ -215,3 +230,65 @@ export const explain = async (
       ...(opts.versionHash !== undefined && { versionHash: opts.versionHash }),
     })
   );
+
+// ── a node nobody classified, stored on a classified tool ─────────────────────────────────────
+
+export const RAW_ID = "incident-board-raw";
+
+/**
+ * A board whose exposure card was added by hand (not by the planner): it carries NO `sensitivity`
+ * of its own. Only the host's bound read policy keeps it from a low viewer.
+ */
+export async function storeUnclassifiedExposure(rig: Rig) {
+  const { version } = await composeBoard(rig, { experienceId: RAW_ID, withExposure: false });
+  const head = must(await rig.lineage.resolveLatest(RAW_ID));
+  const handle = handleFor(exposureCap, "accounts");
+  const spec = {
+    handle,
+    executionGraph: [
+      {
+        stepId: "s1",
+        toolName: exposureCap.toolName,
+        toolVersion: exposureCap.toolVersion,
+        toolSchemaHash: exposureCap.toolSchemaHash,
+        arguments: {},
+        dependsOn: [],
+        idempotent: true,
+      },
+    ],
+    reshaping: { engine: "JSONPath", scriptRef: "accounts" },
+    outputShapeHash: "fnv1a64:042b41495f5d90e6",
+    cachePolicy: { ttlSeconds: 60, scope: "principal" },
+  } as const;
+  const by = user("dana");
+  const at = rig.tick();
+  must(
+    await rig.lineage.compose({
+      experienceId: RAW_ID,
+      expectedHead: version,
+      by,
+      ops: [
+        { op: { type: "remapProvider", handle, spec: spec as never }, by, at },
+        {
+          op: {
+            type: "insertNode",
+            parentId: head.root.id,
+            node: {
+              id: "raw_exposure",
+              order: "z",
+              kind: "semantic",
+              type: "Metric",
+              typeVersion: "1.0.0",
+              span: 4,
+              label: { key: "raw_exposure.label", fallback: "Customer exposure" },
+              props: { unit: "accounts" },
+              binding: { handle, priority: "P1" },
+            } as never,
+          },
+          by,
+          at,
+        },
+      ],
+    })
+  );
+}

@@ -56,7 +56,9 @@ step(4, "Hydrate values, record what each viewer was shown, then change the data
 setWorld(rig, { open: 7, primary: "Dana Ruiz", accounts: 1200 });
 const approved = await openBoard(rig, DANA);
 await openBoard(rig, LEE);
-say(`   dana saw open=7 and approved at ${approved.at}; lee saw open=7 (never customer_exposure)`);
+say(
+  `   dana saw open=7 and approved at ${approved.at}; lee saw open=7 (never customer_exposure: the capability classes it secret, the bound policy holds it back)`
+);
 setWorld(rig, { open: 5 });
 await openBoard(rig, LEE);
 setWorld(rig, { open: 3 });

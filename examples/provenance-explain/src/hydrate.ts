@@ -1,4 +1,4 @@
-import type { Experience, SeenReader, Viewer } from "@loom-ui/core";
+import type { Experience, ReadPolicy, SeenReader, Viewer } from "@loom-ui/core";
 import { HydrationController, HydrationStore, type TransientInvoker } from "@loom-ui/hydration";
 import { InMemoryProjectionRuntime } from "@loom/projection-runtime";
 
@@ -31,14 +31,15 @@ export class WorldInvoker implements TransientInvoker {
 
 /**
  * Hydrate `exp` for ONE viewer. The controller never invokes a provider whose class the viewer
- * may not see. A hydration store holds whatever its viewer's principal chain was
+ * may not see, where the class is the node's own OR the bound `readPolicy`'s floor for its tool. A hydration store holds whatever its viewer's principal chain was
  * allowed to read, so each viewer gets a store of their own (see `HydrationStore`'s scope docs).
  * Returns the `SeenReader` a `snapshotSeen` call reads the delivered values through.
  */
 export async function hydrateFor(
   exp: Experience,
   who: { id: string; viewer: Viewer },
-  invoker: TransientInvoker
+  invoker: TransientInvoker,
+  readPolicy?: ReadPolicy
 ): Promise<SeenReader> {
   const runtime = new InMemoryProjectionRuntime();
   const store = new HydrationStore(runtime, {
@@ -51,6 +52,7 @@ export async function hydrateFor(
     invoker,
     store,
     viewer: who.viewer,
+    ...(readPolicy && { readPolicy }),
     setTimer: (fn) => {
       timers.push(fn);
       return () => {

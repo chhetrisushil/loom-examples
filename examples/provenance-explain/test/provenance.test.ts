@@ -1,5 +1,5 @@
 import { seenToState } from "@loom-ui/core";
-import { seenStreamKey } from "@loom-ui/lineage";
+import { seenKeySubject, seenStreamKey } from "@loom-ui/lineage";
 import { describe, expect, it } from "vitest";
 import {
   EXPERIENCE_ID,
@@ -14,6 +14,7 @@ import {
   DANA,
   LEE,
   MAX_VIEWS,
+  RAW_ID,
   addressOf,
   composeBoard,
   createRig,
@@ -25,6 +26,7 @@ import {
   must,
   openBoard,
   setWorld,
+  storeUnclassifiedExposure,
   sweep,
   viewsOf,
 } from "../src/scenario";
@@ -130,6 +132,7 @@ describe("3. explain, for a cleared viewer and a low-clearance one", () => {
     const low = await explain(rig, "open_incidents", LEE.viewer);
     expect(low).toMatchObject({ available: true, created: { op: "insertNode" } });
     expect("why" in low).toBe(false); // the version holds a secret card; so lee gets no prose
+    expect(JSON.stringify(low)).not.toContain(SUMMARY);
     expect(await explain(rig, "open_incidents", DANA.viewer)).toMatchObject({
       why: { text: SUMMARY },
     });
@@ -142,6 +145,72 @@ describe("3. explain, for a cleared viewer and a low-clearance one", () => {
       experienceId: "incident-board-lite",
     });
     expect(e).toMatchObject({ available: true, why: { untrusted: true, text: SUMMARY_LITE } });
+  });
+});
+
+describe("3b. the class is the capability's, not the model's", () => {
+  for (const [name, proposal] of [
+    ["omits a class", undefined],
+    ["proposes a LOWER class", "internal"],
+  ] as const) {
+    it(`a model that ${name} cannot open the classified card to a low viewer`, async () => {
+      const rig = createRig();
+      const { composed } = await composeBoard(rig, { ...(proposal && { proposal }) });
+      expect(composed.summaryClass).toBe("secret");
+      // the planner floors the node at the capability's class: the card is stored as secret
+      const head = await headOf(rig);
+      expect(JSON.stringify(head.root)).toContain('"sensitivity":"secret"');
+      expect(await explain(rig, "customer_exposure", LEE.viewer)).toEqual({ available: false });
+      expect(await explain(rig, "customer_exposure", DANA.viewer)).toMatchObject({
+        available: true,
+      });
+      // and it is never fetched for the low viewer
+      await openBoard(rig, LEE);
+      expect(rig.invoker.calls).not.toContain("legal.exposure");
+    });
+  }
+
+  it("a stored node with NO class of its own on that tool is hidden at read time by the bound policy", async () => {
+    const rig = createRig();
+    await storeUnclassifiedExposure(rig);
+    const stored = must(await rig.lineage.resolveLatest(RAW_ID));
+    const raw = JSON.stringify(stored.root).split('"id":"raw_exposure"')[1];
+    expect(raw).toBeDefined();
+    expect(raw).not.toContain("sensitivity"); // nobody classified it
+    // the policy classes the TOOL: lee gets bare unavailable, identical to an unknown id ...
+    const opts = { experienceId: RAW_ID };
+    expect(await explain(rig, "raw_exposure", LEE.viewer, opts)).toEqual({ available: false });
+    expect(await explain(rig, "raw_exposure", DANA.viewer, opts)).toMatchObject({
+      available: true,
+    });
+    // ... the provider is never invoked for lee, and his recorded snapshot says it was restricted
+    const seen = await openBoard(rig, LEE, RAW_ID);
+    expect(rig.invoker.calls).not.toContain("legal.exposure");
+    expect(JSON.stringify(seen.snapshot)).not.toContain("1200");
+    // control: the SAME stored node with no policy bound is open to lee (the policy is what holds it)
+    const open = createRig({ readPolicy: null });
+    await storeUnclassifiedExposure(open);
+    expect(await explain(open, "raw_exposure", LEE.viewer, opts)).toMatchObject({
+      available: true,
+    });
+  });
+
+  it("the words are withheld by the class FLOOR, not by the summary's class", async () => {
+    const rig = createRig();
+    await storeUnclassifiedExposure(rig); // summary is of an internal class (lite board)
+    const opts = { experienceId: RAW_ID };
+    const stored = must(await rig.lineage.versions(RAW_ID));
+    expect(stored.length).toBeGreaterThan(1);
+    const low = await explain(rig, "open_incidents", LEE.viewer, opts);
+    expect(low).toMatchObject({ available: true });
+    expect("why" in low).toBe(false); // a secret card raises the floor
+    expect(JSON.stringify(low)).not.toContain(SUMMARY_LITE);
+    // control: with no policy bound the floor is internal, and lee reads the same words
+    const open = createRig({ readPolicy: null });
+    await storeUnclassifiedExposure(open);
+    expect(await explain(open, "open_incidents", LEE.viewer, opts)).toMatchObject({
+      why: { text: SUMMARY_LITE },
+    });
   });
 });
 
@@ -219,6 +288,15 @@ describe("6. erase a viewer, collect garbage, roll off old views", () => {
     const { rig } = await dayOfViews();
     must(await rig.log.eraseViewer({ experienceId: EXPERIENCE_ID, viewerId: "lee" }));
     expect(await viewsOf(rig, "lee")).toMatchObject({ erased: true, views: [] });
+    // the viewer's key is destroyed ...
+    expect(await rig.keys.get(seenKeySubject(seenStreamKey(EXPERIENCE_ID, "lee")))).toBeFalsy();
+    expect(await rig.keys.get(seenKeySubject(seenStreamKey(EXPERIENCE_ID, "dana")))).toBeTruthy();
+    // ... the history stays: events are there, as ciphertext, with the erasure marker
+    const raw = JSON.stringify(await rig.seenEvents.read(seenStreamKey(EXPERIENCE_ID, "lee")));
+    expect(raw).toContain("VIEWER_ERASED");
+    expect(raw).toContain("VIEW_RECORDED");
+    expect(raw).not.toContain(addressOf(5).slice("sha256:".length));
+    expect(raw).not.toContain("Dana Ruiz");
     const again = await openBoard(rig, LEE).then(
       () => "recorded",
       (e: Error) => e.message
@@ -228,14 +306,17 @@ describe("6. erase a viewer, collect garbage, roll off old views", () => {
     expect((await viewsOf(rig, "dana")).views).toHaveLength(2);
   });
 
-  it("before the sweep the erased viewer's blob is still in the store", async () => {
+  it("a sweep BEFORE the erasure deletes nothing; the erased viewer's blob is in the store until the next one", async () => {
     const { rig } = await dayOfViews();
+    expect((await sweep(rig)).deleted).toBe(0); // every blob is rooted by a live view: control
+    expect(await holds(rig, 5)).toBe(true);
     must(await rig.log.eraseViewer({ experienceId: EXPERIENCE_ID, viewerId: "lee" }));
     expect(await holds(rig, 5)).toBe(true); // shredding hides it; it does not delete it
   });
 
   it("the sweep reclaims the erased viewer's unique blob; shared and lineage blobs survive", async () => {
     const { rig } = await dayOfViews();
+    expect((await sweep(rig)).deleted).toBe(0); // control: nothing is garbage before the erasure
     must(await rig.log.eraseViewer({ experienceId: EXPERIENCE_ID, viewerId: "lee" }));
     const cited = await lineageBlobs(rig);
     expect(cited.length).toBeGreaterThan(0);
@@ -243,7 +324,7 @@ describe("6. erase a viewer, collect garbage, roll off old views", () => {
     const report = await sweep(rig);
     expect(report.deleted).toBe(1);
     expect(await holds(rig, 5)).toBe(false); // seen only by lee
-    expect(await holds(rig, 7)).toBe(true); // lee saw it too, and so did dana
+    expect(await holds(rig, 7)).toBe(true); // lee saw it too, but dana's view roots it
     expect(await holds(rig, "Dana Ruiz")).toBe(true);
     expect(await holds(rig, 1200)).toBe(true);
     for (const a of cited) expect(await rig.content.get({ __loomContent: a })).not.toBeNull();
