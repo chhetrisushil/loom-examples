@@ -38,10 +38,10 @@ await collectSeenGarbage(seenLog, { graceMs, ownsContentStore: true });
 |---|---|
 | **1. Compose** | The reference planner (scripted model) composes the board; `plannerProvenance` links each op to the recorded `decisionId` and model. `explain` returns it as `created.by`; the model's summary arrives as `UntrustedText` and its class (`secret`, the strictest of what the planner read) is stored with the version. `lineage.verify` is clean. |
 | **2. Edit, revert** | A hand edit is a second version attributed to the person; `explain` at that version shows `changed` and `changes: 1` while `created` still names the planner. `revert` is a NEW version whose ledger is the restored version's: `changes: 0` again. Nothing is rewritten. |
-| **3. Explain, two viewers** | For a cleared on-call viewer the classified card explains fully. For a low-clearance viewer it returns bare `{ available: false }`, **identical to an id that does not exist** (no oracle). On the cards that viewer may see, the *words* (summary, prompt) are withheld because the version holds a secret card (the class floor). On a board with no classified card the same viewer reads them. |
+| **3. Explain, two viewers** | For a cleared on-call viewer the classified card explains fully. For a low-clearance viewer it returns bare `{ available: false }`, **identical to an id that does not exist** (no oracle). On the cards that viewer may see, the *words* (summary, prompt) are withheld because the version holds a secret card (the class floor, which the bound policy also raises for a hand-added unclassified card on the secret tool, even when the summary itself is only internal). On a board with no classified card the same viewer reads them. A model that omits or lowers the class cannot open the card. |
 | **4. Record views** | Each viewer hydrates through their own store (the controller never invokes a provider whose class the viewer may not see), `snapshotSeen` captures the delivered values, `SeenLog.record` seals each ref under that viewer's key. The low viewer's snapshot says only that something was `restricted`. The raw stream holds no readable address or value; one value seen by two viewers is one blob. |
 | **5. Replay at approval** | `read({ until })` returns the view as of the approval, `seenToState` rebuilds `values.<handle>` / `status.<handle>`: `open = 7` even though the data has since moved to `3`. A low-clearance *reader* of the same stream is redacted again at read time. |
-| **6. Erase, collect, roll off** | `eraseViewer` destroys the viewer's key (crypto-shredding): reads say `erased`, `record` refuses, the log keeps only ciphertext. The value blobs stay in the content store until `collectSeenGarbage` (mark-and-sweep) reclaims what no live view and no lineage artifact names: the erased viewer's unique value goes, the value another viewer also saw survives, so do the lineage's artifacts. With `maxViews: 3` a fourth view rolls the oldest off (it does not refuse), and the next sweep reclaims its unique blob. |
+| **6. Erase, collect, roll off** | `eraseViewer` destroys the viewer's key (crypto-shredding): reads say `erased`, `record` refuses, the log keeps only ciphertext (a `VIEWER_ERASED` marker, `VIEW_RECORDED` events no one can read). A sweep before the erasure deletes 0; after it, exactly the erased viewer's unique blob. The value blobs stay in the content store until `collectSeenGarbage` (mark-and-sweep) reclaims what no live view and no lineage artifact names: the erased viewer's unique value goes, the value another viewer also saw survives, so do the lineage's artifacts. With `maxViews: 3` a fourth view rolls the oldest off (it does not refuse), and the next sweep reclaims its unique blob. |
 
 ## Rules the example follows
 
@@ -51,9 +51,20 @@ await collectSeenGarbage(seenLog, { graceMs, ownsContentStore: true });
 - **One hydration store per viewer.** A shared store would hold one viewer's classified values for another.
 - **`ownsContentStore: true` is an assertion.** The sweep deletes what it cannot root; this example's
   content store holds only lineage artifacts and viewed values.
-- **Classification is the host's.** The catalogue lets the planner *propose* a class for a Metric
-  (`sensitivity: "model-may-set"`); the scripted model proposes `secret` for the exposure card. A
-  capability's own `sensitivity` classes the planner's *summary*, not the node.
+- **Classification is the capability's, enforced twice.** The exposure capability declares
+  `sensitivity: "secret"`; the scripted model's reply carries no class at all.
+  1. *Write time (planner floor):* `materialize` classes every node bound to a capability at least
+     `cap.sensitivity`. A model that omits the class, or proposes a lower one, changes nothing
+     (`sensitivity: "model-may-set"` lets it only RAISE).
+  2. *Read time (bound policy):* the host builds `declaredToolClassesFrom(capabilities)` from the SAME
+     capabilities and binds it once as a `ReadPolicy` on `Lineage` (`SeenLog` and the change feed
+     inherit it; the example also passes it to `SeenLog` explicitly) and on the `HydrationController`
+     (`createServeSurface(policy)` takes the same object). This covers nodes the planner did not write: a
+     hand-inserted card with no class of its own on `legal.exposure` is still hidden from a low viewer
+     (`explain` says unavailable, the provider is never invoked). The tests pair it with a control rig
+     that binds nothing, where the same node is open. `undeclared: "deny"` would additionally refuse a tool the
+     capabilities do not list; it is left off here.
+  A capability's own `sensitivity` also classes the planner's *summary*.
 - **`viewer`, `viewerId` and `reader` are claims.** Nothing in lineage or the seen log authorizes; the host does.
 - **A fake clock.** Retention, `until` and the collector's grace period are all time; the rig injects it.
 
