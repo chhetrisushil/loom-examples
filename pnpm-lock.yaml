@@ -33,6 +33,7 @@ overrides:
   '@loom/blueprint-runtime': link:../loom/packages/blueprint-runtime
   '@loom-ui/core': link:../loom-ui/packages/core
   '@loom-ui/hydration': link:../loom-ui/packages/hydration
+  '@loom-ui/lineage': link:../loom-ui/packages/lineage
   '@loom-ui/planner': link:../loom-ui/packages/planner
   '@loom-ui/renderer-lit': link:../loom-ui/packages/renderer-lit
   '@loom-ui/renderer-terminal': link:../loom-ui/packages/renderer-terminal
@@ -1566,6 +1567,43 @@ importers:
       tsx:
         specifier: 'catalog:'
         version: 4.23.1
+      vitest:
+        specifier: 'catalog:'
+        version: 2.1.9(@types/node@22.20.1)(happy-dom@20.14.5)(jsdom@25.0.1)(sass@1.90.0)
+
+  examples/provenance-explain:
+    dependencies:
+      '@loom-ui/core':
+        specifier: link:../../../loom-ui/packages/core
+        version: link:../../../loom-ui/packages/core
+      '@loom-ui/hydration':
+        specifier: link:../../../loom-ui/packages/hydration
+        version: link:../../../loom-ui/packages/hydration
+      '@loom-ui/lineage':
+        specifier: link:../../../loom-ui/packages/lineage
+        version: link:../../../loom-ui/packages/lineage
+      '@loom-ui/planner':
+        specifier: link:../../../loom-ui/packages/planner
+        version: link:../../../loom-ui/packages/planner
+      '@loom/event-runtime':
+        specifier: link:../../../loom/packages/event-runtime
+        version: link:../../../loom/packages/event-runtime
+      '@loom/plugin-content':
+        specifier: link:../../../loom/plugins/content
+        version: link:../../../loom/plugins/content
+      '@loom/projection-runtime':
+        specifier: link:../../../loom/packages/projection-runtime
+        version: link:../../../loom/packages/projection-runtime
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.1
+      tsx:
+        specifier: 'catalog:'
+        version: 4.23.1
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
       vitest:
         specifier: 'catalog:'
         version: 2.1.9(@types/node@22.20.1)(happy-dom@20.14.5)(jsdom@25.0.1)(sass@1.90.0)

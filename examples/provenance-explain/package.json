@@ -1,0 +1,28 @@
+{
+  "name": "@loom/provenance-explain",
+  "version": "0.0.1",
+  "description": "loom-ui U12 on an incident-triage board: the reference planner composes it and its decision is stamped on the ops, a card is hand-edited and reverted, Lineage.explain answers 'why is this here' differently for a cleared on-call viewer and a low-clearance one, what each viewer was shown is recorded in a per-viewer SeenLog (refs sealed under a per-viewer key) and replayed as of an approval, erasing a viewer is crypto-shredding, and the mark-and-sweep collector reclaims that viewer's unique blobs while shared and lineage blobs survive. Headless.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --build",
+    "start": "tsx src/main.ts",
+    "test": "vitest run",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@loom-ui/core": "*",
+    "@loom-ui/hydration": "*",
+    "@loom-ui/lineage": "*",
+    "@loom-ui/planner": "*",
+    "@loom/event-runtime": "*",
+    "@loom/plugin-content": "*",
+    "@loom/projection-runtime": "*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "^5.6.3",
+    "vitest": "catalog:"
+  }
+}
