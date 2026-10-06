@@ -7,12 +7,13 @@ import {
   type EffectMiddleware,
   EffectRuntime,
   GrantTable,
+  delegationDigest,
   signDelegation,
 } from "@loom/effect-runtime";
 import { InMemoryAsyncEventStore } from "@loom/event-runtime";
 import { InMemoryAsyncSnapshotStore } from "@loom/snapshot-runtime";
 import { recordReach } from "@loom/verify";
-import { type FlowRunner, WorkflowRuntime } from "@loom/workflow-runtime";
+import { type FlowRunner, type PrincipalResolver, WorkflowRuntime } from "@loom/workflow-runtime";
 import { z } from "zod";
 import { capabilities, triageCatalog } from "./catalog";
 import { LLM_TOOL_ID, fakeLlm } from "./llm";
@@ -34,6 +35,29 @@ export const delegatedPrincipal = {
   tenant: "acme",
   actor: "alice",
   delegation: signDelegation(SECRET, "alice", [LLM_TOOL_ID]),
+};
+
+/**
+ * The app's token store. The kernel records a principal on EXECUTION_STARTED as a DESCRIPTION
+ * (identity + a digest of the delegation, never the bearer token), and effects run as that durable
+ * owner after every park/resume/restart. So a delegated principal needs something that can put the
+ * token back: this app-owned store, keyed by the digest the kernel recorded. A start that carries a
+ * delegation with no such restorer is refused (`PrincipalUnrestorableError`), because it would be
+ * denied after its first park.
+ */
+const tokenStore = new Map([
+  [delegationDigest(delegatedPrincipal.delegation), delegatedPrincipal.delegation],
+]);
+
+/** Rebuild the effect principal from the recorded record; an unknown digest restores no delegation. */
+const principalResolver: PrincipalResolver = {
+  resolve(record) {
+    const token =
+      record.delegation === undefined ? undefined : tokenStore.get(record.delegation.id);
+    // The delegation was recorded but the token is gone: fail closed (undefined denies every effect).
+    if (record.delegation !== undefined && token === undefined) return undefined;
+    return { ...record.identity, ...(token === undefined ? {} : { delegation: token }) };
+  },
 };
 
 const intent = { objective: "Triage the billing queue", source: "user" as const };
@@ -80,6 +104,7 @@ export function createTriageApp(opts: { reach?: boolean } = {}) {
     eventStore,
     snapshotStore,
     effectRuntime: effects,
+    principalResolver,
     onWarn: () => {},
   });
   const planner = createPlanner(opts);
@@ -194,6 +219,7 @@ export function createTriageApp(opts: { reach?: boolean } = {}) {
         eventStore,
         snapshotStore,
         effectRuntime: effects,
+        principalResolver,
         onWarn: () => {},
       });
       rt.registerFlow(define(TRIAGE_FLOW), triage);
