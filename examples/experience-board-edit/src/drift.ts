@@ -20,6 +20,7 @@ import {
   type CapabilityRef,
   type DecideContext,
   type DecideOptionsLike,
+  type DecideScope,
   type PlannerModel,
   ReferencePlanner,
   driftCapabilities,
@@ -196,6 +197,16 @@ export function repairReplyFor(board: Experience): string {
   });
 }
 
+/**
+ * The scope this in-memory decide hands its decider. These scripted models never reach a tool
+ * through it, so a call is a bug in the example — say so rather than invent an answer.
+ */
+const NO_SCOPE: DecideScope = {
+  invokeTransient() {
+    return Promise.reject(new Error("the in-memory decide has no transient scope"));
+  },
+};
+
 /** A `ReferencePlanner` scripted to return exactly one reply — the repair — plus loom's `ctx.decide` shape in memory. */
 export function repairPlanner(reply: string): { planner: ReferencePlanner; ctx: DecideContext } {
   const model: PlannerModel = {
@@ -207,11 +218,11 @@ export function repairPlanner(reply: string): { planner: ReferencePlanner; ctx: 
   const ctx: DecideContext = {
     async decide<T>(
       id: string,
-      decider: () => T | Promise<T>,
+      decider: (scope: DecideScope) => T | Promise<T>,
       _opts?: DecideOptionsLike
     ): Promise<T> {
       if (decisions.has(id)) return decisions.get(id) as T;
-      const v = await decider();
+      const v = await decider(NO_SCOPE);
       decisions.set(id, JSON.parse(JSON.stringify(v)));
       return v;
     },

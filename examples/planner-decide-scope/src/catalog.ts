@@ -41,6 +41,8 @@ export const capabilities: CapabilityRef[] = [
     toolSchemaHash: "sha256:tickets-open-1-0",
     description: "Open support tickets for a queue",
     inputSchema: { type: "object", properties: { queue: { type: "string" } } },
+    // Declared so the planner can classify its summary: a sample with no class withholds it (U7).
+    sensitivity: "internal",
     sampleOutput: {
       queue: "billing",
       total: 14,

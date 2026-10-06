@@ -1,4 +1,4 @@
-import type { DecideContext, DecideOptionsLike, PlannerModel } from "@loom-ui/planner";
+import type { DecideContext, DecideOptionsLike, DecideScope, PlannerModel } from "@loom-ui/planner";
 
 // The compose draft and two revisions, as a real model would return them. Ids are STABLE across
 // revisions — that is what keyed recompose keys on. Spans: a 12-column row. The planner appends
@@ -87,17 +87,27 @@ export function scriptedModel(): PlannerModel {
   };
 }
 
+/**
+ * The scope this in-memory decide hands its decider. These scripted models never reach a tool
+ * through it, so a call is a bug in the example — say so rather than invent an answer.
+ */
+const NO_SCOPE: DecideScope = {
+  invokeTransient() {
+    return Promise.reject(new Error("the in-memory decide has no transient scope"));
+  },
+};
+
 /** Runs the decider once per id and remembers the result — loom's `ctx.decide` shape, in memory. */
 export function memoryDecide(): DecideContext {
   const decisions = new Map<string, unknown>();
   return {
     async decide<T>(
       id: string,
-      decider: () => T | Promise<T>,
+      decider: (scope: DecideScope) => T | Promise<T>,
       _opts?: DecideOptionsLike
     ): Promise<T> {
       if (decisions.has(id)) return decisions.get(id) as T;
-      const v = await decider();
+      const v = await decider(NO_SCOPE);
       decisions.set(id, JSON.parse(JSON.stringify(v)));
       return v;
     },
