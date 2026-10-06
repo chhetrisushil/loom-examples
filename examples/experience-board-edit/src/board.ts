@@ -11,6 +11,7 @@ import {
   type CapabilityRef,
   type DecideContext,
   type DecideOptionsLike,
+  type DecideScope,
   type PlanResult,
   type PlannerModel,
   type PlannerUsage,
@@ -121,6 +122,16 @@ export function scriptedModel(): PlannerModel & { calls: number } {
 }
 
 /**
+ * The scope this in-memory decide hands its decider. These scripted models never reach a tool
+ * through it, so a call is a bug in the example — say so rather than invent an answer.
+ */
+const NO_SCOPE: DecideScope = {
+  invokeTransient() {
+    return Promise.reject(new Error("the in-memory decide has no transient scope"));
+  },
+};
+
+/**
  * loom's `ctx.decide` shape, in memory: the decider runs once per id and the value is kept as
  * JSON — the form loom persists it in — so a replay is served exactly what the log would hold.
  */
@@ -129,11 +140,11 @@ export function memoryDecide(): DecideContext {
   return {
     async decide<T>(
       id: string,
-      decider: () => T | Promise<T>,
+      decider: (scope: DecideScope) => T | Promise<T>,
       _opts?: DecideOptionsLike
     ): Promise<T> {
       if (decisions.has(id)) return decisions.get(id) as T;
-      const value = await decider();
+      const value = await decider(NO_SCOPE);
       decisions.set(id, JSON.parse(JSON.stringify(value)));
       return value;
     },
