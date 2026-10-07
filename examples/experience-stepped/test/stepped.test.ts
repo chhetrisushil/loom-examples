@@ -1,3 +1,5 @@
+import { REFERENCE_CONTAINER_ROLES, containerRoleFindings } from "@loom-ui/core";
+import { referenceContainers } from "@loom-ui/renderer-lit/containers";
 import type { DomContainerRenderer } from "@loom-ui/renderer-lit/dom";
 import { RendererRegistry } from "@loom/blueprint-runtime";
 import { describe, expect, it } from "vitest";
@@ -103,7 +105,7 @@ describe("paging: exactly one step shown at a time, the rest hidden accessibly",
 });
 
 describe("setRole toggles the container between chrome and plain", () => {
-  it("setRole(null) falls back to plain — every step visible, chrome gone, widgets remounted; setRole('stepped') brings it back", () => {
+  it("setRole(null) falls back to plain — every step visible, chrome gone, widgets remounted; setRole('stepper') brings it back", () => {
     const app = createApp();
     try {
       const ids = allWidgetIdsInDocumentOrder();
@@ -121,7 +123,7 @@ describe("setRole toggles the container between chrome and plain", () => {
         expect(s.hasAttribute("aria-hidden")).toBe(false);
       }
 
-      const added = app.land([{ type: "setRole", nodeId: "onboarding", role: "stepped" }]);
+      const added = app.land([{ type: "setRole", nodeId: "onboarding", role: "stepper" }]);
       expect(added.findings).toEqual([]);
       expect(added.remounted).toEqual(ids);
       expect(roleHost(app.host)).not.toBeNull();
@@ -292,7 +294,7 @@ describe("a container renderer that throws", () => {
     const boom: DomContainerRenderer = () => {
       throw new Error("chrome exploded");
     };
-    const containers = new RendererRegistry<DomContainerRenderer>().register("stepped", boom);
+    const containers = new RendererRegistry<DomContainerRenderer>().register("stepper", boom);
     const app = createApp({ containers });
     try {
       expect(roleHost(app.host)).toBeNull();
@@ -320,7 +322,7 @@ describe("a container renderer that throws", () => {
         dispose: () => {},
       };
     };
-    const containers = new RendererRegistry<DomContainerRenderer>().register("stepped", flaky);
+    const containers = new RendererRegistry<DomContainerRenderer>().register("stepper", flaky);
     const app = createApp({ containers });
     try {
       expect(roleHost(app.host)).not.toBeNull();
@@ -338,7 +340,7 @@ describe("a container renderer that throws", () => {
           // Blueprint IR 2.4.0 (loom ADR 0101): every container's layout now carries its node id,
           // "onboarding" included — no longer "" the way an id-less layout used to report here.
           nodeId: "onboarding",
-          message: expect.stringMatching(/"stepped".*chrome update exploded/),
+          message: expect.stringMatching(/"stepper".*chrome update exploded/),
         },
       ]);
       expect(roleHost(app.host)).toBeNull();
@@ -350,6 +352,31 @@ describe("a container renderer that throws", () => {
         )
       ).toBe(true);
       expect(widgetEl(app.host, highlightNodeId(STEPS.account))).not.toBeNull();
+    } finally {
+      app.dispose();
+    }
+  });
+});
+
+describe("the onboarding is a reference `stepper` (loom-ui U15)", () => {
+  it("satisfies the shared role rules: 2+ titled panels, no findings", () => {
+    const app = createApp();
+    try {
+      expect(containerRoleFindings(app.experience.root, REFERENCE_CONTAINER_ROLES)).toEqual([]);
+    } finally {
+      app.dispose();
+    }
+  });
+
+  it("is drawn by loom-ui's OWN `stepper` renderer too (`referenceContainers()`), one step visible", () => {
+    // This example keeps its own renderer as the teaching point; the role name is the shared one,
+    // so an app that does not need custom chrome registers the reference renderer unchanged.
+    const app = createApp({ containers: referenceContainers() });
+    try {
+      const sections = stepSections(app.host);
+      expect(sections.map((s) => s.hidden)).toEqual([false, true, true]);
+      expect(nav(app.host)).toBeNull(); // this app's chrome is not mounted: loom-ui's is
+      expect(roleHost(app.host)).not.toBeNull();
     } finally {
       app.dispose();
     }

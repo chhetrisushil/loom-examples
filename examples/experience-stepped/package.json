@@ -1,7 +1,7 @@
 {
   "name": "@loom/experience-stepped",
   "version": "0.0.1",
-  "description": "A container-renderer seam reference, non-genUI: a bike-share rider onboarding registers its own `stepped` renderer for a `role: \"stepped\"` column container (Blueprint IR 2.2.0, loom ADR 0099) — Back/Next chrome the app owns, step mount/reconcile/subscriptions the adapter owns. Paging shows exactly one step, accessibly (hidden + inert + aria-hidden); setRole toggles chrome in and out; a step title change patches chrome with no remount; appending a step remounts none of the existing ones; a throwing renderer falls back to plain; the terminal prints every step, role ignored.",
+  "description": "A container-renderer seam reference, non-genUI: a bike-share rider onboarding registers its own renderer for a `role: \"stepper\"` column container (Blueprint IR 2.2.0, loom ADR 0099) — Back/Next chrome the app owns, step mount/reconcile/subscriptions the adapter owns. Paging shows exactly one step, accessibly (hidden + inert + aria-hidden); setRole toggles chrome in and out; a step title change patches chrome with no remount; appending a step remounts none of the existing ones; a throwing renderer falls back to plain; the terminal prints every step, role ignored.",
   "private": true,
   "type": "module",
   "scripts": {

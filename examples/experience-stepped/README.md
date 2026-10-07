@@ -4,12 +4,12 @@ loom-ui's **container-renderer seam** (`DomRenderOptions.containers`, Blueprint 
 `Layout.role`, loom ADR 0099), in an app that has nothing to do with any other: a **bike-share
 rider onboarding**. Where `@loom-ui/renderer-lit`'s `registry` lets an app register a renderer
 for a widget **kind**, `containers` lets it register one for a container **role** — this app
-registers its own `stepped` renderer (`src/steppedContainer.ts`) for `role: "stepped"` and gets
+registers its own renderer (`src/steppedContainer.ts`) under the **reference** role `"stepper"` (loom-ui U15) and gets
 progress-dot / Back-Next chrome around a plain vertical list of steps, with no change to the
 adapter's own mount, keyed reconcile, reorder, subscription or focus-pin behaviour.
 
 One `Experience`, authored as operations over a `genesis`, compiled for `web` and for `terminal`.
-The root grid holds one `column` container (`"onboarding"`, `role: "stepped"`, titled "Rider
+The root grid holds one `column` container (`"onboarding"`, `role: "stepper"`, titled "Rider
 onboarding") with three step containers — account → payment → pickup — each holding a `Detail`
 (loom-ui's `Note`) and a `Highlight` (loom-ui's `Kpi`).
 
@@ -32,7 +32,7 @@ pnpm --filter @loom/experience-stepped build
   last, and either at its own end is a no-op.
 - **`setRole`**: `setRole(nodeId, null)` falls back to a plain list (chrome gone, every step
   visible with none of the three hidden attributes) and remounts every widget under the
-  container (a role is part of its key, like a type change) — `setRole(nodeId, "stepped")`
+  container (a role is part of its key, like a type change) — `setRole(nodeId, "stepper")`
   reverses it, remounting again.
 - **Update**: an identical Blueprint makes zero DOM mutations (asserted with a `MutationObserver`)
   and an empty `RecomposeReport`.
@@ -52,9 +52,15 @@ pnpm --filter @loom/experience-stepped build
   every step prints under the title in reading order, and the frame is byte-identical whether or
   not the container carries a role (loom ADR 0099 D5).
 
+- **The role is the shared one** (U15): `"stepper"` is loom-ui's reference role, so the
+  onboarding passes `containerRoleFindings(root, REFERENCE_CONTAINER_ROLES)` (2+ titled panels), and
+  `createApp({ containers: referenceContainers() })` draws it with loom-ui's own stepper instead.
+  This example still registers ITS OWN renderer by default — writing one is what it teaches (see
+  `experience-tabs-planner` for the reference renderers and a planner that composes the roles).
+
 There is **no consumer-specific code** here — only this app's own vocabulary (`Detail`,
-`Highlight`) mapped onto loom-ui's generic kinds (`Note`, `Kpi`) and its own container role
-(`"stepped"`) mapped onto its own renderer.
+`Highlight`) mapped onto loom-ui's generic kinds (`Note`, `Kpi`) and the reference container role
+(`"stepper"`) mapped onto its own renderer.
 
 Requires the sibling `../loom-ui` built at a commit with the container-renderer seam
 (`DomRenderOptions.containers`, `ContainerNode.role`, `setRole`) and the sibling `../loom` built
