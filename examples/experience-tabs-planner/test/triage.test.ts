@@ -3,6 +3,8 @@ import {
   type Experience,
   type Operation,
   REFERENCE_CONTAINER_ROLES,
+  type ReadPolicy,
+  type Viewer,
   containerRoleFindings,
   findNode,
   walk,
@@ -96,14 +98,12 @@ describe("1. compose: one tabs container, panels Overview / Queue / History", ()
   });
 
   it("the role rules are enforced on the model's reply: a lone panel, a bare widget, an untitled panel all fail closed", async () => {
-    const lone = entries().filter((e) => e.id !== "queue" && e.id !== "history");
-    const loneFixed = lone.filter(
-      (e) => !["sla", "queue_list", "history_list"].includes(e.id as string)
-    );
+    const drop = ["queue", "history", "sla", "queue_list", "history_list"];
+    const lone = entries().filter((e) => !drop.includes(e.id as string));
     const widgetUnderTabs = [...entries(), { ...entries()[2], id: "stray", parent: "views" }];
     const untitled = entries().map((e) => (e.id === "queue" ? { ...e, title: undefined } : e));
     for (const [nodes, complaint] of [
-      [loneFixed, /needs at least 2/],
+      [lone, /needs at least 2/],
       [widgetUnderTabs, /"stray" is a widget/],
       [untitled, /"queue" has no title/],
     ] as const) {
@@ -115,10 +115,10 @@ describe("1. compose: one tabs container, panels Overview / Queue / History", ()
     }
   });
 
-  it("a role the host did NOT offer is not a kind the model may use", async () => {
-    const t = triage([reply(entries({ role: "stepper" }))]);
-    // offered by default: fine. Offer nothing and the same reply is refused.
-    expect(errors(await t.compose())).toEqual([]);
+  it("a role the host did NOT offer is not a kind the model may use (the same reply is fine when offered)", async () => {
+    const offered = triage([reply(entries())]);
+    expect(errors(await offered.compose())).toEqual([]);
+
     const bare = new ReferencePlanner({
       model: scriptedModel([reply(entries())]),
       modelId: "m",
@@ -127,6 +127,10 @@ describe("1. compose: one tabs container, panels Overview / Queue / History", ()
     const r = await bare.compose({ intent, catalog, capabilities }, memoryDecide());
     expect(r.ops).toEqual([]);
     expect(r.findings.some((f) => f.code === "plan-failed")).toBe(true);
+    // The reason is the unoffered role (the container kind is not one of the offered ones).
+    const why = r.findings.map((f) => f.message).join("\n");
+    expect(why).toMatch(/nodes\.0\.container: container must be one of: section, row, grid/);
+    expect(why).not.toMatch(/one of:.*\b(tabs|stepper)\b/);
   });
 });
 
@@ -389,7 +393,7 @@ describe("5. policy A: a panel whose cards are all restricted collapses to a bar
     ]);
     expect(text(t.host)).toContain("Pending refunds");
     expect(t.invoker.calls).toContain("billing.refunds");
-    expect(t.explain("refunds").available).toBe(true);
+    expect((await t.explain("refunds")).available).toBe(true);
     expect(t.terminal()).toContain("Pending refunds");
   });
 
@@ -410,10 +414,10 @@ describe("5. policy A: a panel whose cards are all restricted collapses to a bar
     // The experience itself is unredacted: the redaction is per viewer, at compile.
     expect(findNode(t.experience.root, "refunds")).toBeDefined();
     // explainNode answers {available:false} — for the collapsed panel, its cards, and an unknown id alike.
-    expect(t.explain("refunds")).toEqual({ available: false });
-    expect(t.explain("refund_pending")).toEqual({ available: false });
-    expect(t.explain("no_such_node")).toEqual({ available: false });
-    expect(t.explain("open").available).toBe(true);
+    expect(await t.explain("refunds")).toEqual({ available: false });
+    expect(await t.explain("refund_pending")).toEqual({ available: false });
+    expect(await t.explain("no_such_node")).toEqual({ available: false });
+    expect((await t.explain("open")).available).toBe(true);
   });
 
   it("one visible card keeps the panel (title and all): the rule is ALL restricted, not ANY", async () => {
@@ -427,7 +431,49 @@ describe("5. policy A: a panel whose cards are all restricted collapses to a bar
     ]);
     expect(text(t.host)).not.toContain("Pending refunds"); // the secret card itself is still redacted
     expect(t.invoker.calls).not.toContain("billing.refunds");
-    expect(t.explain("refunds").available).toBe(true);
-    expect(t.explain("refund_pending")).toEqual({ available: false });
+    expect((await t.explain("refunds")).available).toBe(true);
+    expect(await t.explain("refund_pending")).toEqual({ available: false });
+  });
+});
+
+describe("5b. the read-time floor: a node the planner did NOT write is hidden by the declared table alone", () => {
+  // The planner stamps `capability.sensitivity` on every node IT writes, so the cases above would
+  // pass with no read policy at all. Here the APPLICATION inserts a Metric bound to the secret
+  // `billing.refunds` with no `sensitivity` of its own: only `declaredToolClasses` classes it.
+  const rawCard = async (viewer: Viewer, policy?: ReadPolicy) => {
+    const t = new Triage(scriptedModel([reply(entries())]), viewer, policy);
+    open.push(t);
+    await t.compose();
+    await t.addUnclassifiedRefundCard("overview");
+    return t;
+  };
+
+  it("hides it from a low viewer: no text, no fetch, explain is {available:false}", async () => {
+    const t = await rawCard(AGENT);
+    const node = findNode(t.experience.root, "raw_refunds");
+    expect(node).toBeDefined();
+    expect(JSON.stringify(node)).not.toContain("sensitivity"); // nobody classified it
+    expect(text(t.host)).not.toMatch(/refund/i);
+    expect(text(t.host)).not.toContain("18400");
+    expect(t.invoker.calls).not.toContain("billing.refunds");
+    expect(t.terminal()).not.toMatch(/refund/i);
+    expect(await t.explain("raw_refunds")).toEqual({ available: false });
+    // The rest of the panel is untouched.
+    expect(text(t.host)).toContain("Open tickets");
+    expect((await t.explain("open")).available).toBe(true);
+  });
+
+  it("a cleared viewer still sees it (the table classes the tool, it does not delete the node)", async () => {
+    const t = await rawCard(LEAD);
+    expect(text(t.host)).toContain("Pending refunds");
+    expect(t.invoker.calls).toContain("billing.refunds");
+    expect((await t.explain("raw_refunds")).available).toBe(true);
+  });
+
+  it("control: the SAME view with an EMPTY table leaks it to the low viewer", async () => {
+    const t = await rawCard(AGENT, {});
+    expect(text(t.host)).toContain("Pending refunds");
+    expect(t.invoker.calls).toContain("billing.refunds");
+    expect((await t.explain("raw_refunds")).available).toBe(true);
   });
 });

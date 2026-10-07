@@ -4,31 +4,39 @@ import {
   type Finding,
   type Intent,
   type Operation,
+  type Provenance,
   REFERENCE_CONTAINER_ROLES,
+  type ReadPolicy,
+  type RecordedOperation,
   type Viewer,
   compile,
-  emptyLedger,
-  explainNode,
+  findNode,
   genesis,
   orderKeyAfterAll,
-  replay,
 } from "@loom-ui/core";
-import { seal } from "@loom-ui/core/log";
 import {
   HYDRATION_PROJECTION_ID,
   HYDRATION_PROJECTION_VERSION,
   HydrationController,
   HydrationStore,
 } from "@loom-ui/hydration";
-import { type PlanResult, type PlannerModel, ReferencePlanner } from "@loom-ui/planner";
+import { InMemoryLineageStore, Lineage, type LineageResult } from "@loom-ui/lineage";
+import {
+  type PlanResult,
+  type PlannerModel,
+  ReferencePlanner,
+  plannerProvenance,
+  providerHandle,
+} from "@loom-ui/planner";
 import { referenceContainers } from "@loom-ui/renderer-lit/containers";
 import { type DomRenderHandle, litRegistry, renderBlueprintDom } from "@loom-ui/renderer-lit/dom";
 import { renderExperience, terminalRegistry } from "@loom-ui/renderer-terminal";
 import type { Blueprint } from "@loom/blueprint-runtime";
+import { InMemoryContentStore } from "@loom/plugin-content";
 import { InMemoryProjectionRuntime } from "@loom/projection-runtime";
 import { catalog } from "./catalog";
 import { memoryDecide } from "./model";
-import { TriageInvoker, capabilities, declaredToolClasses, readPolicy } from "./world";
+import { TriageInvoker, capabilities, readPolicy as hostPolicy, refunds } from "./world";
 
 export const EXPERIENCE_ID = "ticket-triage";
 
@@ -55,6 +63,8 @@ export class Triage {
   readonly host: HTMLElement = document.createElement("div");
   readonly planner: ReferencePlanner;
   readonly ctx = memoryDecide();
+  /** Every version this view goes through is recorded here; `explain` reads it back. */
+  readonly lineage: Lineage;
   private readonly timers: Array<() => void> = [];
   private readonly controller: HydrationController;
   private handle: DomRenderHandle | undefined;
@@ -62,8 +72,15 @@ export class Triage {
 
   constructor(
     readonly model: PlannerModel,
-    readonly viewer: Viewer = LEAD
+    readonly viewer: Viewer = LEAD,
+    /** The host's read policy. Only the negative control passes anything but the declared table. */
+    readonly readPolicy: ReadPolicy = hostPolicy
   ) {
+    this.lineage = new Lineage({
+      events: new InMemoryLineageStore(),
+      content: new InMemoryContentStore(),
+      readPolicy,
+    });
     this.planner = new ReferencePlanner({ model, modelId: "scripted-triage", maxAttempts: 1 });
     this.controller = new HydrationController({
       invoker: this.invoker,
@@ -93,9 +110,14 @@ export class Triage {
       this.ctx
     );
     if (result.ops.length > 0) {
-      const built = replay(genesis({ experienceId: EXPERIENCE_ID, intent, meta }), result.ops);
-      if (!built.ok) throw new Error(built.finding.message);
-      await this.show(seal(built.value));
+      const start = must(
+        await this.lineage.start(genesis({ experienceId: EXPERIENCE_ID, intent, meta }), HOST)
+      );
+      await this.record(
+        start.experience.versionHash,
+        result.ops,
+        plannerProvenance(result, PLANNER)
+      );
     }
     return result;
   }
@@ -112,15 +134,19 @@ export class Triage {
       },
       this.ctx
     );
-    if (result.ops.length > 0) await this.apply(result.ops);
+    if (result.ops.length > 0) {
+      await this.record(
+        this.experience.versionHash,
+        result.ops,
+        plannerProvenance(result, PLANNER)
+      );
+    }
     return result;
   }
 
   /** Ops the APPLICATION authors (not the planner's): folded on and drawn the same way. */
   async apply(ops: readonly Operation[]): Promise<void> {
-    const next = replay(this.experience, ops);
-    if (!next.ok) throw new Error(next.finding.message);
-    await this.show(seal(next.value));
+    await this.record(this.experience.versionHash, ops, HOST);
   }
 
   /** The application's own container: a policy memo the planner must never edit. */
@@ -159,13 +185,63 @@ export class Triage {
     ]);
   }
 
-  /** `explainNode` for this view's viewer, with the host's read policy bound. */
-  explain(nodeId: string) {
-    return explainNode(this.experience, nodeId, {
-      viewer: this.viewer,
-      ledger: emptyLedger(),
-      declaredToolClasses,
-    });
+  /** `Lineage.explain` for this view's viewer; the lineage carries the host's bound read policy. */
+  async explain(nodeId: string) {
+    return must(await this.lineage.explain(EXPERIENCE_ID, nodeId, { viewer: this.viewer }));
+  }
+
+  /**
+   * A card the application authors by hand on the refunds tool, in `panelId`: NO `sensitivity` of
+   * its own (the planner never wrote it, so nothing stamped a class on it). Only the host's read
+   * policy can keep it from a low-clearance viewer.
+   */
+  async addUnclassifiedRefundCard(panelId: string): Promise<void> {
+    const handle = providerHandle(
+      refunds.toolName,
+      refunds.toolVersion,
+      refunds.toolSchemaHash,
+      {},
+      "pending"
+    );
+    const panel = findNode(this.experience.root, panelId) as ContainerNode;
+    await this.apply([
+      {
+        type: "remapProvider",
+        handle,
+        spec: {
+          handle,
+          executionGraph: [
+            {
+              stepId: "s1",
+              toolName: refunds.toolName,
+              toolVersion: refunds.toolVersion,
+              toolSchemaHash: refunds.toolSchemaHash,
+              arguments: {},
+              dependsOn: [],
+              idempotent: true,
+            },
+          ],
+          reshaping: { engine: "JSONPath", scriptRef: "pending" },
+          outputShapeHash: "fnv1a64:042b41495f5d90e6",
+          cachePolicy: { ttlSeconds: 60, scope: "principal" },
+        } as never,
+      },
+      {
+        type: "insertNode",
+        parentId: panelId,
+        node: {
+          id: "raw_refunds",
+          order: orderKeyAfterAll(panel.children),
+          kind: "semantic",
+          type: "Metric",
+          typeVersion: "1.0.0",
+          span: 6,
+          label: { key: "triage.raw_refunds.label", fallback: "Pending refunds" },
+          props: { unit: "USD" },
+          binding: { handle, priority: "P1" },
+        } as never,
+      },
+    ]);
   }
 
   /** The terminal frame: every panel stacked, no chrome (a role is not a terminal concept). */
@@ -190,10 +266,27 @@ export class Triage {
       hydrationProjectionId: HYDRATION_PROJECTION_ID,
       hydrationProjectionVersion: HYDRATION_PROJECTION_VERSION,
       viewer: this.viewer,
-      declaredToolClasses,
+      ...(this.readPolicy.declaredToolClasses !== undefined && {
+        declaredToolClasses: this.readPolicy.declaredToolClasses,
+      }),
     });
     if (!r.ok) throw new Error(`compile (${surface}): ${r.findings.map(msg).join("; ")}`);
     return r.blueprint;
+  }
+
+  /** Commit `ops` (authored by `by`) onto the lineage's head, then draw the version it produced. */
+  private async record(head: string, ops: readonly Operation[], by: Provenance): Promise<void> {
+    const at = new Date().toISOString();
+    const recorded: RecordedOperation[] = ops.map((op) => ({ op, by, at }));
+    const committed = must(
+      await this.lineage.compose({
+        experienceId: EXPERIENCE_ID,
+        expectedHead: head,
+        ops: recorded,
+        by,
+      })
+    );
+    await this.show(committed.experience);
   }
 
   private async show(next: Experience): Promise<void> {
@@ -224,5 +317,14 @@ export class Triage {
     throw new Error("hydration did not settle");
   }
 }
+
+/** A refusal is a bug in the example: say so. */
+function must<T>(r: LineageResult<T>): T {
+  if (!r.ok) throw new Error(`lineage refused: ${JSON.stringify(r.refusal)}`);
+  return r.value;
+}
+
+const HOST: Provenance = { source: "user", agentId: "triage-app" };
+const PLANNER = { agentId: "triage-planner" } as const;
 
 const msg = (f: Finding): string => `${f.code}: ${f.message}`;

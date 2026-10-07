@@ -39,12 +39,21 @@ pnpm --filter @loom/experience-tabs-planner build   # tsc
 4. **Re-role.** The same panels, `tabs` → `stepper`, are ONE `setRole` op. The tablist is
    replaced by Back / Next and a position line.
 5. **Policy A.** A *Refunds* panel whose cards are all bound to a capability declared `secret`
-   (the class lives on the capability; `declaredToolClassesFrom(capabilities)` is bound on
-   `compile`, `explainNode` and the hydration controller). A cleared viewer sees the panel; a
-   low-clearance viewer sees **a bare placeholder** — no title, no role, no cards, no fetch of
-   `billing.refunds` — and the tab set keeps its panel count (the fourth tab reads "Restricted").
-   `explainNode` answers `{ available: false }` for the panel, its cards and an unknown id alike.
-   One visible card keeps the whole panel: the rule is *all* restricted, not *any*.
+   (the class lives on the capability; `declaredToolClassesFrom(capabilities)` is ONE table: the
+   hydration controller and `Lineage` bind it once, `compile` takes it per call). A cleared viewer
+   sees the panel; a low-clearance viewer sees **a bare placeholder** — no title, no role, no
+   children, no count of them, no fetch of `billing.refunds`. What it does NOT hide is that a panel
+   exists and where: the tab set keeps its panel count and the fourth tab reads "Restricted". A host
+   that must hide even that has to restructure (e.g. never offer the panel to that audience).
+   `lineage.explain` answers `{ available: false }` for the panel, its cards and an unknown id
+   alike. One visible card keeps the whole panel: the rule is *all* restricted, not *any*.
+6. **The read-time floor.** The planner stamps `capability.sensitivity` on every node it writes, so
+   step 5 would hold even with no read policy. The table's own job is the node the planner did NOT
+   write: the application inserts (`remapProvider` + `insertNode`) a Metric bound to
+   `billing.refunds` with no `sensitivity`. For the low viewer it is absent from the DOM (shadow
+   roots), the tool is never called, and `explain` says `{ available: false }`; with an EMPTY table
+   (the negative control) the same view leaks it. The declared table, not the node's own class,
+   is what hides it.
 
 ## Notes
 

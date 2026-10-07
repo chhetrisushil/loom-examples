@@ -43,7 +43,8 @@ export const capabilities: CapabilityRef[] = [stats, queue, history, refunds];
 
 /**
  * The host's read policy, derived from the SAME capabilities the planner is offered, so the two
- * cannot disagree. It is bound on `compile`, on `explainNode` and on the hydration controller.
+ * cannot disagree. ONE table, passed to every read path: the hydration controller and `Lineage`
+ * bind it once; `compile` takes it per call (core has no bound option).
  */
 export const declaredToolClasses = declaredToolClassesFrom(capabilities);
 export const readPolicy: ReadPolicy = { declaredToolClasses };

@@ -39,7 +39,7 @@ import { steppedContainer } from "./steppedContainer";
 // ── A bike-share rider onboarding, non-genUI ────────────────────────────────────────────────
 // One `column` container, `role: "stepper"`, three step containers (account → payment →
 // pickup), each a `Detail` (loom-ui's `Note`) and a `Highlight` (loom-ui's `Kpi`). This app
-// registers its OWN `stepped` container renderer (`steppedContainer.ts`) on loom-ui's
+// registers its OWN `stepper`-role container renderer (`steppedContainer.ts`) on loom-ui's
 // container-renderer seam — the app owns chrome and step visibility, the adapter owns
 // everything else. `confirm` is a fourth step, defined but never composed in: appending it is
 // what the "no existing widget remounts" test exercises.
