@@ -4,7 +4,7 @@ import type {
   DomContainerRenderer,
 } from "@loom-ui/renderer-lit/dom";
 
-// This app's own container renderer, registered under the role "stepped" on
+// This app's own container renderer, registered under the reference role "stepper" on
 // `DomRenderOptions.containers` (Blueprint IR 2.2.0 `Layout.role`, loom ADR 0099). The adapter
 // keeps everything it owns for a plain container — `body`, the children's mount, keyed
 // reconcile, reorder, placement, subscriptions and the focus pin; this renderer owns only its

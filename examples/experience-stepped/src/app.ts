@@ -37,7 +37,7 @@ import { catalog } from "./catalog";
 import { steppedContainer } from "./steppedContainer";
 
 // ── A bike-share rider onboarding, non-genUI ────────────────────────────────────────────────
-// One `column` container, `role: "stepped"`, three step containers (account → payment →
+// One `column` container, `role: "stepper"`, three step containers (account → payment →
 // pickup), each a `Detail` (loom-ui's `Note`) and a `Highlight` (loom-ui's `Kpi`). This app
 // registers its OWN `stepped` container renderer (`steppedContainer.ts`) on loom-ui's
 // container-renderer seam — the app owns chrome and step visibility, the adapter owns
@@ -199,7 +199,7 @@ function initialOperations(): Operation[] {
         direction: "column",
         span: 12,
         title: { key: "stepped.onboarding.title", fallback: "Rider onboarding" },
-        role: "stepped",
+        role: "stepper",
         children: [],
       },
     },
@@ -308,7 +308,7 @@ export function createApp(options: { containers?: DomContainerRegistry } = {}): 
   document.body.appendChild(host);
   const containers: DomContainerRegistry =
     options.containers ??
-    new RendererRegistry<DomContainerRenderer>().register("stepped", steppedContainer());
+    new RendererRegistry<DomContainerRenderer>().register("stepper", steppedContainer());
   const handle = renderBlueprintDom(host, blueprint, {
     projectionRuntime: runtime,
     executionId: store.executionId,
