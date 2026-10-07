@@ -66,7 +66,22 @@ for (const [who, viewer] of [
   say(`     tabs: ${JSON.stringify(tabs(v))}`);
   say(`     billing.refunds fetched: ${v.invoker.calls.includes("billing.refunds")}`);
   say(
-    `     explainNode("refunds"): ${JSON.stringify(v.explain("refunds").available === false ? { available: false } : { available: true })}`
+    `     lineage.explain("refunds"): ${JSON.stringify((await v.explain("refunds")).available === false ? { available: false } : { available: true })}`
   );
+  v.dispose();
+}
+
+step(6, "The read-time floor: a card the APPLICATION wrote, with no class of its own");
+for (const [who, viewer, policy] of [
+  ["agent, declared table", AGENT, undefined],
+  ["agent, EMPTY table (control)", AGENT, {}],
+] as const) {
+  const v = new Triage(scriptedModel([reply(entries())]), viewer, policy);
+  await v.compose();
+  await v.addUnclassifiedRefundCard("overview");
+  const card = findNode(v.experience.root, "raw_refunds");
+  say(`   ${who}  (card carries a class: ${JSON.stringify(card).includes("sensitivity")})`);
+  say(`     billing.refunds fetched: ${v.invoker.calls.includes("billing.refunds")}`);
+  say(`     explain("raw_refunds").available: ${(await v.explain("raw_refunds")).available}`);
   v.dispose();
 }
