@@ -4,6 +4,7 @@ import { InMemoryProjectionRuntime } from "@loom/projection-runtime";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
 import { CAPABILITY_AGENT, FLEET } from "./agents/definitions";
+import { registerDiagnosticsEffects } from "./agents/diagnosticsRunner";
 import { buildCatalog } from "./capabilities/catalog";
 import { Orchestrator } from "./orchestrator/Orchestrator";
 import { buildRegistry } from "./widgets/registry";
@@ -35,6 +36,8 @@ const app = defineConfig({
   agents: FLEET,
   a2a: true,
   capabilityAgents: CAPABILITY_AGENT,
+  // agentLoop$ resolves its model + tool calls through this EffectRuntime.
+  execution: { registerEffects: registerDiagnosticsEffects },
 });
 
 // ── The conductor ─────────────────────────────────────────────────────────────

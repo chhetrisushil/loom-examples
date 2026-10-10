@@ -2,6 +2,7 @@ import { defineConfig } from "@loom/app";
 import type { WidgetAction } from "@loom/blueprint-runtime";
 import { InMemoryProjectionRuntime } from "@loom/projection-runtime";
 import { CAPABILITY_AGENT, FLEET } from "./agents/definitions";
+import { registerDiagnosticsEffects } from "./agents/diagnosticsRunner";
 import { MissionControlBlueprint } from "./blueprints/MissionControlBlueprint";
 import { ObservabilityBlueprint } from "./blueprints/ObservabilityBlueprint";
 import { buildCatalog } from "./capabilities/catalog";
@@ -33,6 +34,8 @@ const loomApp = defineConfig({
   agents: FLEET,
   a2a: true,
   capabilityAgents: CAPABILITY_AGENT,
+  // agentLoop$ resolves its model + tool calls through this EffectRuntime.
+  execution: { registerEffects: registerDiagnosticsEffects },
 });
 
 const orchestrator = new Orchestrator({

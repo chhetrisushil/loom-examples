@@ -30,50 +30,38 @@ import {
 const report = (executionId: string, line: string): void => progressHub.report(executionId, line);
 
 // ── diagnose-schema (ReAct: inspect the target table) ─────────────────────────
-const DiagnoseSchemaStep = step$({
-  id: "diagnose-schema-step",
-  name: "Diagnose Schema",
-  inputSchema: z.object({ target: z.string() }),
-  outputSchema: z.object({
-    target: z.string(),
-    rootCause: z.string(),
-    severity: z.string(),
-    metrics: z.record(z.number()),
-  }),
-  handler: handler$(async (input: { target: string }, ctx) => {
-    report(ctx.executionId, `Inspecting table ${input.target}…`);
-    await sleep(500);
-    // Genuine ReAct loop: the Schema Inspector agent calls the inspect-table tool,
-    // then reasons over the result (see agents/diagnosticsRunner.ts).
-    const result = await runSchemaInspectorAgent(input.target, ctx);
-    report(
-      ctx.executionId,
-      `ReAct loop: ${result.toolCalls} tool call over ${result.iterations} iterations.`
-    );
-    report(
-      ctx.executionId,
-      `Table: ${(result.stats.rowCount / 1_000_000).toFixed(0)}M rows, ${result.stats.sizeGb} GB, ` +
-        `${result.stats.indexes} indexes, ${result.stats.writeQps} writes/s.`
-    );
-    report(ctx.executionId, `Analysis: ${result.summary}`);
-    const diagnosis: Diagnosis = {
-      target: input.target,
-      rootCause: result.summary,
-      severity: "warning",
-      metrics: {
-        rowCount: result.stats.rowCount,
-        sizeGb: result.stats.sizeGb,
-        indexes: result.stats.indexes,
-        fkConstraints: result.stats.fkConstraints,
-        writeQps: result.stats.writeQps,
-      },
-    };
-    return diagnosis;
-  }),
-});
-
-const DiagnoseSchemaRunner: FlowRunner<{ target: string }, Diagnosis> = (ctx, input) =>
-  ctx.run(DiagnoseSchemaStep, { target: input.target }) as Promise<Diagnosis>;
+// A genuine ReAct loop, run FROM the flow's runner body (agentLoop$): the Schema Inspector
+// agent calls the inspect-table tool, then reasons over the result. Every model call and
+// tool call is its own durable frame in this flow's log (see agents/diagnosticsRunner.ts),
+// so there is no wrapping step$ — a step handler has no `ctx.execute` to loop with.
+const DiagnoseSchemaRunner: FlowRunner<{ target: string }, Diagnosis> = async (ctx, input) => {
+  report(ctx.executionId, `Inspecting table ${input.target}…`);
+  await sleep(500);
+  const result = await runSchemaInspectorAgent(input.target, ctx);
+  report(
+    ctx.executionId,
+    `ReAct loop: ${result.toolCalls} tool call over ${result.iterations} iterations.`
+  );
+  report(
+    ctx.executionId,
+    `Table: ${(result.stats.rowCount / 1_000_000).toFixed(0)}M rows, ${result.stats.sizeGb} GB, ` +
+      `${result.stats.indexes} indexes, ${result.stats.writeQps} writes/s.`
+  );
+  report(ctx.executionId, `Analysis: ${result.summary}`);
+  const diagnosis: Diagnosis = {
+    target: input.target,
+    rootCause: result.summary,
+    severity: "warning",
+    metrics: {
+      rowCount: result.stats.rowCount,
+      sizeGb: result.stats.sizeGb,
+      indexes: result.stats.indexes,
+      fkConstraints: result.stats.fkConstraints,
+      writeQps: result.stats.writeQps,
+    },
+  };
+  return diagnosis;
+};
 
 export const DiagnoseSchemaFlow: RegisteredFlow<{ target: string }, Diagnosis> = {
   definition: flow$({
@@ -87,7 +75,7 @@ export const DiagnoseSchemaFlow: RegisteredFlow<{ target: string }, Diagnosis> =
       severity: z.enum(["info", "warning", "critical"]),
       metrics: z.record(z.number()),
     }),
-    steps: [DiagnoseSchemaStep],
+    steps: [],
   }),
   runner: DiagnoseSchemaRunner,
 };

@@ -5,6 +5,7 @@ import type { BranchRegistry, EventStore } from "@loom/event-runtime";
 import { SqliteTimerStore, sqliteStorage } from "@loom/plugin-sqlite";
 import type { RegisteredFlow, WorkflowRuntime } from "@loom/workflow-runtime";
 import { CAPABILITY_AGENT, FLEET } from "../agents/definitions";
+import { registerDiagnosticsEffects } from "../agents/diagnosticsRunner";
 import { buildCatalog } from "../capabilities/catalog";
 import { RemediateLagFlow } from "../capabilities/flows";
 import { Orchestrator } from "../orchestrator/Orchestrator";
@@ -63,6 +64,8 @@ export function createApp(opts: { dataDir: string; missionId?: string }): Server
     agents: FLEET,
     a2a: true,
     capabilityAgents: CAPABILITY_AGENT,
+    // agentLoop$ resolves its model + tool calls through this EffectRuntime.
+    execution: { registerEffects: registerDiagnosticsEffects },
   });
 
   if (!app.stores.branchRegistry) {

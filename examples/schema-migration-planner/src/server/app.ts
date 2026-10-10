@@ -6,6 +6,7 @@ import type { BranchRegistry } from "@loom/event-runtime";
 import { SqliteTimerStore, sqliteStorage } from "@loom/plugin-sqlite";
 import type { RegisteredFlow, WorkflowRuntime } from "@loom/workflow-runtime";
 import { AGENT_CARDS, CAPABILITY_AGENT, FLEET } from "../agents/definitions";
+import { registerSchemaInspectorEffects } from "../agents/diagnosticsRunner";
 import { buildCatalog } from "../capabilities/catalog";
 import { MigrationExecutionFlow } from "../capabilities/flows";
 import { buildPlacementDispatcher } from "../compute/dispatcher";
@@ -78,6 +79,8 @@ export function createApp(opts: {
     // The branchable migration flow isn't planner-routed — the Migration Board
     // drives it directly — so register it explicitly.
     flows: [MigrationExecutionFlow as RegisteredFlow],
+    // agentLoop$ resolves the schema inspector's model + tool calls through this EffectRuntime.
+    execution: { registerEffects: registerSchemaInspectorEffects },
     // Durable deadlines, so the shadow-verification gate inside each branch has a real
     // one — and so something other than an operator can wake a parked branch.
     // #392 — with a branch worker configured, a wake goes back to the lane the execution
