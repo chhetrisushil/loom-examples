@@ -104,3 +104,5 @@ Point `A2APeerClient` at that server — identical Loom-side code.
 If you only want ADK/LangChain for their **LLM** (not the agent loop), skip A2A
 and implement Loom's `LlmProvider` (`packages/llm/src/types.ts`) instead, then
 register it with `createAgentModelEffect(provider)` and run `agentLoop$` over it. Cheaper when you just need model access.
+
+The demo runs the local agent with `runAgentOnce` (`@loom/app`), which builds the throwaway in-memory app and one-off flow `agentLoop$` needs. That is for scripts and tests; production puts `agentLoop$` in a registered flow.

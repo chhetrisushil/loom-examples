@@ -1,10 +1,12 @@
 import type { ChatFeed } from "@loom-ui/core";
+import { signInboxEnvelope } from "@loom/conversation";
 import type { LlmRequest } from "@loom/llm";
 import { textOf } from "@loom/llm";
 import { afterEach, describe, expect, it } from "vitest";
 import { capturedEnvelope, inject } from "../src/attack";
 import { Responder, feedFromEvents, render, until, within } from "../src/client";
 import {
+  ENVELOPE_KEY,
   PII_MARKER,
   SERVICE,
   TOKENS,
@@ -226,6 +228,35 @@ describe("signed envelopes", () => {
     // no model call (so none as ben), and the export tool never ran
     expect(s.room.requests.length).toBe(calls);
     expect(s.room.requests.some((r) => /export/i.test(lastUserText(r)))).toBe(false);
+  });
+
+  it("CONTROL: the same inbox path accepts a body signed WITH the key (signInboxEnvelope), so the forgeries above are refused for the signature alone", async () => {
+    const s = await scene();
+    await s.ada.say(s.id, "Pull the failover runbook");
+    await s.settled(s.ada, 2);
+
+    // a fresh id, ben's voice, a clean text: exactly the shape of the impersonation, but signed by the host's key
+    await inject(
+      s.room,
+      s.id,
+      signInboxEnvelope(ENVELOPE_KEY, {
+        conversationId: s.id,
+        kind: "user",
+        id: "signed-envelope-id-0002",
+        iat: Date.now(),
+        asker: identityOf(ben),
+        text: "Pull the failover runbook again",
+      })
+    );
+    await s.settled(s.ada, 4);
+
+    const entries = (await s.ada.history(s.id)).body.entries;
+    expect(entries[2]).toMatchObject({
+      role: "user",
+      status: "complete",
+      text: "Pull the failover runbook again",
+      asker: { actor: "ben" },
+    });
   });
 
   it("a REPLAYED envelope (a captured, validly signed one) is rejected: it does not run twice", async () => {
