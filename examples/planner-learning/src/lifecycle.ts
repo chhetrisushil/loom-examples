@@ -67,12 +67,11 @@ export interface TrialResult {
   reasons: string[];
 }
 
-const refusal = (e: unknown): string[] =>
-  e instanceof PromotionRefusedError
-    ? e.reasons.length > 0
-      ? [...e.reasons]
-      : [e.message]
-    : [String(e)];
+/** The gate's reasons for a refusal. Anything else (a KV/IO failure) is NOT a refusal: it is rethrown. */
+const refusal = (e: unknown): string[] => {
+  if (!(e instanceof PromotionRefusedError)) throw e;
+  return e.reasons.length > 0 ? [...e.reasons] : [e.message];
+};
 
 /**
  * register -> offline gate -> SHADOW -> gate -> CANARY -> gate -> FULL, or rollback.
@@ -132,9 +131,9 @@ export async function trial(lab: Lab, candidate: Version, o: TrialOptions): Prom
       now: now(),
     });
   } catch (e) {
+    result.reasons = refusal(e); // before the rollback: an IO failure must not masquerade as a refusal
     await reg.rollback({ id: POLICY_ID, now: now(), note: "shadow gate refused" });
     result.outcome = "refused-after-shadow";
-    result.reasons = refusal(e);
     say(`shadow gate refused: ${result.reasons.join("; ")}`);
     return result;
   }
