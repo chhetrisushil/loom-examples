@@ -19,7 +19,8 @@ export interface Sse {
 export async function until(
   cond: () => boolean | Promise<boolean>,
   what: string,
-  ms = 20_000
+  // Below vitest's 5 s test timeout, so a stuck wait fails with "timed out waiting for <what>".
+  ms = 4_000
 ): Promise<void> {
   const t0 = Date.now();
   while (!(await cond())) {

@@ -112,7 +112,11 @@ describe("chat-agent", () => {
   it("restart + Last-Event-ID: ids continue, nothing is skipped or repeated, replay calls no model", async () => {
     const stores = newStores(); // the durable half: it outlives the "process"
     let chat = await startChat({ stores, rotateEveryTurns: 2 }); // rotates, so ids span generations
-    cleanup.push(() => chat.stop());
+    const first = chat; // captured: `chat` is reassigned below
+    let firstStopped = false;
+    cleanup.push(async () => {
+      if (!firstStopped) await first.stop();
+    });
     const alice = await Session.start(chat.url, "tok-alice");
     const feed1 = await follow(alice);
     for (let i = 1; i <= 3; i++) {
@@ -128,10 +132,12 @@ describe("chat-agent", () => {
     feed1.close();
 
     // the process dies and a new one starts over the same durable stores, on a different port
-    await chat.stop();
-    const oldUrl = chat.url;
+    await first.stop();
+    firstStopped = true;
+    const oldUrl = first.url;
     chat = await startChat({ stores, rotateEveryTurns: 2 });
-    cleanup.push(() => chat.stop());
+    const second = chat;
+    cleanup.push(() => second.stop());
     alice.base = chat.url;
     expect(chat.url).not.toBe(oldUrl);
 
