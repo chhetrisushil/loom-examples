@@ -227,13 +227,10 @@ describe("the R18 lifecycle", () => {
   });
 });
 
-describe("what a FRESH turn reports (loom-ui friction)", () => {
-  // KNOWN GAP: ReferencePlanner reads the rollout stamp from `ctx.decide`'s options at CALL time
-  // (loom-ui packages/planner/src/reference.ts:206), but loom >= #529 sets `options.policy` inside the
-  // decider, so a fresh turn's `report.variant.policy.version` / `.rollout` are never populated and the
-  // DECISION_RECORDED stamp is the only place the acting version is visible. `it.fails` flips red when
-  // loom-ui reads the stamp after the decision resolves: then delete `.fails` and assert it for real.
-  it.fails("report.variant names the acting version and the rollout stamp", async () => {
+describe("what a FRESH turn reports", () => {
+  // loom-ui reads the rollout stamp after loom's decider returns (loom-ui #63), so a turn that ACTED
+  // reports the acting version and the stamp; a replay reports neither (see the replay test).
+  it("report.variant names the acting version and the rollout stamp", async () => {
     const lab = new Lab();
     await lab.bootstrap();
     const s = await lab.turn({ userId: "fresh@example.com", segment: "power" });

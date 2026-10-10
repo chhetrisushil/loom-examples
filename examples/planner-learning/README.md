@@ -34,9 +34,8 @@ learn                       trajectories -> evaluatePolicy (SNIPS + unit bootstr
   store, so SNIPS still has what v2 needs and the drift story is unchanged.
 - **Where the acting version is visible.** The authority is the log: the `DECISION_RECORDED` stamp
   (`policy.version`, rollout mode, bucket, shadow arm) that `linkFromLedger` / `settleRewards` join on. A replayed
-  `report.variant.policy` has no `version` (the registry's current version did not choose). Known gap: a FRESH
-  turn's report should name the acting version and carry the rollout stamp, but with loom >= #529 it does not
-  (see the `it.fails` test); the example reads the stamp from the log.
+  `report.variant.policy` has no `version` (the registry's current version did not choose); a FRESH turn's
+  report names the acting `{ id, version }` and carries the rollout stamp (mode, bucket, shadow arm).
 - **Votes (loom-ui U11).** The viewer is the host's session (`{id, tenant}`), never the payload. A vote on a
   surface the server did not record showing that viewer (`seenLogExposure`) is refused `unexposed`; a re-vote
   replaces the earlier one (one viewer = one vote in the fold), a replayed batch is refused, and
