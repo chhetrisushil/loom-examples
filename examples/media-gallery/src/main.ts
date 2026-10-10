@@ -133,13 +133,14 @@ say(
 // 7. GC.
 const orphan = await vault.put("acme", tinyPng([1, 1, 1]), { mediaType: "image/png" });
 clock.now += 30 * DAY_MS;
-const report = await sweepMedia(vault, assistant, {
-  now: clock.now,
-  roots: () => tools.addresses(),
-});
+const scan = { now: clock.now, roots: () => tools.addresses() };
+const preview = await sweepMedia(vault, assistant, { ...scan, dryRun: true }); // nothing is deleted
+const intactAfterPreview = (await vault.store.get({ __loomContent: orphan.ref.address })) !== null;
+const report = await sweepMedia(vault, assistant, scan);
 const survives = await vault.store.get({ __loomContent: [...addresses][0] as string });
 say(
   "7. GC pins what a log still cites",
+  `dry run first: ${preview.orphansReclaimed.length} would be reclaimed, the orphan is still stored: ${intactAfterPreview}`,
   `orphans reclaimed: ${report.orphansReclaimed.length} (uncited, past the TTL; the orphan put in step 7 is among them: ${report.orphansReclaimed.includes(orphan.ref.address)})`,
   `gallery photos survive (held by the library, an external root): ${(await Promise.all(ids.map(async (id) => vault.store.get({ __loomContent: (await tools.refOf("acme", id))?.address ?? "" })))).every((b) => b !== null)}`,
   `a swatch the run cited still resolves: ${survives !== null}`

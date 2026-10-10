@@ -65,6 +65,28 @@ describe("media-gallery", () => {
     expect(foreign.toolText).toContain("content_unavailable"); // the model is told only that it could not be opened
   });
 
+  it("identical bytes stored by two tenants: both may read, a third may not, and every seam agrees", async () => {
+    const vault = new MediaVault();
+    const bytes = tinyPng([77, 88, 99]);
+    const a = await vault.put("acme", bytes, { mediaType: "image/png" });
+    const g = await vault.put("globex", bytes, { mediaType: "image/png" });
+    expect(g.ref.address).toBe(a.ref.address); // one blob
+    const address = a.ref.address;
+
+    expect(await vault.resolveForModel(a.source.ref, ctxFor("acme"))).not.toBeNull();
+    expect(await vault.resolveForModel(a.source.ref, ctxFor("globex"))).not.toBeNull();
+    expect(await vault.resolveForModel(a.source.ref, ctxFor("initech"))).toBeNull();
+
+    const req = { ref: a.ref, kind: "Image", widgetId: "img", purpose: "display" as const };
+    for (const tenant of ["acme", "globex"]) {
+      expect(await vault.mediaResolverFor(tenant)(req)).toMatchObject({ ok: true });
+      expect(vault.terminalLinkFor(tenant)(a.ref)).toBe(vault.linkFor(tenant, address));
+    }
+    expect(await vault.mediaResolverFor("initech")(req)).toEqual({ ok: false });
+    expect(vault.terminalLinkFor("initech")(a.ref)).toBeUndefined();
+    expect(vault.linkFor("acme", address)).not.toBe(vault.linkFor("globex", address)); // links are viewer-scoped
+  });
+
   // ── 2 ── x-content-ref: a marked argument only accepts a ref the caller may read ─────────────────
   it("a content-ref argument naming a foreign ref is refused, and the tool is never called", async () => {
     const vault = new MediaVault();
@@ -166,6 +188,29 @@ describe("media-gallery", () => {
     expect(new Set(addresses).size).toBe(3); // one address per swatch, cited by the tool frame and the model frame
     expect(log).toContain('"kind":"ref"');
     expect(log).not.toContain('"kind":"data"');
+
+    // The snapshot store holds no bytes either, and neither does the attachment path (a tool NAMING an address).
+    const snapshots = JSON.stringify(await a.snapshotStore.loadLatest(executionId));
+    for (const color of [
+      [220, 40, 40],
+      [40, 170, 70],
+      [40, 90, 220],
+    ] as const)
+      expect(snapshots).not.toContain(Buffer.from(tinyPng(color)).toString("base64"));
+    const att = await vault.put("acme", tinyPng([13, 14, 15]), { mediaType: "image/png" });
+    const viaAttachment = createAssistant({
+      vault,
+      provider: model,
+      attachments: new Map([["passport-scan", att]]),
+    });
+    const run2 = await viaAttachment.ask("acme", "open the attachment please");
+    expect(run2.outcome.status).toBe("completed");
+    expect(JSON.stringify(model.seen.at(-1))).toContain(
+      Buffer.from(tinyPng([13, 14, 15])).toString("base64")
+    );
+    const log2 = JSON.stringify(await viaAttachment.eventStore.read(run2.executionId));
+    expect(log2).not.toContain(Buffer.from(tinyPng([13, 14, 15])).toString("base64"));
+    expect(log2).toContain(att.ref.address);
   });
 
   // ── 5 ── loom-ui media widgets render a gallery from refs ───────────────────────────────────────────
@@ -237,6 +282,69 @@ describe("media-gallery", () => {
     expect(await vault.store.get({ __loomContent: held.ref.address })).not.toBeNull();
   });
 
+  it("a sweep that omits an event store erases what only that store cites; scanning both keeps it", async () => {
+    const setup = async () => {
+      const clock = { now: Date.now() };
+      const vault = new MediaVault(new InMemoryContentStore({ now: () => clock.now }));
+      const first = createAssistant({
+        vault,
+        provider: scriptedVision(declaredCapabilities("gpt-4o")),
+      });
+      const second = createAssistant({
+        vault,
+        provider: scriptedVision(declaredCapabilities("gpt-4o")),
+      });
+      const r1 = await first.ask("acme", "show me a red swatch");
+      const r2 = await second.ask("globex", "show me a green swatch"); // a DIFFERENT blob, in a SECOND event store
+      const addr = async (a: typeof first, id: string) => [
+        ...new Set(
+          [...JSON.stringify(await a.eventStore.read(id)).matchAll(/sha256:[0-9a-f]{64}/g)].map(
+            (m) => m[0]
+          )
+        ),
+      ];
+      const redAddr = await addr(first, r1.executionId);
+      const greenAddr = await addr(second, r2.executionId);
+      expect(redAddr).toHaveLength(1);
+      expect(greenAddr).toHaveLength(1);
+      expect(greenAddr[0]).not.toBe(redAddr[0]);
+      clock.now += 30 * DAY_MS;
+      return {
+        vault,
+        first,
+        second,
+        clock,
+        red: redAddr[0] as string,
+        green: greenAddr[0] as string,
+      };
+    };
+    const has = async (v: MediaVault, address: string) =>
+      (await v.store.get({ __loomContent: address })) !== null;
+
+    // Footgun, pinned: scanning only the FIRST store makes the second run's blob an orphan, and it is erased.
+    const partial = await setup();
+    const preview = await sweepMedia(partial.vault, partial.first, {
+      now: partial.clock.now,
+      dryRun: true,
+    });
+    expect(preview.orphansReclaimed).toEqual([partial.green]); // the dry run names it ...
+    expect(await has(partial.vault, partial.green)).toBe(true); // ... and deletes nothing
+    await sweepMedia(partial.vault, partial.first, { now: partial.clock.now });
+    expect(await has(partial.vault, partial.red)).toBe(true);
+    expect(await has(partial.vault, partial.green)).toBe(false); // data loss: the log still cites it
+
+    // Scanning both keeps both.
+    const full = await setup();
+    const report = await sweepMedia(full.vault, full.first, {
+      now: full.clock.now,
+      eventStores: [full.first.eventStore, full.second.eventStore],
+      snapshotStores: [full.first.snapshotStore, full.second.snapshotStore],
+    });
+    expect(report.orphansReclaimed).toEqual([]);
+    expect(await has(full.vault, full.red)).toBe(true);
+    expect(await has(full.vault, full.green)).toBe(true);
+  });
+
   // ── extra ── the inline limits the claim-check exists to avoid ───────────────────────────────────────
   it("inline media is capped per part and per request; a ref costs nothing against either", () => {
     const inline = (bytes: number) => ({
@@ -250,9 +358,26 @@ describe("media-gallery", () => {
     expect(MAX_INLINE_BYTES).toBe(64 * 1024);
     expect(MAX_INLINE_TOTAL_BYTES).toBe(256 * 1024);
     expect(() => guardRequest(req(inline(MAX_INLINE_BYTES + 1)))).toThrow(OversizedInlinePartError);
-    expect(() =>
-      guardRequest(req(...Array.from({ length: 5 }, () => inline(MAX_INLINE_BYTES))))
-    ).toThrow();
+    const parts = (n: number) => req(...Array.from({ length: n }, () => inline(MAX_INLINE_BYTES)));
+    expect(() => guardRequest(parts(4))).not.toThrow(); // exactly the total cap: passes
+    let total: unknown;
+    try {
+      guardRequest(parts(5));
+    } catch (err) {
+      total = err;
+    }
+    // Same error class as the per-part cap; the TOTAL cap is told apart by `limit` (and the message).
+    expect(total).toBeInstanceOf(OversizedInlinePartError);
+    expect((total as OversizedInlinePartError).limit).toBe(MAX_INLINE_TOTAL_BYTES);
+    expect((total as OversizedInlinePartError).message).toContain("in this request totals");
+    let part: unknown;
+    try {
+      guardRequest(req(inline(MAX_INLINE_BYTES + 1)));
+    } catch (err) {
+      part = err;
+    }
+    expect((part as OversizedInlinePartError).limit).toBe(MAX_INLINE_BYTES);
+    expect((part as OversizedInlinePartError).message).toContain("part is");
     const ref = {
       type: "image" as const,
       mediaType: "image/png",

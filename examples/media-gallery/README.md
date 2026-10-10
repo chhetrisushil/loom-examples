@@ -45,5 +45,10 @@ serveHandles(exp, requests, { contentRefArgs: table,
   stored it, so a second tenant storing the same bytes may read them, and one who merely knows the address may not.
 - **A log citation is not the only root.** Blobs cited only by an app table (here the photo library) are
   orphans to the sweep unless you pass `roots`.
+- **The sweep reclaims orphans, so the scan must be COMPLETE.** `src/gc.ts` runs `reclaimOrphans: true`, which
+  deletes every stored blob that no SCANNED log, snapshot or `roots` entry cites. Leave an event store, a
+  snapshot store (a compacted prefix's refs live only in its snapshot) or an external root out of the scan and
+  every blob only it cites is an orphan, and is erased. Pass them all (`eventStores`, `snapshotStores`,
+  `roots`), and run with `dryRun: true` first (`main.ts` does) to see what would go. Test 6 pins the footgun.
 - `returnsMedia` is the operator's declaration; without it a media-shaped tool output is plain data, so a
   hostile result cannot choose which stored blob is fetched into the prompt.
