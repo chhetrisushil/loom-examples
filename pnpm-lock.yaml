@@ -33,6 +33,7 @@ overrides:
   '@loom/blueprint-runtime': link:../loom/packages/blueprint-runtime
   '@loom-ui/core': link:../loom-ui/packages/core
   '@loom-ui/hydration': link:../loom-ui/packages/hydration
+  '@loom-ui/learning': link:../loom-ui/packages/learning
   '@loom-ui/lineage': link:../loom-ui/packages/lineage
   '@loom-ui/planner': link:../loom-ui/packages/planner
   '@loom-ui/renderer-lit': link:../loom-ui/packages/renderer-lit
@@ -41,6 +42,7 @@ overrides:
   '@loom/classify': link:../loom/packages/classify
   '@loom/cli': link:../loom/tools/cli
   '@loom/compiler': link:../loom/tools/compiler
+  '@loom/conversation': link:../loom/packages/conversation
   '@loom/core': link:../loom/packages/core
   '@loom/dispatcher': link:../loom/packages/dispatcher
   '@loom/dst': link:../loom/tools/dst
@@ -62,6 +64,7 @@ overrides:
   '@loom/plugin-audit-chain': link:../loom/plugins/audit-chain
   '@loom/plugin-cloudrun': link:../loom/plugins/cloudrun
   '@loom/plugin-content': link:../loom/plugins/content
+  '@loom/plugin-conversation-sse': link:../loom/plugins/conversation-sse
   '@loom/plugin-durable-state': link:../loom/plugins/durable-state
   '@loom/plugin-mcp': link:../loom/plugins/mcp
   '@loom/plugin-mcp-app': link:../loom/plugins/mcp-app
@@ -86,7 +89,6 @@ overrides:
   '@loom/worker-runtime-local': link:../loom/packages/worker-runtime-local
   '@loom/workflow-runtime': link:../loom/packages/workflow-runtime
   loom-plugin-linucb: link:../loom-plugins/plugins/loom-plugin-linucb
-  '@loom-ui/learning': link:../loom-ui/packages/learning
 
 importers:
 
@@ -462,6 +464,52 @@ importers:
       '@loom/projection-runtime':
         specifier: link:../../../loom/packages/projection-runtime
         version: link:../../../loom/packages/projection-runtime
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.1
+      tsx:
+        specifier: 'catalog:'
+        version: 4.23.1
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 2.1.9(@types/node@22.20.1)(happy-dom@20.14.5)(jsdom@25.0.1)(sass@1.90.0)
+
+  examples/chat-agent:
+    dependencies:
+      '@loom/agent':
+        specifier: link:../../../loom/packages/agent
+        version: link:../../../loom/packages/agent
+      '@loom/classify':
+        specifier: link:../../../loom/packages/classify
+        version: link:../../../loom/packages/classify
+      '@loom/conversation':
+        specifier: link:../../../loom/packages/conversation
+        version: link:../../../loom/packages/conversation
+      '@loom/core':
+        specifier: link:../../../loom/packages/core
+        version: link:../../../loom/packages/core
+      '@loom/effect-runtime':
+        specifier: link:../../../loom/packages/effect-runtime
+        version: link:../../../loom/packages/effect-runtime
+      '@loom/event-runtime':
+        specifier: link:../../../loom/packages/event-runtime
+        version: link:../../../loom/packages/event-runtime
+      '@loom/llm':
+        specifier: link:../../../loom/packages/llm
+        version: link:../../../loom/packages/llm
+      '@loom/plugin-conversation-sse':
+        specifier: link:../../../loom/plugins/conversation-sse
+        version: link:../../../loom/plugins/conversation-sse
+      '@loom/snapshot-runtime':
+        specifier: link:../../../loom/packages/snapshot-runtime
+        version: link:../../../loom/packages/snapshot-runtime
+      '@loom/workflow-runtime':
+        specifier: link:../../../loom/packages/workflow-runtime
+        version: link:../../../loom/packages/workflow-runtime
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
