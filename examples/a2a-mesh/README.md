@@ -25,6 +25,10 @@ standing in for ADK/LangGraph) and shows both directions:
 
 - **Outbound** — `A2APeerClient` discovers the remote agent's card and registers
   it as a Loom tool; a Loom `agent$` then calls it mid-reasoning.
+  The peer's card text is the *peer's*: an A2A tool is third-party, so the model-facing
+  spec **withholds** its description (`Third-party tool; description withheld`) and strips
+  any Zod `.describe()` text. The demo prints both the advertised description and
+  `toolSpecFor(tool).description`, the text the model really gets (loom ADR 0125 D14).
 - **Inbound** — `createA2AServer` exposes a Loom flow over A2A; a client effect
   drives it (standing in for an external framework calling Loom).
 
@@ -41,6 +45,17 @@ const tool = await peer.registerInto(effectRuntime, registry);    // now a Loom 
 const myAgent = agent$({ id: "orchestrator", name: "Orchestrator", tools: [tool] });
 // myAgent can now call the external agent by tool id, mid-ReAct-loop.
 ```
+
+**Vouch for a peer you operate** (outbound, trusted text):
+
+```ts
+const peer = new A2APeerClient({ url: "http://localhost:9999", trustDescriptions: true });
+```
+
+With `trustDescriptions: true` the card's description reaches the model verbatim, as
+instructions and unguarded (loom warns once, `LOOM_AGENT_TRUSTED_TOOL_TEXT`). Do this only for
+a peer you control; otherwise describe the tool in your system prompt. Pinned by
+`test/a2a-mesh.test.ts` (`pnpm --filter @loom/plugin-a2a-mesh test`).
 
 **Expose a Loom agent to the outside world** (inbound):
 

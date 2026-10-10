@@ -1,6 +1,6 @@
 import {
   type AgentLoopConfig,
-  type ToolRanker,
+  type ToolRankerFactory,
   agentLoop$,
   createAgentModelEffect,
 } from "@loom/agent";
@@ -35,8 +35,13 @@ const flowDef: FlowDefinition = {
 export interface WorldOptions {
   /** The 64 MCP tools, mapped by `@loom/plugin-mcp` (`origin: "remote"`). */
   mcp: MappedMcpTool[];
-  /** A custom ranker for tools: switches search into two-ranker mode. Absent: built-in BM25F. */
-  ranker?: ToolRanker;
+  /**
+   * A custom tool-ranker FACTORY (`toolSearch.ranker`): switches search into two-ranker mode and is
+   * handed the run's sanitized docs. Absent: built-in BM25F.
+   */
+  ranker?: ToolRankerFactory;
+  /** The built-in ranker's query stoplist. Absent: the library default; `[]` turns it off. */
+  stopwords?: readonly string[];
   /** Host vocabulary for the MCP tools. Default: the example's `ANNOTATIONS`. */
   annotations?: Readonly<Record<string, { tags?: readonly string[]; aliases?: readonly string[] }>>;
   /** A log to continue (a crashed run's prefix). Absent: a fresh one. */
@@ -102,6 +107,7 @@ export function buildWorld(o: WorldOptions): World {
       catalog,
       annotations: o.annotations ?? ANNOTATIONS,
       ...(o.ranker !== undefined && { ranker: o.ranker }),
+      ...(o.stopwords !== undefined && { stopwords: o.stopwords }),
     },
   };
   const runner: FlowRunner<unknown, unknown> = async (ctx) =>

@@ -1,7 +1,7 @@
 {
   "name": "@loom/tool-search-mcp-menu",
   "version": "0.0.1",
-  "description": "An agent facing a 64-tool MCP catalogue that must not be in the prompt: agentLoop$({ toolSearch, skillActivation }) offers search_tools instead; host annotations close the vocabulary gap (\"bill the customer\" finds charge_invoice), remote descriptions are withheld and results tainted, skills are discovered through search and activated mid-loop, a custom ranker runs in two-ranker mode, and a resume after a crash makes zero ranker calls and zero repeat MCP calls. Offline, scripted model.",
+  "description": "An agent facing a 64-tool MCP catalogue that must not be in the prompt: agentLoop$({ toolSearch, skillActivation }) offers search_tools instead; host annotations close the vocabulary gap (\"bill the customer\" finds charge_invoice alone, the built-in ranker drops query stopwords), remote descriptions are withheld and results tainted, skills are discovered through search and activated mid-loop, a custom ranker factory is built from the sanitized search docs and runs in two-ranker mode, and a resume after a crash makes zero factory calls, zero ranker calls and zero repeat MCP calls. Offline, scripted model.",
   "private": true,
   "scripts": {
     "build": "tsc --build",

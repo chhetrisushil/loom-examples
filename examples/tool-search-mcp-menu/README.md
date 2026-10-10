@@ -15,9 +15,13 @@ pnpm --filter @loom/tool-search-mcp-menu test    # the tests ARE the proof
 | Turn-0 menu is `search_tools`, `activate_skill` and the agent's own tool (3 of 64+) | `menuOf(plain, 0)` |
 | Remote tools (`origin: "remote"`, and fail-closed on `jsonInputSchema` too: either marks a tool remote): the server's description (it carries an injection) is withheld, the result is tainted | test "remote (MCP) tools are untrusted" |
 | Host `toolSearch.annotations` close the vocabulary gap: "bill the customer" finds `charge_invoice`; without them it does not | `src/catalog.ts` `ANNOTATIONS` |
+| The built-in BM25F drops query **stopwords** (`DEFAULT_STOPWORDS`): "bill the customer" returns `charge_invoice` ALONE, not `refund_payment` / `slow_queries` (their aliases only share "the"). `toolSearch.stopwords: []` brings that noise back | test "the query stoplist" |
 | A skill registry with `discovery: "search"`: found by `search_tools`, loaded by `activate_skill`, instructions come back as the tool result, its tool joins the menu | `src/skills.ts` |
-| A custom `toolSearch.ranker` puts search in two-ranker mode (tool ranker + built-in skill ranker, interleaved tool-first) | `src/ranker.ts` |
-| Crash before the activation and resume: **0 ranker calls**, identical recorded pages, identical menu, no repeated MCP call | `src/scenario.ts` `runActs` |
+| A custom `toolSearch.ranker` puts search in two-ranker mode (tool ranker + built-in skill ranker, interleaved tool-first). It is a **factory**, `(docs) => new OverlapRanker(docs)`: called lazily, once per run, with the run's *sanitized* docs (`toolSearchDocs`): host annotations in, remote descriptions out, so the ranker imports no vocabulary of its own. The recorded ranker kind is still a plain string (`"word-overlap"`) | `src/ranker.ts` |
+| Crash before the activation and resume: **0 factory calls, 0 ranker calls**, identical recorded pages, identical menu, no repeated MCP call | `src/scenario.ts` `runActs` |
+
+A custom ranker has no built-in stoplist; `OverlapRanker` filters `DEFAULT_STOPWORDS` out of its own
+query, which is why both rankers return the same page.
 
 Layout: `catalog.ts` (the 64 tools + host vocabulary), `server.ts` (MCP over HTTP), `skills.ts`,
 `ranker.ts`, `model.ts` (scripted provider), `world.ts` (runtime wiring, crash/resume helpers),
