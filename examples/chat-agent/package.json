@@ -1,0 +1,30 @@
+{
+  "name": "@loom/chat-agent",
+  "version": "0.0.1",
+  "description": "A chat agent on the R17 conversation layer (owner-only, single user): multi-turn dialogue as one chained execution, barge-in (a new turn interrupts an in-flight answer and the partial is kept, marked interrupted), history rotation + token-window compaction, a process restart after which the client reconnects over SSE with Last-Event-ID and resumes without gaps or duplicates, and a second tenant asking for the first's conversation getting 404. Offline, scripted model, real SSE server on port 0.",
+  "private": true,
+  "scripts": {
+    "build": "tsc --build",
+    "start": "tsx src/main.ts",
+    "test": "vitest run",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@loom/agent": "*",
+    "@loom/classify": "*",
+    "@loom/conversation": "*",
+    "@loom/core": "*",
+    "@loom/effect-runtime": "*",
+    "@loom/event-runtime": "*",
+    "@loom/llm": "*",
+    "@loom/plugin-conversation-sse": "*",
+    "@loom/snapshot-runtime": "*",
+    "@loom/workflow-runtime": "*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "^5.6.3",
+    "vitest": "catalog:"
+  }
+}
