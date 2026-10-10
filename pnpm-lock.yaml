@@ -254,6 +254,9 @@ importers:
       '@loom/agent':
         specifier: link:../../../loom/packages/agent
         version: link:../../../loom/packages/agent
+      '@loom/classify':
+        specifier: link:../../../loom/packages/classify
+        version: link:../../../loom/packages/classify
       '@loom/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core

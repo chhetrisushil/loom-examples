@@ -16,13 +16,13 @@ pnpm --filter @loom/agent-loop-triage test    # the tests ARE the proof
 | **The terminal denylist still holds.** A `QuotaExceededError` (and an authority denial) is *not* fed back: the run fails, the model is never asked again | tests "a terminal error class still propagates", "so does an authority denial" |
 | **Per-call outcome decisions.** Each call records `<loop>#turn:<i>:tool:<j>:outcome` (`source: "agent-outcome"`); a failure the model consumed is served on replay, never re-run (the carrier API would succeed now, yet ran once) | test "a consumed failure is not re-run on replay" |
 | **Approval across a restart.** `requireApproval` parks the refund; a *fresh* runtime over the same store resumes with `answerApproval`; no completed tool re-runs, one new model call | `src/scenario.ts` `runActs`, test "approval across a process restart" |
-| **`writeBack` recall.** `writeBack: { toolId, unless }` (the ring, plus a fork guard): ticket 1002 for the same customer recalls ticket 1001 and calls no tool. Bare `writeBack: true` (or `{}`) throws `AgentLoopConfigError`; so does a response cache without `cacheScope` | test "config errors" |
+| **`writeBack` recall.** `writeBack: { toolId, unless }` (the ring, plus a fork guard): ticket 1002 for the same customer recalls ticket 1001 and calls no tool. Bare `writeBack: true` (or `{}`) throws `AgentLoopConfigError`; so does a response cache without `cacheScope` | tests "config errors", "the fork guard" (`unless` true: nothing written, `#writeback:skip` recorded) |
 
 Things worth knowing:
 
 - `requireApproval` is an **auto-approve policy**: it answers "may this call proceed on its own?", and `false` *parks*. `requireApproval: (c) => c.name !== "issue_refund"` parks only the refund.
-- Ticket 1001 saw a tool error, so its answer is written to memory **tainted** (ADR 0085) and recalled fenced as data, never in an instruction position.
+- Ticket 1001 saw a tool error, so its answer is written to memory **tainted** (ADR 0085) and recalled fenced as data, never in an instruction position (test "ticket 1001's answer is stored TAINTED": the memory entry `isTainted`, and ticket 1002's request carries it only inside `<untrusted-input>` in a `user` message).
 - The ring path bypasses the response cache; the `cacheScope` requirement bites only on the direct path (`reasoning` without `reasoningToolId`, which also logs the `LOOM_AGENT_RING` warning you see in the tests).
-- The one place a failed tool runs twice is the documented crash window: the process dies between the step's `STEP_FAILED` and the outcome record. Deleting the outcome decisions from the log before the restart reproduces it (the carrier runs twice), which is how the replay test was revert-checked.
+- The one place a failed tool runs twice is the documented crash window: the process dies between the step's `STEP_FAILED` and the outcome record. The NEGATIVE test "without the outcome decisions the consumed failure DOES re-run" reproduces it: it strips the outcome decisions from the log before the restart and asserts the carrier runs twice, which proves the decisions are what prevent the re-run.
 
 Layout: `model.ts` (router, scripted model), `world.ts` (tools, ring wiring, `boot()` = one process over a shared `Backend`), `scenario.ts` (the acts), `main.ts` (narration).

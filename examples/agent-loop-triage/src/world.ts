@@ -13,7 +13,6 @@ import { InMemoryMemoryStore, TieredMemory } from "@loom/memory";
 import { QuotaExceededError } from "@loom/middleware";
 import { ReasoningRuntime } from "@loom/reasoning";
 import type { ReasoningCache } from "@loom/reasoning";
-import { ReplayVM } from "@loom/replay-vm";
 import { InMemoryAsyncSnapshotStore } from "@loom/snapshot-runtime";
 import { WorkflowRuntime, answerApproval } from "@loom/workflow-runtime";
 import type { FlowRunner } from "@loom/workflow-runtime";
@@ -57,7 +56,10 @@ const flowDef: FlowDefinition = {
  * their call counters), the event log, and the memory store. A "process" is a `boot()` over this.
  */
 export class Backend {
-  readonly store = new InMemoryAsyncEventStore();
+  readonly store: InMemoryAsyncEventStore;
+  constructor(store: InMemoryAsyncEventStore = new InMemoryAsyncEventStore()) {
+    this.store = store;
+  }
   readonly memory = new TieredMemory({
     store: new InMemoryMemoryStore(),
     tiers: { working: { maxEntries: 100 } },
@@ -84,6 +86,8 @@ export interface BootOptions {
   grants?: string[];
   /** A response cache for the DIRECT path (needs `cacheScope`). */
   cache?: ReasoningCache;
+  /** Simulate a fork / simulation: the default `writeBack.unless` returns true (skip the write). */
+  fork?: boolean;
   /** Pre-ringed memory write-back is the default; `none` leaves `writeBack` unset. */
   writeBack?: AgentLoopConfig["writeBack"];
 }
@@ -188,7 +192,7 @@ export function boot(o: BootOptions): Process {
     // ADR 0121 D4: through the ring (`toolId`) so the write is authorized and journaled, and
     // `unless` so a forked / simulated execution does not write. (`allowDirect: true` is the
     // explicit opt-out for a single-tenant host that wants neither.)
-    writeBack: o.writeBack ?? { toolId: MEMORY_TOOL, unless: () => false },
+    writeBack: o.writeBack ?? { toolId: MEMORY_TOOL, unless: () => o.fork === true },
     ...o.config,
   };
   const runner: FlowRunner<unknown, unknown> = async (ctx) => {
@@ -218,11 +222,30 @@ export async function start(p: Process, executionId: string) {
   return p.runtime.start(flowDef, {}, { executionId });
 }
 
-/** Poll until `executionId` has left `running` (a failure is flushed asynchronously). */
-export async function settled(p: Process, executionId: string) {
+export interface SettledOptions {
+  /** Give up after this long (default 10 s). A stuck execution must fail loudly, not hang. */
+  timeoutMs?: number;
+  signal?: AbortSignal;
+}
+
+/**
+ * Poll until `executionId` has left `running` (a failure is flushed asynchronously). Bounded: on
+ * the deadline or an abort it throws, naming the execution's status.
+ */
+export async function settled(p: Process, executionId: string, opts: SettledOptions = {}) {
+  const deadline = Date.now() + (opts.timeoutMs ?? 10_000);
   for (;;) {
     const s = await p.runtime.loadState(executionId);
     if (s !== null && s.status !== "running") return s;
+    const why =
+      opts.signal?.aborted === true
+        ? "aborted"
+        : Date.now() >= deadline
+          ? `not settled within ${opts.timeoutMs ?? 10_000}ms`
+          : undefined;
+    if (why !== undefined) {
+      throw new Error(`execution ${executionId} ${why} (status: ${s?.status ?? "no state"})`);
+    }
     await new Promise((r) => setTimeout(r, 2));
   }
 }
@@ -245,5 +268,3 @@ export const decisionsOf = (events: readonly EventEnvelope[]) =>
   events
     .filter((e) => e.eventType === "DECISION_RECORDED")
     .map((e) => e.payload as { decisionId: string; source?: string; choice: unknown });
-
-export { ReplayVM };
