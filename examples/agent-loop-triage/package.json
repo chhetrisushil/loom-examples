@@ -19,7 +19,6 @@
     "@loom/memory": "*",
     "@loom/middleware": "*",
     "@loom/reasoning": "*",
-    "@loom/replay-vm": "*",
     "@loom/snapshot-runtime": "*",
     "@loom/workflow-runtime": "*",
     "zod": "catalog:"
