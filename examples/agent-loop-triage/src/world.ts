@@ -184,9 +184,8 @@ export function boot(o: BootOptions): Process {
     systemPrompt: "You triage support tickets. Look the order up before you refund it.",
     maxIterations: 6,
     parallelTools: true,
-    // The policy answers "may this call proceed on its own?": `false` PARKS for a human. (Despite
-    // the name `requireApproval`, returning `true` means NO approval is required.)
-    requireApproval: (c) => c.name !== "issue_refund",
+    // `needsApproval` answers "does this call need a human?": `true` PARKS it for approval.
+    needsApproval: (c) => c.name === "issue_refund",
     memory: b.memory,
     memoryScope: MEMORY_SCOPE,
     // ADR 0121 D4: through the ring (`toolId`) so the write is authorized and journaled, and
