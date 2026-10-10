@@ -32,8 +32,8 @@ learn                       trajectories -> evaluatePolicy (SNIPS + unit bootstr
   The world then drifts (casual viewers now prefer `tabs`); on the canary window its lift is negative, the gate
   refuses, and the controller rolls back to v1. v3 (tabs for all), judged on epoch-2 traffic, is promoted.
 - **Determinism.** The decision is recorded once with the acting version, propensity, bucket and shadow arm;
-  replay serves it. Note what replay does *not* skip: `policy.select` is still consulted and its answer
-  discarded (ADR 0080), so a replay makes zero new decisions and zero planner model calls, not zero `select` calls.
+  replay serves it with zero new decisions, zero planner model calls and zero `policy.select` calls (the registry
+  read and `select` run inside `ctx.decide`, ADR 0124 follow-up).
 
 ## Sample output (abridged)
 

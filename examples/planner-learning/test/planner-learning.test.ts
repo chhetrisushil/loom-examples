@@ -181,7 +181,7 @@ describe("the R18 lifecycle", () => {
     ).rejects.toBeInstanceOf(PromotionRefusedError);
   });
 
-  it("replay serves the recorded decision: no new decision, no planner model call, whatever the registry says now", async () => {
+  it("replay serves the recorded decision: no new decision, no planner model call, no policy.select, whatever the registry says now", async () => {
     const parked = await lab.parkedTurn({ userId: "replay@example.com", segment: "casual" });
     const log0 = await lab.eventStore.read(parked.executionId);
     const rec0 = log0.filter((e) => e.eventType === "DECISION_RECORDED");
@@ -199,6 +199,7 @@ describe("the R18 lifecycle", () => {
       note: "registry moves under a parked run",
     });
     const modelCalls = lab.models.flat.calls + lab.models.tabs.calls;
+    const selects = lab.policies.calls.length;
     const resumed = await lab.runtime.resume(parked.executionId, {
       eventType: "ReplayGate",
       payload: {},
@@ -210,6 +211,8 @@ describe("the R18 lifecycle", () => {
     );
     expect(rec1).toHaveLength(rec0.length);
     expect(lab.models.flat.calls + lab.models.tabs.calls).toBe(modelCalls);
+    // loom #529: the registry read and select run inside ctx.decide, so a served decision consults no policy.
+    expect(lab.policies.calls.length).toBe(selects);
     expect((final.variables._output as { layout: string }).layout).toBe(choice.choice);
   });
 });

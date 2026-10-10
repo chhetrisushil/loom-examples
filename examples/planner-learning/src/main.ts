@@ -73,7 +73,7 @@ async function main(): Promise<void> {
     `decisions recorded before/after replay: ${before}/${after}; planner model calls on replay: ${lab.models.flat.calls + lab.models.tabs.calls - modelCalls0}`
   );
   say(
-    `policy.select consulted on replay ${lab.policies.calls.length - calls0}x (its answer is discarded; the recorded choice is served)`
+    `policy.select consulted on replay ${lab.policies.calls.length - calls0}x (the recorded choice is served)`
   );
   say(`final mean-lift of v3 canary: ${fmt(t3.reports.canary?.lift)}`);
 }
