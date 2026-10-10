@@ -8,7 +8,11 @@ import {
   textOf,
 } from "@loom/llm";
 import type { LlmRequest } from "@loom/llm";
-import { InMemoryContentStore } from "@loom/plugin-content";
+import {
+  InMemoryContentStore,
+  ReclaimOrphansSnapshotAckError,
+  sweepUnpinnedContent,
+} from "@loom/plugin-content";
 import { describe, expect, it } from "vitest";
 import { createAssistant } from "../src/assistant";
 import { GallerySession, GalleryTools } from "../src/gallery";
@@ -280,6 +284,64 @@ describe("media-gallery", () => {
     ).not.toBeNull();
     expect(await vault.store.get({ __loomContent: orphan.ref.address })).toBeNull();
     expect(await vault.store.get({ __loomContent: held.ref.address })).not.toBeNull();
+  });
+
+  it("the erasing sweep is only allowed because the example touches what it cites: the wrapping is load-bearing", async () => {
+    const clock = { now: Date.now() };
+    const store = new InMemoryContentStore({ now: () => clock.now });
+    // Spy on the touches the decorators make (ContentResolvingEventStore on append, ContentTouchingSnapshotStore on save).
+    const touched = new Set<string>();
+    const realTouch = store.touch?.bind(store);
+    expect(realTouch).toBeDefined();
+    store.touch = async (addresses) => {
+      for (const a of addresses) touched.add(a);
+      return (realTouch as NonNullable<typeof realTouch>)(addresses);
+    };
+    const vault = new MediaVault(store);
+    const a = createAssistant({ vault, provider: scriptedVision(declaredCapabilities("gpt-4o")) });
+    const { executionId } = await a.ask("acme", "show me a red swatch");
+    const cited = [
+      ...new Set(
+        [
+          ...JSON.stringify(await a.eventStore.read(executionId)).matchAll(/sha256:[0-9a-f]{64}/g),
+        ].map((m) => m[0])
+      ),
+    ];
+    expect(cited).toHaveLength(1);
+    expect(touched.has(cited[0] as string)).toBe(true); // the append touched the media source it cites
+    expect(a.touchProblems).toEqual([]); // no failed touch, no cited blob found missing
+
+    // The second citation path: a snapshot that carries a media source (a compacted fork's seed) is touched on save.
+    const seedOnly = await vault.put("acme", tinyPng([9, 9, 9]), { mediaType: "image/png" });
+    expect(touched.has(seedOnly.ref.address)).toBe(false); // a bare put does not go through touch()
+    await a.snapshotStore.save({
+      id: "seed-1",
+      executionId: "seed",
+      workflowId: "gallery-chat",
+      sequence: 1,
+      state: { variables: { media: seedOnly.source } },
+      createdAt: clock.now,
+    } as unknown as Parameters<typeof a.snapshotStore.save>[0]);
+    expect(touched.has(seedOnly.ref.address)).toBe(true); // ContentTouchingSnapshotStore touched it
+
+    clock.now += 30 * DAY_MS;
+    const base = {
+      eventStores: [a.eventStore],
+      snapshotStores: [a.snapshotStore],
+      contentStore: store,
+      pinnedEventTypes: [],
+      olderThanMs: 7 * DAY_MS,
+      now: clock.now,
+    };
+    // Without the snapshot acknowledgement loom refuses to ERASE (nothing is deleted) ...
+    await expect(
+      sweepUnpinnedContent({ ...base, reclaimOrphans: { completeScan: true } })
+    ).rejects.toBeInstanceOf(ReclaimOrphansSnapshotAckError);
+    // ... and the example's sweep, which wraps its stores and acknowledges, is allowed and keeps the cited blob.
+    const report = await sweepMedia(vault, a, { now: clock.now });
+    // (the seed blob is cited by no scanned execution here, so it is a legitimate orphan; the cited one is not)
+    expect(report.orphansReclaimed).toEqual([seedOnly.ref.address]);
+    expect(await store.get({ __loomContent: cited[0] as string })).not.toBeNull();
   });
 
   it("a sweep that omits an event store erases what only that store cites; scanning both keeps it", async () => {

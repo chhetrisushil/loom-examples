@@ -45,10 +45,27 @@ serveHandles(exp, requests, { contentRefArgs: table,
   stored it, so a second tenant storing the same bytes may read them, and one who merely knows the address may not.
 - **A log citation is not the only root.** Blobs cited only by an app table (here the photo library) are
   orphans to the sweep unless you pass `roots`.
-- **The sweep reclaims orphans, so the scan must be COMPLETE.** `src/gc.ts` runs `reclaimOrphans: { completeScan: true }` (loom requires that explicit acknowledgement), which
-  deletes every stored blob that no SCANNED log, snapshot or `roots` entry cites. Leave an event store, a
-  snapshot store (a compacted prefix's refs live only in its snapshot) or an external root out of the scan and
-  every blob only it cites is an orphan, and is erased. Pass them all (`eventStores`, `snapshotStores`,
-  `roots`), and run with `dryRun: true` first (`main.ts` does) to see what would go. Test 6 pins the footgun.
+- **The sweep reclaims orphans, so the scan must be COMPLETE.** `src/gc.ts` runs
+  `reclaimOrphans: { completeScan: true, snapshotsTouchContent: true }`, which deletes every stored blob that no
+  SCANNED log, snapshot or `roots` entry cites. Leave an event store, a snapshot store (a compacted prefix's refs
+  live only in its snapshot) or an external root out of the scan and every blob only it cites is an orphan, and
+  is erased. Pass them all (`eventStores`, `snapshotStores`, `roots`), and run with `dryRun: true` first
+  (`main.ts` does) to see what would go. The multi-store test pins the footgun.
+- **The erasing sweep is only safe if every citation is also a TOUCH** (loom ADR 0055 D6 amendment 2). A ref that
+  reaches a log or snapshot without a `put` (a fork copies one, a snapshot carries one) is invisible to the
+  sweep's conditional delete, so loom refuses to erase unless you satisfy its guards, and this example satisfies
+  each for real rather than just asserting it:
+  1. `completeScan: true` - the caller passes every store that may cite a blob.
+  2. The content store can `touch` (`InMemoryContentStore` has `touch` and `touchClock`; a custom store that lacks
+     them throws `ReclaimOrphansTouchError` / `ReclaimOrphansClockError`).
+  3. `snapshotsTouchContent: true` - true because `src/assistant.ts` wraps the snapshot store in
+     `ContentTouchingSnapshotStore` (outside any encrypting store) over the SAME content store as the vault, and
+     writes the log through `ContentResolvingEventStore` (`externalize: {}`: the log keeps the media sources
+     verbatim and the decorator only touches what an append or fork cites). Their `onTouchError` feeds
+     `assistant.touchProblems`, which a healthy run leaves empty.
+  4. The orphan TTL leaves at least 60 s on the store's clock (`olderThanMs` is 7 days; a tiny one throws
+     `ReclaimOrphansMarginError`). Tests move the injected clock, not the TTL.
+  The "wrapping is load-bearing" test spies on `touch`, sees the append and a snapshot save touch their citations,
+  checks `touchProblems` stays empty, and shows the sweep without the acknowledgement is refused.
 - `returnsMedia` is the operator's declaration; without it a media-shaped tool output is plain data, so a
   hostile result cannot choose which stored blob is fetched into the prompt.

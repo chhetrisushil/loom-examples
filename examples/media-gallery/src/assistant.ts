@@ -2,9 +2,15 @@ import { agentLoop$, createAgentModelEffect, mediaResult } from "@loom/agent";
 import { agent$, tool$ } from "@loom/core";
 import type { FlowDefinition } from "@loom/core";
 import { EffectRuntime, ToolEffect } from "@loom/effect-runtime";
-import { InMemoryAsyncEventStore } from "@loom/event-runtime";
+import { type EventStore, InMemoryAsyncEventStore } from "@loom/event-runtime";
 import { type LlmCapabilities, type LlmProvider, mediaTypeAccepted } from "@loom/llm";
-import { InMemoryAsyncSnapshotStore } from "@loom/snapshot-runtime";
+import {
+  ContentResolvingEventStore,
+  ContentTouchingSnapshotStore,
+  type TouchErrorHook,
+  type TouchReport,
+} from "@loom/plugin-content";
+import { InMemoryAsyncSnapshotStore, type SnapshotStore } from "@loom/snapshot-runtime";
 import { WorkflowRuntime } from "@loom/workflow-runtime";
 import type { FlowRunner } from "@loom/workflow-runtime";
 import { z } from "zod";
@@ -79,12 +85,37 @@ export interface AssistantOptions {
   readonly provider: LlmProvider;
   /** Files the shared directory `open_attachment` reads (name -> stored). */
   readonly attachments?: ReadonlyMap<string, StoredMedia>;
-  readonly eventStore?: InMemoryAsyncEventStore;
+  /** The RAW log to write through (default: a fresh in-memory one). It is wrapped, not replaced. */
+  readonly eventStore?: EventStore;
+}
+
+/** A touch that failed, or found a cited blob already gone (see `TouchErrorHook`). */
+export interface TouchProblem {
+  readonly error: unknown;
+  readonly report: TouchReport;
 }
 
 export function createAssistant(options: AssistantOptions) {
-  const eventStore = options.eventStore ?? new InMemoryAsyncEventStore();
-  const snapshotStore = new InMemoryAsyncSnapshotStore();
+  // Every touch problem lands here. A healthy run leaves it EMPTY; a non-empty list means a write cited a
+  // blob that was already gone (or the store's touch failed), which the sweep below would turn into data loss.
+  const touchProblems: TouchProblem[] = [];
+  const onTouchError: TouchErrorHook = (error, report) => touchProblems.push({ error, report });
+  // The erasing sweep (`reclaimOrphans`) is only safe if EVERY path that makes a log or snapshot cite a blob
+  // also TOUCHES it (loom ADR 0055 D6 amendment 2). Two decorators over the SAME content store do that:
+  //   - the event log is written through ContentResolvingEventStore (nothing is externalized: the log keeps
+  //     the R5 media sources verbatim, the decorator only touches the addresses an append or fork cites);
+  //   - the snapshot store is wrapped in ContentTouchingSnapshotStore (a compacted fork's seed snapshot is
+  //     the one place a prefix's refs survive). No EncryptingSnapshotStore here; if you add one, wrap OUTSIDE it.
+  const eventStore: EventStore = new ContentResolvingEventStore(
+    options.eventStore ?? new InMemoryAsyncEventStore(),
+    options.vault.store,
+    { externalize: {}, onTouchError }
+  );
+  const snapshotStore: SnapshotStore = new ContentTouchingSnapshotStore(
+    new InMemoryAsyncSnapshotStore(),
+    options.vault.store,
+    { onTouchError }
+  );
   const effects = new EffectRuntime();
   effects.register(
     "model",
@@ -137,6 +168,7 @@ export function createAssistant(options: AssistantOptions) {
   return {
     eventStore,
     snapshotStore,
+    touchProblems,
     runtime,
     /** Run one conversation AS `tenant`: the principal travels to every effect and to the content resolver. */
     async ask(tenant: string, prompt: string, executionId?: string) {
