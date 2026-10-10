@@ -138,8 +138,9 @@ describe("two-ranker mode (a custom tool ranker)", () => {
 
   it("the page is the same whichever tool ranker produced it", () => {
     const pick = (w: typeof acts.plain) =>
-      (w.requests[1] ? resultsOf(w.requests[1]) : []).find((r) => r.tool === "search_tools")?.result
-        .tools?.map((t) => t.name);
+      (w.requests[1] ? resultsOf(w.requests[1]) : [])
+        .find((r) => r.tool === "search_tools")
+        ?.result.tools?.map((t) => t.name);
     expect(pick(acts.custom)).toEqual(pick(acts.plain));
     expect(pick(acts.plain)?.length).toBeGreaterThan(1);
   });
