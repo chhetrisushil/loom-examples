@@ -9,10 +9,11 @@ import {
   findNode,
   walk,
 } from "@loom-ui/core";
+import { placeholderAlias } from "@loom-ui/core";
 import { checkPlannerConformance } from "@loom-ui/planner";
 import { ReferencePlanner } from "@loom-ui/planner";
 import { afterEach, describe, expect, it } from "vitest";
-import { AGENT, LEAD, Triage, intent, meta } from "../src/app";
+import { AGENT, DEMO_PLACEHOLDER_KEY, LEAD, Triage, intent, meta } from "../src/app";
 import { catalog } from "../src/catalog";
 import { entries, memoryDecide, reply, scriptedModel } from "../src/model";
 import { capabilities } from "../src/world";
@@ -418,6 +419,18 @@ describe("5. policy A: a panel whose cards are all restricted collapses to a bar
     expect(await t.explain("refund_pending")).toEqual({ available: false });
     expect(await t.explain("no_such_node")).toEqual({ available: false });
     expect((await t.explain("open")).available).toBe(true);
+  });
+
+  it("the placeholder's id is a KEYED alias (U10c): derivable from the host secret, never the node's own id", async () => {
+    const t = withRefunds(AGENT);
+    await t.compose();
+    // The alias is a pure function of (host key, experience id, node id). A host holding the key
+    // gets the same alias on every replica and after every restart; with the random per-process
+    // fallback this equality could not hold.
+    const expected = placeholderAlias(DEMO_PLACEHOLDER_KEY, t.experience.experienceId, "refunds");
+    expect(t.placeholderIds()).toContain(expected);
+    expect(expected.startsWith("r_")).toBe(true);
+    expect(JSON.stringify(t.placeholderIds())).not.toMatch(/refund/i);
   });
 
   it("one visible card keeps the panel (title and all): the rule is ALL restricted, not ANY", async () => {
