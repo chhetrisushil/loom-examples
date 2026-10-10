@@ -160,6 +160,7 @@ export function createApp(opts: { patchable?: boolean } = {}): App {
   const controller = new HydrationController({
     invoker,
     store,
+    contentRefArgs: "none", // no media tools: no content-reference argument to guard (U9b opt-out)
     setTimer: (fn) => {
       timers.push(fn);
       return () => {

@@ -52,6 +52,7 @@ export async function hydrateFor(
     invoker,
     store,
     viewer: who.viewer,
+    contentRefArgs: "none", // no media tools: no content-reference argument to guard (U9b opt-out)
     ...(readPolicy && { readPolicy }),
     setTimer: (fn) => {
       timers.push(fn);

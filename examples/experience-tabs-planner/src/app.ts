@@ -25,6 +25,7 @@ import {
   type PlanResult,
   type PlannerModel,
   ReferencePlanner,
+  contentRefArgsFrom,
   plannerProvenance,
   providerHandle,
 } from "@loom-ui/planner";
@@ -87,6 +88,7 @@ export class Triage {
       store: this.store,
       viewer,
       readPolicy,
+      contentRefArgs: contentRefArgsFrom(capabilities),
       setTimer: (fn) => {
         this.timers.push(fn);
         return () => {
