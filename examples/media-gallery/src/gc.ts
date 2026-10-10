@@ -1,6 +1,6 @@
-import type { InMemoryAsyncEventStore } from "@loom/event-runtime";
+import type { EventStore } from "@loom/event-runtime";
 import { type ContentSweepReport, sweepUnpinnedContent } from "@loom/plugin-content";
-import type { InMemoryAsyncSnapshotStore } from "@loom/snapshot-runtime";
+import type { SnapshotStore } from "@loom/snapshot-runtime";
 import type { MediaVault } from "./vault";
 
 export const DAY_MS = 24 * 60 * 60 * 1000;
@@ -15,14 +15,14 @@ export const DAY_MS = 24 * 60 * 60 * 1000;
  */
 export function sweepMedia(
   vault: MediaVault,
-  stores: { eventStore: InMemoryAsyncEventStore; snapshotStore: InMemoryAsyncSnapshotStore },
+  stores: { eventStore: EventStore; snapshotStore: SnapshotStore },
   options: {
     now: number;
     olderThanMs?: number;
     /** EVERY event store that may cite a blob. Default: just `stores.eventStore`. Omitting one DELETES what only it cites. */
-    eventStores?: readonly InMemoryAsyncEventStore[];
+    eventStores?: readonly EventStore[];
     /** EVERY snapshot store (a compacted prefix's refs live only there). Default: just `stores.snapshotStore`. */
-    snapshotStores?: readonly InMemoryAsyncSnapshotStore[];
+    snapshotStores?: readonly SnapshotStore[];
     /** Report what WOULD be reclaimed, deleting nothing. Run this first. */
     dryRun?: boolean;
     /** Addresses held OUTSIDE any log (an app table such as a photo library): pinned through both passes. */
@@ -36,8 +36,12 @@ export function sweepMedia(
     pinnedEventTypes: [],
     olderThanMs: options.olderThanMs ?? 7 * DAY_MS,
     now: options.now,
-    // The caller asserts the scan is COMPLETE (every store that may cite a blob, live before archive).
-    reclaimOrphans: { completeScan: true },
+    // Two acknowledgements, each TRUE here (and each refused by loom if its precondition is missing):
+    //   completeScan          - the caller passes every store that may cite a blob (live before archive);
+    //   snapshotsTouchContent - the snapshot stores are ContentTouchingSnapshotStore (see assistant.ts).
+    // Loom also requires the content store to `touch` and expose `touchClock`, and the orphan TTL to leave
+    // >= 60 s on the store's clock (`olderThanMs` below is days).
+    reclaimOrphans: { completeScan: true, snapshotsTouchContent: true },
     ...(options.dryRun === true && { dryRun: true }),
     ...(options.roots !== undefined && { roots: options.roots }),
   });
