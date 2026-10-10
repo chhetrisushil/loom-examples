@@ -167,11 +167,14 @@ describe("two-ranker mode (a custom tool ranker)", () => {
     expect(docs.every((d) => d.description === undefined)).toBe(true);
   });
 
-  it("the page is the same whichever tool ranker produced it", () => {
+  it("on THIS query the two rankers agree, only because both drop the stopword (a custom ranker owns its query processing)", () => {
     const pick = (w: typeof acts.plain) =>
       (w.requests[1] ? resultsOf(w.requests[1]) : [])
         .find((r) => r.tool === "search_tools")
         ?.result.tools?.map((t) => t.name);
+    // The custom ranker's own stopword filter is what removes the noise hits, not the built-in's.
+    expect(pick(acts.custom)).not.toContain("refund_payment");
+    expect(pick(acts.custom)).not.toContain("slow_queries");
     expect(pick(acts.custom)).toEqual(pick(acts.plain));
     expect(pick(acts.plain)).toEqual(["charge_invoice"]);
   });

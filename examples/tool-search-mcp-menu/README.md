@@ -20,8 +20,12 @@ pnpm --filter @loom/tool-search-mcp-menu test    # the tests ARE the proof
 | A custom `toolSearch.ranker` puts search in two-ranker mode (tool ranker + built-in skill ranker, interleaved tool-first). It is a **factory**, `(docs) => new OverlapRanker(docs)`: called lazily, once per run, with the run's *sanitized* docs (`toolSearchDocs`): host annotations in, remote descriptions out, so the ranker imports no vocabulary of its own. The recorded ranker kind is still a plain string (`"word-overlap"`) | `src/ranker.ts` |
 | Crash before the activation and resume: **0 factory calls, 0 ranker calls**, identical recorded pages, identical menu, no repeated MCP call | `src/scenario.ts` `runActs` |
 
-A custom ranker has no built-in stoplist; `OverlapRanker` filters `DEFAULT_STOPWORDS` out of its own
-query, which is why both rankers return the same page.
+A custom ranker has no built-in stoplist: it owns its query processing. `OverlapRanker` filters
+`DEFAULT_STOPWORDS` out of its own raw query tokens (before any plural folding, or "this" would never
+match), which is why, on THIS query, both rankers return the same page; they are different algorithms
+and agree only here. Two differences to know if you copy it: a query made only of stopwords still
+searches with the built-in ranker (it keeps the unfiltered terms) but returns nothing from
+`OverlapRanker`; and `@loom/agent`'s `tokenizeToolText` is the tokenizer the built-in ranker uses.
 
 Layout: `catalog.ts` (the 64 tools + host vocabulary), `server.ts` (MCP over HTTP), `skills.ts`,
 `ranker.ts`, `model.ts` (scripted provider), `world.ts` (runtime wiring, crash/resume helpers),
