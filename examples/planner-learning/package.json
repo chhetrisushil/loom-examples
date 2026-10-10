@@ -1,0 +1,34 @@
+{
+  "name": "@loom/planner-learning",
+  "version": "0.0.1",
+  "description": "The learning lifecycle for a loom-ui planner, end to end: viewers vote on the surface they were SHOWN (authenticated viewer, exposure required, one bounded vote each) -> a VoteLedger -> one late reward on the planner's recorded decision; a candidate layout policy is registered, run in SHADOW (scored, never served), canaried on a stable slice, judged off-policy by the promotion gate and then promoted, or ROLLED BACK when the world drifted under it. Replay serves the recorded choice. Headless, offline, deterministic.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --build",
+    "start": "tsx src/main.ts",
+    "test": "vitest run",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@loom-ui/core": "*",
+    "@loom-ui/learning": "*",
+    "@loom-ui/lineage": "*",
+    "@loom-ui/planner": "*",
+    "@loom/analytics": "*",
+    "@loom/core": "*",
+    "@loom/effect-runtime": "*",
+    "@loom/event-runtime": "*",
+    "@loom/learning": "*",
+    "@loom/plugin-content": "*",
+    "@loom/snapshot-runtime": "*",
+    "@loom/workflow-runtime": "*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "^5.6.3",
+    "vitest": "catalog:"
+  }
+}

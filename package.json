@@ -25,6 +25,7 @@
       "@loom/blueprint-runtime": "link:../loom/packages/blueprint-runtime",
       "@loom-ui/core": "link:../loom-ui/packages/core",
       "@loom-ui/hydration": "link:../loom-ui/packages/hydration",
+      "@loom-ui/learning": "link:../loom-ui/packages/learning",
       "@loom-ui/lineage": "link:../loom-ui/packages/lineage",
       "@loom-ui/planner": "link:../loom-ui/packages/planner",
       "@loom-ui/renderer-lit": "link:../loom-ui/packages/renderer-lit",
