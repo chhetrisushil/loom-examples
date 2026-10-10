@@ -12,14 +12,31 @@ pnpm --filter @loom/planner-learning test    # the tests ARE the proof
 ## The loop
 
 ```
-planner turn (short flow)   decideWithRollout("layout")  -> who acts: incumbent / canary slice / (shadow beside)
-                            ReferencePlanner.compose     -> the surface, in that layout
+planner turn (short flow)   ReferencePlanner.compose({ unit }) -> ONE planner, `variants.rollout` = the registry:
+                                                          who picks the layout (incumbent / canary slice / shadow
+                                                          beside), then the surface in that layout
 host publishes              Lineage version + SeenLog view per viewer + DecisionLink (via linkFromLedger)
 viewers vote                SignalIngestor (authenticated viewer, exposure REQUIRED) -> VoteLedger
 close                       settleRewards -> ONE late reward on the decision (reward-pipeline principal)
 learn                       trajectories -> evaluatePolicy (SNIPS + unit bootstrap) -> registry.promote (gate)
 ```
 
+- **The planner owns the decision (loom-ui `variants.rollout`).** There is one `ReferencePlanner`, built with
+  `variants: { rollout: { source: registry, policyId, resolve, bucketSecret }, variants: { flat, tabs } }`. Each
+  turn it chooses a variant through `decideWithRollout` (the `unit`, an HMAC alias, is the traffic key), then composes
+  it; the flow is `planner.compose({ intent, catalog, capabilities, unit }, ctx)` plus
+  `plannerProvenance(plan, { agentId })`, whose `policyDecisionId` is `plan.report.variant.decisionId`, the
+  decision a reward attaches to. No hand-rolled `decideWithRollout`, no per-layout planners, no hand-stamped id.
+- **A contextual policy reads its features by `unit`.** The planner's choice context is its own
+  (`{ kind, unit, key, catalogId }`), so v2 ("tabs for power users") cannot take `segment` from the context. It
+  closes over the host's feature store (`SegmentStore`: unit -> segment, written when the host knows the user),
+  as a real policy reads a feature store. Offline evaluation re-scores the logged `unit` through the same
+  store, so SNIPS still has what v2 needs and the drift story is unchanged.
+- **Where the acting version is visible.** The authority is the log: the `DECISION_RECORDED` stamp
+  (`policy.version`, rollout mode, bucket, shadow arm) that `linkFromLedger` / `settleRewards` join on. A replayed
+  `report.variant.policy` has no `version` (the registry's current version did not choose). Known gap: a FRESH
+  turn's report should name the acting version and carry the rollout stamp, but with loom >= #529 it does not
+  (see the `it.fails` test); the example reads the stamp from the log.
 - **Votes (loom-ui U11).** The viewer is the host's session (`{id, tenant}`), never the payload. A vote on a
   surface the server did not record showing that viewer (`seenLogExposure`) is refused `unexposed`; a re-vote
   replaces the earlier one (one viewer = one vote in the fold), a replayed batch is refused, and
@@ -50,5 +67,5 @@ learn                       trajectories -> evaluatePolicy (SNIPS + unit bootstr
 ## Layout
 
 `src/world.ts` (catalog, scripted model, drifting ground truth) · `src/policies.ts` (versions, content
-hashes, resolver) · `src/lab.ts` (flow, publish, viewers, settle) · `src/lifecycle.ts` (controller) ·
+hashes, resolver, segment store) · `src/lab.ts` (planner, flow, publish, viewers, settle) · `src/lifecycle.ts` (controller) ·
 `src/main.ts` (narration).

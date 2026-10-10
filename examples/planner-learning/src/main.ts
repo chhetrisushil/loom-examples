@@ -1,3 +1,4 @@
+import type { PlanVariantReport } from "@loom-ui/planner";
 import { type Batch, Lab } from "./lab";
 import { armOf, fmt, trial } from "./lifecycle";
 import { POLICY_ID } from "./policies";
@@ -20,7 +21,9 @@ async function main(): Promise<void> {
   say(`120 planner turns served: ${served.flat} flat / ${served.tabs} tabs; 3 viewers each voted`);
   say(`closed: ${settled.appended} late rewards recorded (one pooled score per decision)`);
 
-  h("2. v2 (by-segment layout, trained on epoch-1 votes): offline -> shadow -> canary");
+  h(
+    "2. v2 (by-segment layout via the host feature store, trained on epoch-1 votes): offline -> shadow -> canary"
+  );
   const t2 = await trial(lab, "2", {
     evidence: baseTrajs,
     incumbent: "1",
@@ -57,7 +60,7 @@ async function main(): Promise<void> {
     (e) => e.eventType === "DECISION_RECORDED"
   ).length;
   const calls0 = lab.policies.calls.length;
-  const modelCalls0 = lab.models.flat.calls + lab.models.tabs.calls;
+  const modelCalls0 = lab.model.calls;
   await lab.registry.rollback({
     id: POLICY_ID,
     to: "1",
@@ -65,15 +68,20 @@ async function main(): Promise<void> {
     note: "demo: registry changes under a parked run",
   });
   const r = await lab.runtime.resume(parked.executionId, { eventType: "ReplayGate", payload: {} });
-  await r.waitForCompletion();
+  const replayed = (
+    (await r.waitForCompletion()).variables._output as { variant: PlanVariantReport }
+  ).variant;
   const after = (await lab.eventStore.read(parked.executionId)).filter(
     (e) => e.eventType === "DECISION_RECORDED"
   ).length;
   say(
-    `decisions recorded before/after replay: ${before}/${after}; planner model calls on replay: ${lab.models.flat.calls + lab.models.tabs.calls - modelCalls0}`
+    `decisions recorded before/after replay: ${before}/${after}; planner model calls on replay: ${lab.model.calls - modelCalls0}`
   );
   say(
     `policy.select consulted on replay ${lab.policies.calls.length - calls0}x (the recorded choice is served)`
+  );
+  say(
+    `replay report: variant ${replayed.id}, policy.version ${replayed.policy.version ?? "omitted"}, rollout stamp ${replayed.rollout === undefined ? "omitted" : "present"} (the log's stamp is the truth)`
   );
   say(`final mean-lift of v3 canary: ${fmt(t3.reports.canary?.lift)}`);
 }
