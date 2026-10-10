@@ -2,6 +2,7 @@ import type { ProjectionRuntime } from "@loom/projection-runtime";
 import { createTestApp, waitFor } from "@loom/testing";
 import { describe, expect, it } from "vitest";
 import { AGENT_CARDS, CAPABILITY_AGENT } from "../src/agents/definitions";
+import { registerDiagnosticsEffects } from "../src/agents/diagnosticsRunner";
 import { buildCatalog } from "../src/capabilities/catalog";
 import type { AgentTask, PlanEntry } from "../src/domain";
 import { Orchestrator } from "../src/orchestrator/Orchestrator";
@@ -17,6 +18,7 @@ function wire(missionId: string) {
     catalog,
     agents: Object.values(AGENT_CARDS),
     capabilityAgents: CAPABILITY_AGENT,
+    execution: { registerEffects: registerDiagnosticsEffects },
   });
 
   const orchestrator = new Orchestrator({

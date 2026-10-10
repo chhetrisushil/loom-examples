@@ -20,45 +20,35 @@ import { llm } from "../runtime/services";
 const report = (executionId: string, line: string): void => progressHub.report(executionId, line);
 
 // ── diagnose-cpu ──────────────────────────────────────────────────────────────
-const DiagnoseCpuStep = step$({
-  id: "diagnose-cpu-step",
-  name: "Diagnose CPU",
-  inputSchema: z.object({ target: z.string() }),
-  outputSchema: z.object({
-    target: z.string(),
-    rootCause: z.string(),
-    severity: z.string(),
-    metrics: z.record(z.number()),
-  }),
-  handler: handler$(async (input: { target: string }, ctx) => {
-    report(ctx.executionId, `Querying live metrics for ${input.target}…`);
-    await sleep(500);
-    // Genuine ReAct loop: the Diagnostics agent calls the db-metrics tool, then
-    // reasons over the result (see agents/diagnosticsRunner.ts).
-    const result = await runDiagnosticsAgent(input.target, ctx);
-    report(
-      ctx.executionId,
-      `ReAct loop: ${result.toolCalls} tool call over ${result.iterations} iterations.`
-    );
-    report(
-      ctx.executionId,
-      `Metrics: CPU ${result.metrics.cpuPct}%, pool ${result.metrics.poolUsed}/${result.metrics.poolMax}.`
-    );
-    report(ctx.executionId, `Root cause: ${result.rootCause}`);
-    const diagnosis: Diagnosis = {
-      target: input.target,
-      rootCause: result.rootCause,
-      severity: "critical",
-      metrics: {
-        cpuPct: result.metrics.cpuPct,
-        memPct: result.metrics.memPct,
-        poolUsed: result.metrics.poolUsed,
-        poolMax: result.metrics.poolMax,
-      },
-    };
-    return diagnosis;
-  }),
-});
+// A genuine ReAct loop, run FROM the flow's runner body (agentLoop$): the Diagnostics
+// agent calls the db-metrics tool, then reasons over the result. Every model call and
+// tool call is its own durable frame in this flow's log (see agents/diagnosticsRunner.ts),
+// so there is no wrapping step$ — a step handler has no `ctx.execute` to loop with.
+const diagnoseCpuRunner: FlowRunner<{ target: string }, Diagnosis> = async (ctx, input) => {
+  report(ctx.executionId, `Querying live metrics for ${input.target}…`);
+  await sleep(500);
+  const result = await runDiagnosticsAgent(input.target, ctx);
+  report(
+    ctx.executionId,
+    `ReAct loop: ${result.toolCalls} tool call over ${result.iterations} iterations.`
+  );
+  report(
+    ctx.executionId,
+    `Metrics: CPU ${result.metrics.cpuPct}%, pool ${result.metrics.poolUsed}/${result.metrics.poolMax}.`
+  );
+  report(ctx.executionId, `Root cause: ${result.rootCause}`);
+  return {
+    target: input.target,
+    rootCause: result.rootCause,
+    severity: "critical",
+    metrics: {
+      cpuPct: result.metrics.cpuPct,
+      memPct: result.metrics.memPct,
+      poolUsed: result.metrics.poolUsed,
+      poolMax: result.metrics.poolMax,
+    },
+  };
+};
 
 // ── diagnose-replica-lag ──────────────────────────────────────────────────────
 const DiagnoseReplicaStep = step$({
@@ -182,10 +172,9 @@ type ApprovalDecision = z.infer<typeof ApprovalDecisionSchema>;
 function diagnosisFlow(
   id: string,
   name: string,
-  step: typeof DiagnoseCpuStep | typeof DiagnoseReplicaStep
+  runner: FlowRunner<{ target: string }, Diagnosis>,
+  steps: (typeof DiagnoseReplicaStep)[]
 ): RegisteredFlow<{ target: string }, Diagnosis> {
-  const runner: FlowRunner<{ target: string }, Diagnosis> = (ctx, input) =>
-    ctx.run(step, { target: input.target }) as Promise<Diagnosis>;
   return {
     definition: flow$({
       id,
@@ -198,17 +187,20 @@ function diagnosisFlow(
         severity: z.enum(["info", "warning", "critical"]),
         metrics: z.record(z.number()),
       }),
-      steps: [step],
+      steps,
     }),
     runner,
   };
 }
 
-export const DiagnoseCpuFlow = diagnosisFlow("diagnose-cpu", "Diagnose CPU", DiagnoseCpuStep);
+export const DiagnoseCpuFlow = diagnosisFlow("diagnose-cpu", "Diagnose CPU", diagnoseCpuRunner, []);
+const diagnoseReplicaRunner: FlowRunner<{ target: string }, Diagnosis> = (ctx, input) =>
+  ctx.run(DiagnoseReplicaStep, { target: input.target }) as Promise<Diagnosis>;
 export const DiagnoseReplicaFlow = diagnosisFlow(
   "diagnose-replica-lag",
   "Diagnose Replica Lag",
-  DiagnoseReplicaStep
+  diagnoseReplicaRunner,
+  [DiagnoseReplicaStep]
 );
 
 const assessRunner: FlowRunner<{ target: string; domain: string }, RemediationAssessment> = (

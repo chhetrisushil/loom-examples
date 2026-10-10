@@ -1,7 +1,6 @@
-import { AgentRunner, toolSpecFor } from "@loom/agent";
+import { type AgentOutput, agentLoop$, createAgentModelEffect, toolSpecFor } from "@loom/agent";
 import { defineConfig } from "@loom/app";
 import { agent$, flow$, handler$, step$ } from "@loom/core";
-import { EffectRuntime } from "@loom/effect-runtime";
 import type { LlmProvider, LlmRequest, LlmResponse } from "@loom/llm";
 import {
   A2APeerClient,
@@ -54,7 +53,10 @@ class ScriptedLlmProvider implements LlmProvider {
 }
 
 async function main(): Promise<void> {
-  const effectRuntime = new EffectRuntime();
+  // The outbound composition root: the agent loop runs FROM a flow's runner body, so it needs a
+  // WorkflowRuntime, and its model call + every tool call resolve through this app's EffectRuntime.
+  const outbound = defineConfig({ storage: { kind: "memory" } });
+  const effectRuntime = outbound.effectRuntime;
   const registry = new AgentRegistry();
 
   // ── The "external" peer (ADK/LangGraph stand-in) ────────────────────────────
@@ -118,17 +120,33 @@ async function main(): Promise<void> {
     },
   ]);
 
-  const runner = new AgentRunner({
-    definition: opsAgent,
-    provider,
-    effectRuntime,
-    systemPrompt: "You are an SRE orchestrator. Delegate diagnosis to your tools.",
+  // The model is an effect (one journaled frame per call); the tool calls are frames too.
+  effectRuntime.register("ops-model", createAgentModelEffect(provider));
+  const opsFlow = flow$({
+    id: "ops-agent-run",
+    name: "Ops agent run",
+    version: "1.0.0",
+    inputSchema: z.object({ prompt: z.string() }),
+    outputSchema: z.object({ content: z.string() }).passthrough(),
+    steps: [],
   });
+  outbound.runtime.registerFlow(opsFlow, (async (ctx, input: { prompt: string }) =>
+    agentLoop$(
+      ctx,
+      {
+        definition: opsAgent,
+        modelToolId: "ops-model",
+        systemPrompt: "You are an SRE orchestrator. Delegate diagnosis to your tools.",
+      },
+      { prompt: input.prompt }
+    )) as FlowRunner<unknown, unknown>);
 
-  const agentOutput = await runner.run(
+  const opsRun = await outbound.runtime.start(
+    opsFlow,
     { prompt: "prod-postgres is at 92% CPU and connections are exhausted. Remediate." },
-    { executionId: "mesh-demo", stepId: "ops", workflowId: "mesh-demo", attempt: 1, emit: () => {} }
+    { executionId: "mesh-demo" }
   );
+  const agentOutput = (await opsRun.waitForCompletion()).variables._output as AgentOutput;
 
   const remoteCall = agentOutput.toolCallLog.find((c) => c.toolName === "remote-diagnostics");
   console.log("\nRemote agent replied:");
@@ -168,8 +186,7 @@ async function main(): Promise<void> {
 
   // Composition root for the inbound A2A server: defineConfig assembles the
   // in-memory stores, EffectRuntime, projection runtime, and WorkflowRuntime,
-  // and registers the remediation flow. The outbound EffectRuntime above is a
-  // separate concern (it backs the AgentRunner, not a WorkflowRuntime).
+  // and registers the remediation flow. It is a separate app from the outbound one above.
   const app = defineConfig({
     storage: { kind: "memory" },
     flows: [remediateFlow],
@@ -220,6 +237,7 @@ async function main(): Promise<void> {
   await server.stop();
   await external.close();
   await app.close();
+  await outbound.close();
   section("Done — bidirectional A2A mesh demonstrated offline.");
 }
 

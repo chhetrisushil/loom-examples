@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { waitForPhase } from "@loom/testing";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { DiagnoseCpuFlow } from "../src/capabilities/flows";
 import { type ServerApp, createApp } from "../src/server/app";
 import { STRATEGIES } from "../src/warroom/strategies";
 
@@ -271,5 +272,22 @@ describe("incident war room (durable, headless)", () => {
     expect(mission().phase).toBe("resolved");
     // The CPU path never opens the War Room.
     expect(app.orchestrator.branchSurface().phase).toBe("idle");
+  }, 30000);
+
+  it("diagnoses through agentLoop$: one durable frame per model call and per tool call", async () => {
+    const handle = await app.missionRuntime.start(
+      DiagnoseCpuFlow,
+      { target: "orders-db-primary" },
+      { executionId: "diag-1" }
+    );
+    const state = await handle.waitForCompletion();
+    expect((state.variables._output as { rootCause: string }).rootCause).toMatch(/pool/i);
+    // The loop is a runner-body function: its frames are in THIS flow's own log, not
+    // one opaque step. Two model calls and the metrics tool call between them.
+    const stepIds = (await app.eventStore.read("diag-1"))
+      .map((e) => (e.payload as { stepId?: string }).stepId)
+      .filter((id): id is string => id !== undefined);
+    expect(stepIds.some((id) => id.includes("#turn:0:tool:0"))).toBe(true);
+    expect(stepIds.some((id) => id.includes("#turn:1"))).toBe(true);
   }, 30000);
 });
