@@ -5,7 +5,7 @@ seeded viewers, in-memory stores). A planner draws the same dashboard in one of 
 or `tabs`); *which* layout is a learned loom decision, and the viewers' votes are what teach it.
 
 ```bash
-pnpm --filter @loom/planner-learning start   # a narrated run (~5 s)
+pnpm --filter @loom/planner-learning start   # a narrated run (~8 s)
 pnpm --filter @loom/planner-learning test    # the tests ARE the proof
 ```
 
@@ -24,7 +24,7 @@ learn                       trajectories -> evaluatePolicy (SNIPS + unit bootstr
   surface the server did not record showing that viewer (`seenLogExposure`) is refused `unexposed`; a re-vote
   replaces the earlier one (one viewer = one vote in the fold), a replayed batch is refused, and
   `maxBatchesPerViewer` caps a flood (`viewer-capacity`).
-- **Lifecycle (loom R18, ADR 0124).** `src/lifecycle.ts` is a ~100-line controller (WHEN to move is application
+- **Lifecycle (loom R18, ADR 0124).** `src/lifecycle.ts` is a ~170-line controller (WHEN to move is application
   code, ADR 0124 D9): register -> offline gate -> **shadow** (the incumbent acts; the candidate's choice is
   stamped beside it) -> **canary** (units whose stable bucket is under the fraction) -> gate on fresh traffic ->
   **full**, or `rollback`. Every `promote` re-runs the gate inside the registry.

@@ -1,5 +1,5 @@
 import { PromotionRefusedError, rolloutBucket } from "@loom/learning";
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import { BUCKET_SECRET, type Batch, Lab } from "../src/lab";
 import { type TrialResult, armOf, evaluateCandidate, trial } from "../src/lifecycle";
 import { POLICY_ID } from "../src/policies";
@@ -206,4 +206,36 @@ describe("the R18 lifecycle", () => {
     expect(lab.models.flat.calls + lab.models.tabs.calls).toBe(modelCalls);
     expect((final.variables._output as { layout: string }).layout).toBe(choice.choice);
   });
+});
+
+describe("trial() error handling", () => {
+  const opts = (evidence: Awaited<ReturnType<Lab["trajectories"]>>) => ({
+    evidence,
+    incumbent: "1" as const,
+    shadow: { users: 20, epoch: 1 },
+    canary: { users: 20, epoch: 2, fraction: 0.3 },
+  });
+
+  it("a KV/IO failure is rethrown, not reported as a gate refusal, and no rollback is attempted", async () => {
+    const lab = new Lab();
+    await lab.bootstrap();
+    const base = await lab.serve("base", 40, 1);
+    await lab.settle(base);
+    const evidence = await lab.trajectories(base);
+    const boom = new Error("kv unavailable");
+    const rollback = vi.spyOn(lab.registry, "rollback");
+    vi.spyOn(lab.registry, "promote").mockRejectedValue(boom);
+    await expect(trial(lab, "2", opts(evidence))).rejects.toBe(boom);
+    expect(rollback).not.toHaveBeenCalled();
+  }, 60_000);
+
+  it("a real refusal at the offline gate is still reported as one", async () => {
+    const lab = new Lab();
+    await lab.bootstrap();
+    const refused = new PromotionRefusedError("2", ["lift below floor"]);
+    vi.spyOn(lab.registry, "promote").mockRejectedValue(refused);
+    const r = await trial(lab, "2", opts([]));
+    expect(r.outcome).toBe("refused-offline");
+    expect(r.reasons).toEqual(["lift below floor"]);
+  }, 60_000);
 });

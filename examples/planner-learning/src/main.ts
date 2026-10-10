@@ -1,4 +1,4 @@
-import { Lab } from "./lab";
+import { type Batch, Lab } from "./lab";
 import { armOf, fmt, trial } from "./lifecycle";
 import { POLICY_ID } from "./policies";
 
@@ -35,7 +35,7 @@ async function main(): Promise<void> {
   );
 
   h("3. v3 (tabs for everyone, retrained on epoch-2 votes)");
-  const evidence = await lab.trajectories(t2.batches.canary as never);
+  const evidence = await lab.trajectories(t2.batches.canary as Batch);
   const t3 = await trial(lab, "3", {
     evidence: armOf(evidence, "1"),
     incumbent: "1",
