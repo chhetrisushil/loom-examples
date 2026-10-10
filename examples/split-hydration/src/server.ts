@@ -91,6 +91,7 @@ export class StationServer {
       invoker: this.opts.tools,
       now: this.opts.clock(),
       outputKinds: { catalog, surface: "web" },
+      contentRefArgs: "none", // no media tools: no content-reference argument to guard (U9b opt-out)
       reshapers,
       cache: this.cache,
       inputDrift: this.opts.readOnly === true ? "report-and-proceed" : "report",
