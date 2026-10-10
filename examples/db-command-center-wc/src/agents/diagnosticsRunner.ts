@@ -1,6 +1,6 @@
 import { agentLoop$, createAgentModelEffect } from "@loom/agent";
 import { type EffectRuntime, ToolEffect } from "@loom/effect-runtime";
-import { type LlmProvider, type LlmRequest, type LlmResponse, toParts } from "@loom/llm";
+import { type LlmProvider, type LlmRequest, type LlmResponse, textOf, toParts } from "@loom/llm";
 import type { ExecutionContext } from "@loom/workflow-runtime";
 import { DiagnosticsAgent } from "./definitions";
 import { fetchMetrics } from "./tools";
@@ -39,7 +39,7 @@ class DiagnosticsScript implements LlmProvider {
 
 function readTarget(request: LlmRequest): string {
   const match = /target[^a-z0-9]*([a-z0-9-]+)/i.exec(
-    request.messages.map((m) => m.content).join(" ")
+    request.messages.map((m) => textOf(m.content)).join(" ")
   );
   return match?.[1] ?? "prod-postgres";
 }

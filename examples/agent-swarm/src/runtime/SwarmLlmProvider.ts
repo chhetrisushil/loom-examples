@@ -1,4 +1,5 @@
 import type { LlmProvider, LlmRequest, LlmResponse } from "@loom/llm";
+import { textOf } from "@loom/llm";
 
 // A single deterministic, offline LlmProvider so the whole swarm runs with no API
 // key. It plays two model roles the runtimes ask for:
@@ -22,7 +23,7 @@ const AUDIT_PLAN: Array<{ capabilityId: string; rationale: string }> = [
 ];
 
 function goalOf(request: LlmRequest): string {
-  const raw = request.messages.map((m) => m.content).join("\n");
+  const raw = request.messages.map((m) => textOf(m.content)).join("\n");
   // Classify off the actual goal line only — the prompt embeds a capability menu.
   const match = /(?:goal|request):\s*([^\n]*)/i.exec(raw);
   return (match?.[1] ?? raw).toLowerCase();
