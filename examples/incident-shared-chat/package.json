@@ -1,0 +1,32 @@
+{
+  "name": "@loom/incident-shared-chat",
+  "version": "0.0.1",
+  "description": "loom R17 SHARED MODE on an incident war-room chat (ADR 0122 D10): several responders share one conversation, each turn runs AS ITS ASKER, answers are classified by the tools they touched and filtered per viewer (history, SSE stream, model context), turns queue FIFO, envelopes are HMAC-signed with a replay floor, a service principal coordinates under an owner-scoped runtime policy, and a non-participant is a uniform 404. Each viewer's transcript is folded by loom-ui's ChatFeed and printed. Offline: scripted LLM, real SSE transport on port 0.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --build",
+    "start": "tsx src/main.ts",
+    "test": "vitest run",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@loom-ui/core": "*",
+    "@loom/agent": "*",
+    "@loom/conversation": "*",
+    "@loom/core": "*",
+    "@loom/effect-runtime": "*",
+    "@loom/event-runtime": "*",
+    "@loom/llm": "*",
+    "@loom/plugin-conversation-sse": "*",
+    "@loom/snapshot-runtime": "*",
+    "@loom/workflow-runtime": "*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "^5.6.3",
+    "vitest": "catalog:"
+  }
+}
