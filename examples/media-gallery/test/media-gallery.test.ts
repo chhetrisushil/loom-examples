@@ -101,7 +101,8 @@ describe("media-gallery", () => {
 
     const foreign = await session.load(["caption"], { image: theirs.ref.address });
     expect(foreign[0]?.state).toBe("error");
-    expect(session.findings.map((f) => f.code)).toContain("media-arg-literal");
+    // loom-ui #64: a param the host gate refuses is `media-arg-param-refused` (a literal stays `media-arg-literal`)
+    expect(session.findings.map((f) => f.code)).toContain("media-arg-param-refused");
     expect(tools.calls).toHaveLength(0); // refused BEFORE the call, not rejected by the tool
     expect(JSON.stringify(foreign)).not.toContain(theirs.ref.address.slice(7, 20)); // never echoed back
 
