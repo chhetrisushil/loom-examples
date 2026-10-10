@@ -10,7 +10,7 @@ A single server-side showcase of Loom's agentic surface, wired together and runn
 4. **A2A out of the box** — expose a flow as an A2A agent (`createA2AServer` + `toAgentCard`, with an `authenticate` that names the caller), then call it as a client (`createA2AClientEffect`, sending the credential in `headers`).
 5. **Capabilities + Intent** — a `CapabilityCatalog`, routed to by **intent** (not URLs).
 6. **Planner** — turn a goal into an ordered capability plan (`PlannerRuntime`).
-7. **Agent memory** — an agent that recalls prior turns (`MemoryRuntime` + `memory$`).
+7. **Agent memory** — an agent that recalls prior turns (`TieredMemory` + `InMemoryMemoryStore`, written back through the effect ring via `memoryWriteBackEffect`).
 8. **Multi-surface rendering** — render one blueprint to the terminal surface.
 
 ## Run it

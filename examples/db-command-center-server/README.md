@@ -116,3 +116,5 @@ shows the parent still suspended, then promotes the winner onto `main`. Source: 
   script and the `fork()`/registry APIs. The **interactive** version — an "Explore branches" control,
   `POST /api/missions/:id/branches` + `/promote` routes, and a live branch graph/diff over SSE — is built
   out fully in the sibling [`examples/incident-war-room`](../incident-war-room/README.md) example.
+
+> **Wiring note:** the diagnose flow runs `agentLoop$`, which resolves its model and tool calls through the app's `EffectRuntime`. Any new composition root that registers the diagnose flow must also pass `execution.registerEffects` (`registerDiagnosticsEffects` from `src/agents/diagnosticsRunner.ts`); without it the run fails at runtime with `No effect registered for toolId`.

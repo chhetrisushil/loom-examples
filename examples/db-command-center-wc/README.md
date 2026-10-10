@@ -55,3 +55,5 @@ human-in-the-loop, workflow composed dynamically by the Planner, domain agents
 over A2A, long-running durable agents, a near-real-time agent-task list, tasks
 created per plan step, and an observability dashboard — here every surface is
 rendered by a Custom Element.
+
+> **Wiring note:** the diagnose flow runs `agentLoop$`, which resolves its model and tool calls through the app's `EffectRuntime`. Any new composition root that registers the diagnose flow must also pass `execution.registerEffects` (`registerDiagnosticsEffects` from `src/agents/diagnosticsRunner.ts`); without it the run fails at runtime with `No effect registered for toolId`.

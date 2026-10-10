@@ -145,3 +145,5 @@ schema-inspector / risk-assessor / migration-executor agents + mock tools, the c
   where `acquireFence` keeps a partitioned zombie worker from writing.
 - **Real DDL** — migrations are mocked deterministically; `projectOutcome` stands in for a gh-ost `--dry-run`
   or a shadow apply.
+
+> **Wiring note:** the diagnose flow runs `agentLoop$`, which resolves its model and tool calls through the app's `EffectRuntime`. Any new composition root that registers the diagnose flow must also pass `execution.registerEffects` (`registerDiagnosticsEffects` from `src/agents/diagnosticsRunner.ts`); without it the run fails at runtime with `No effect registered for toolId`.
