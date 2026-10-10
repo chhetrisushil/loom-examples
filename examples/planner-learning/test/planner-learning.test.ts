@@ -1,7 +1,13 @@
 import { PromotionRefusedError, rolloutBucket } from "@loom/learning";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { BUCKET_SECRET, type Batch, Lab } from "../src/lab";
-import { type TrialResult, armOf, evaluateCandidate, trial } from "../src/lifecycle";
+import {
+  type TrialOptions,
+  type TrialResult,
+  armOf,
+  evaluateCandidate,
+  trial,
+} from "../src/lifecycle";
 import { POLICY_ID } from "../src/policies";
 
 interface Stamp {
@@ -209,9 +215,9 @@ describe("the R18 lifecycle", () => {
 });
 
 describe("trial() error handling", () => {
-  const opts = (evidence: Awaited<ReturnType<Lab["trajectories"]>>) => ({
+  const opts = (evidence: Awaited<ReturnType<Lab["trajectories"]>>): TrialOptions => ({
     evidence,
-    incumbent: "1" as const,
+    incumbent: "1",
     shadow: { users: 20, epoch: 1 },
     canary: { users: 20, epoch: 2, fraction: 0.3 },
   });
