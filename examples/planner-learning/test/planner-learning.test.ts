@@ -1,7 +1,10 @@
+import { snapshotSeen } from "@loom-ui/core";
+import { SIGNAL_VERSION } from "@loom-ui/core/signals";
+import { InMemoryVoteLog, SignalIngestor, VoteLedger, seenLogExposure } from "@loom-ui/learning";
 import type { PlanVariantReport } from "@loom-ui/planner";
 import { PromotionRefusedError, rolloutBucket } from "@loom/learning";
 import { beforeAll, describe, expect, it, vi } from "vitest";
-import { BUCKET_SECRET, type Batch, Lab } from "../src/lab";
+import { BUCKET_SECRET, type Batch, KEY, Lab, type Surface } from "../src/lab";
 import {
   type TrialOptions,
   type TrialResult,
@@ -9,7 +12,8 @@ import {
   evaluateCandidate,
   trial,
 } from "../src/lifecycle";
-import { POLICY_ID } from "../src/policies";
+import { POLICY_ID, versionHash } from "../src/policies";
+import { NODES, TENANT } from "../src/world";
 
 interface Stamp {
   version: string;
@@ -89,6 +93,70 @@ describe("viewer votes (loom-ui U11)", () => {
     const a = await mk();
     const b = await mk();
     expect(a.surfaces.map((s) => s.served)).toEqual(b.surfaces.map((s) => s.served));
+  });
+});
+
+describe("exposure is node-level, not version-level", () => {
+  // The server recorded the viewer seeing the surface VERSION, but no entry naming the voted node
+  // (a snapshot with no data-bound entries). seenLogExposure's `versionIsEnough` decides whether that vouches.
+  it("a version-only view is refused under versionIsEnough:false and accepted under true", async () => {
+    const lab = new Lab();
+    await lab.bootstrap();
+    const s = await lab.turn({ userId: "vo@example.com", segment: "power" });
+    const viewerId = "version-only-viewer";
+    const exp = (await lab.lineage.get(s.experienceId, s.versionHash)) as {
+      ok: true;
+      value: Parameters<typeof snapshotSeen>[0];
+    };
+    const full = snapshotSeen(exp.value, {
+      viewer: { clearance: "internal" },
+      read: () => ({ found: true, value: 1, status: "ready" }),
+    });
+    expect(full.entries.length).toBeGreaterThan(0); // the real view names nodes; strip them to make it version-only
+    const rec = await lab.seenLog.record({
+      experienceId: s.experienceId,
+      viewerId: `${TENANT}/${viewerId}`,
+      snapshot: { ...full, entries: [] },
+      viewer: { clearance: "internal" },
+    });
+    expect(rec.ok).toBe(true);
+
+    // the lab's strict ingestor
+    const strict = await lab.vote(s, viewerId, 5);
+    // every NODE exposure is refused (the version view names no node); only the surface-level
+    // feedback, which the version-level fact does vouch for, gets through
+    expect(strict.rejected.unexposed).toBe(NODES.length);
+    expect(strict.accepted).toBe(1);
+
+    // the SAME vote through a lenient ingestor over the same links and the same seen log
+    const ledger = new VoteLedger({
+      log: new InMemoryVoteLog(),
+      pseudonymKey: KEY,
+      clock: () => Date.now(),
+    });
+    const lenient = new SignalIngestor({
+      links: lab.links,
+      ledger,
+      clock: () => Date.now(),
+      exposure: seenLogExposure(lab.seenLog, {
+        versionIsEnough: true,
+        viewerIdOf: ({ tenant, viewerId: v }) => `${tenant}/${v}`,
+      }),
+    });
+    const ok = await lenient.ingest({
+      viewer: { id: viewerId, tenant: TENANT },
+      raw: {
+        v: SIGNAL_VERSION,
+        batchId: "lenient",
+        view: { experienceId: s.experienceId, versionHash: s.versionHash },
+        signals: [
+          ...NODES.map((node) => ({ kind: "exposure" as const, node })),
+          { kind: "feedback" as const, rating: 5 },
+        ],
+      },
+    });
+    expect(ok.rejected.unexposed).toBeUndefined();
+    expect(ok.accepted).toBe(NODES.length + 1);
   });
 });
 
@@ -236,6 +304,89 @@ describe("what a FRESH turn reports", () => {
     const s = await lab.turn({ userId: "fresh@example.com", segment: "power" });
     expect(s.report.policy).toEqual({ id: POLICY_ID, version: "1" });
     expect(s.report.rollout?.mode).toBe("full");
+  });
+
+  // A fresh turn under a non-full rollout stamps the mode, the unit's bucket and the arm that did NOT act.
+  describe("under a rollout", () => {
+    const lab = new Lab();
+    let salt = "";
+    let base: Batch;
+
+    // register v2 and walk it to `mode` with the offline report (the registry gate is the same at every step)
+    beforeAll(async () => {
+      await lab.bootstrap();
+      base = await lab.serve("p3-base", 120, 1);
+      await lab.settle(base);
+      const report = evaluateCandidate(lab, await lab.trajectories(base), "2");
+      const now = Date.parse(lab.iso());
+      await lab.registry.register({
+        id: POLICY_ID,
+        version: "2",
+        contentHash: versionHash("2"),
+        now,
+      });
+      await lab.registry.promote({ id: POLICY_ID, version: "2", report, mode: "shadow", now });
+      salt = (await lab.registry.resolve(POLICY_ID))?.salt ?? "";
+    }, 120_000);
+
+    const unitOf = (s: Surface) => rolloutBucket(salt, s.unit, BUCKET_SECRET);
+
+    it("shadow: the report carries the mode and the shadow arm's version and choice; the incumbent acts", async () => {
+      expect(salt).not.toBe("");
+      const s = await lab.turn({ userId: "fresh-shadow@example.com", segment: "power" });
+      const r = s.report;
+      expect(r.policy).toEqual({ id: POLICY_ID, version: "1" });
+      expect(r.rollout?.mode).toBe("shadow");
+      expect(r.rollout?.bucket).toBeUndefined(); // loom buckets only a canary split; shadow has no slice
+      expect(r.rollout?.acted).toEqual({ id: POLICY_ID, version: "1" });
+      expect(r.rollout?.shadow).toMatchObject({ id: POLICY_ID, version: "2" });
+      expect(typeof r.rollout?.shadow?.action).toBe("string");
+      // the stamp on the report is the stamp in the log
+      const [first] = await stampsOf(lab, { label: "x", epoch: 1, surfaces: [s] });
+      const payload = first?.payload as NonNullable<typeof first>["payload"];
+      expect(payload.policy.rollout.shadow).toMatchObject({
+        version: "2",
+        action: r.rollout?.shadow?.action,
+      });
+      expect(s.served).toBe(payload.choice);
+    });
+
+    it("canary: a unit inside the slice is acted on by the candidate, one outside by the incumbent", async () => {
+      const now = Date.parse(lab.iso());
+      const report = evaluateCandidate(lab, await lab.trajectories(base), "2");
+      await lab.registry.promote({
+        id: POLICY_ID,
+        version: "2",
+        report,
+        mode: "canary",
+        canaryFraction: 0.3,
+        now,
+      });
+      const seen = {
+        inside: undefined as Surface | undefined,
+        outside: undefined as Surface | undefined,
+      };
+      for (let i = 0; i < 60 && (!seen.inside || !seen.outside); i++) {
+        const s = await lab.turn({ userId: `fresh-canary-${i}@example.com`, segment: "casual" });
+        const side = unitOf(s) < 0.3 ? "inside" : "outside";
+        seen[side] ??= s;
+      }
+      const { inside, outside } = seen;
+      if (!inside || !outside) throw new Error("no unit found on one side of the slice");
+      for (const [s, acting, other] of [
+        [inside, "2", "1"],
+        [outside, "1", "2"],
+      ] as const) {
+        const r = s.report;
+        expect(r.rollout?.mode).toBe("canary");
+        expect(r.rollout?.bucket).toBe(unitOf(s));
+        expect(r.policy).toEqual({ id: POLICY_ID, version: acting });
+        expect(r.rollout?.acted).toEqual({ id: POLICY_ID, version: acting });
+        expect(r.rollout?.shadow).toMatchObject({ version: other });
+      }
+      expect(inside.report.rollout?.armProbability).toBeCloseTo(0.3);
+      expect(outside.report.rollout?.armProbability).toBeCloseTo(0.7);
+    }, 60_000);
   });
 });
 
