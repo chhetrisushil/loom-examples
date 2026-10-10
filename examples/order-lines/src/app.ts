@@ -1,6 +1,7 @@
 import type { Experience } from "@loom-ui/core";
 import { HydrationController, HydrationStore } from "@loom-ui/hydration";
 import { type DomRenderHandle, litRegistry, renderBlueprintDom } from "@loom-ui/renderer-lit/dom";
+import "@loom-ui/renderer-lit/register";
 import { renderExperience, terminalRegistry } from "@loom-ui/renderer-terminal";
 import type { Blueprint } from "@loom/blueprint-runtime";
 import { InMemoryProjectionRuntime } from "@loom/projection-runtime";

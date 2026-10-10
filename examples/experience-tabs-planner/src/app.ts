@@ -31,6 +31,7 @@ import {
 } from "@loom-ui/planner";
 import { referenceContainers } from "@loom-ui/renderer-lit/containers";
 import { type DomRenderHandle, litRegistry, renderBlueprintDom } from "@loom-ui/renderer-lit/dom";
+import "@loom-ui/renderer-lit/register";
 import { renderExperience, terminalRegistry } from "@loom-ui/renderer-terminal";
 import type { Blueprint } from "@loom/blueprint-runtime";
 import { InMemoryContentStore } from "@loom/plugin-content";
