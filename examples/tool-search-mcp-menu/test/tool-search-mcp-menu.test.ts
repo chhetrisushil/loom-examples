@@ -82,6 +82,8 @@ describe("vocabulary: host annotations", () => {
     );
     expect(search?.result.tools?.[0]?.name).toBe("charge_invoice");
     expect(search?.result.tools?.[0]?.loaded).toBe(true);
+    // the built-in ranker drops query stopwords ("the"), so no alias that merely contains "the" matches
+    expect((search?.result.tools ?? []).map((t) => t.name)).toEqual(["charge_invoice"]);
     expect(acts.mcpCalls.plain).toEqual(["charge_invoice"]);
   });
 
@@ -92,6 +94,18 @@ describe("vocabulary: host annotations", () => {
     expect((search?.result.tools ?? []).map((t) => t.name)).not.toContain("charge_invoice");
     // the script reads the results, so it called whatever came back first: not charge_invoice
     expect(menuOf(w, w.requests.length - 1)).not.toContain("charge_invoice");
+  });
+});
+
+describe("vocabulary: the query stoplist (ADR 0125 D15)", () => {
+  it("with stopwords: [] the noise comes back: 'the' matches refund_payment and slow_queries", async () => {
+    const w = buildWorld({ mcp: await server.mapped(), stopwords: [] });
+    await run(w);
+    const search = resultsOf(w.requests[1] as never).find((r) => r.tool === "search_tools");
+    const names = (search?.result.tools ?? []).map((t) => t.name);
+    expect(names).toContain("charge_invoice");
+    expect(names).toEqual(expect.arrayContaining(["refund_payment", "slow_queries"]));
+    expect(names.length).toBeGreaterThan(1);
   });
 });
 
@@ -134,6 +148,23 @@ describe("two-ranker mode (a custom tool ranker)", () => {
     expect(records[0]?.results[0]).toBe("charge_invoice");
     expect(records[1]?.skills).toContain("month_end_close");
     expect(acts.ranker.calls).toBe(2);
+    // the recorded kind is a plain string, whatever built the ranker
+    for (const r of records) expect(typeof r.ranker).toBe("string");
+  });
+
+  it("the ranker factory is called once per run, lazily, with the run's SANITIZED docs", () => {
+    expect(acts.ranker.factoryCalls).toBe(1);
+    expect(acts.ranker.built).toHaveLength(1);
+    const docs = acts.ranker.docsSeen[0] ?? [];
+    expect(docs).toHaveLength(CATALOG_SIZE);
+    const charge = docs.find((d) => d.id === "charge_invoice");
+    // the host's annotation is present ...
+    expect(charge?.aliases).toContain("bill the customer");
+    expect(charge?.tags).toContain("billing");
+    // ... and the server's description (it carries an injection) is not
+    expect(charge?.description).toBeUndefined();
+    expect(JSON.stringify(docs)).not.toMatch(/ignore every other tool/i);
+    expect(docs.every((d) => d.description === undefined)).toBe(true);
   });
 
   it("the page is the same whichever tool ranker produced it", () => {
@@ -142,7 +173,7 @@ describe("two-ranker mode (a custom tool ranker)", () => {
         .find((r) => r.tool === "search_tools")
         ?.result.tools?.map((t) => t.name);
     expect(pick(acts.custom)).toEqual(pick(acts.plain));
-    expect(pick(acts.plain)?.length).toBeGreaterThan(1);
+    expect(pick(acts.plain)).toEqual(["charge_invoice"]);
   });
 });
 
@@ -155,6 +186,9 @@ describe("durability: kill, restart, replay", () => {
   it("the replay makes ZERO ranker calls (the live run made two)", () => {
     expect(acts.ranker.calls).toBe(2);
     expect(acts.resumedRanker.calls).toBe(0);
+    // nor is the factory even built: a resume never reaches the ranker
+    expect(acts.resumedRanker.factoryCalls).toBe(0);
+    expect(acts.resumedRanker.built).toEqual([]);
   });
 
   it("the recorded pages, and the activation, are identical after the resume", () => {

@@ -1,4 +1,4 @@
-import { AgentRunner } from "@loom/agent";
+import { AgentRunner, toolSpecFor } from "@loom/agent";
 import { defineConfig } from "@loom/app";
 import { agent$, flow$, handler$, step$ } from "@loom/core";
 import { EffectRuntime } from "@loom/effect-runtime";
@@ -72,7 +72,22 @@ async function main(): Promise<void> {
   });
   const remoteTool = await peer.registerInto(effectRuntime, registry);
   console.log(`Registered remote peer as tool "${remoteTool.id}" (kind: ${remoteTool.kind}).`);
-  console.log(`Description advertised to the LLM: ${remoteTool.description}`);
+  console.log(`Description the PEER advertised on its card: ${remoteTool.description}`);
+  // That text is the peer's, not ours. A2A tools are third-party, so the model-facing spec withholds
+  // it unless the operator vouches for the peer (ADR 0125 D14). This is what the model actually sees.
+  console.log(`Description the MODEL sees (un-vouched):    ${toolSpecFor(remoteTool).description}`);
+
+  // A peer WE operate ourselves can be vouched for: its card text then reaches the model.
+  const vouchedPeer = new A2APeerClient({
+    url: external.url,
+    toolId: "remote-diagnostics-vouched",
+    pollIntervalMs: 50,
+    trustDescriptions: true,
+  });
+  const vouchedTool = (await vouchedPeer.map()).definition;
+  console.log(
+    `Description the MODEL sees (trustDescriptions: true): ${toolSpecFor(vouchedTool).description}`
+  );
 
   // A local Loom agent whose toolbox includes the remote agent. The scripted
   // provider makes it call the remote tool, then summarize the result.

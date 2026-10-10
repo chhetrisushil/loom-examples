@@ -2,7 +2,7 @@ import { SOURCE_SKILL_ACTIVATION, SOURCE_TOOL_SEARCH } from "@loom/agent";
 import type { EventEnvelope } from "@loom/core";
 import { CATALOG_SIZE } from "./catalog";
 import { resultsOf } from "./model";
-import { OverlapRanker } from "./ranker";
+import { RankerProbe } from "./ranker";
 import type { RunningServer } from "./server";
 import {
   AGENT_ID,
@@ -48,9 +48,9 @@ export function digest(w: World): string[] {
 export interface Acts {
   readonly plain: World;
   readonly custom: World;
-  readonly ranker: OverlapRanker;
+  readonly ranker: RankerProbe;
   readonly resumed: World;
-  readonly resumedRanker: OverlapRanker;
+  readonly resumedRanker: RankerProbe;
   readonly crashedLog: readonly EventEnvelope[];
   readonly fullLog: readonly EventEnvelope[];
   readonly resumedLog: readonly EventEnvelope[];
@@ -63,7 +63,7 @@ export interface Acts {
  *  - `plain`: the built-in BM25F ranker (host annotations close the vocabulary gap);
  *  - `custom`: a custom tool ranker (two-ranker mode with skill discovery), counting its calls;
  *  - `resumed`: `custom`'s log cut just before the skill activation (both searches already
- *    recorded), resumed by a world whose ranker would count any call.
+ *    recorded), resumed by a world whose factory and ranker would count any call.
  */
 export async function runActs(server: RunningServer): Promise<Acts> {
   const plain = buildWorld({ mcp: await server.mapped() });
@@ -71,16 +71,20 @@ export async function runActs(server: RunningServer): Promise<Acts> {
   const afterPlain = [...server.log.calls];
 
   const mcp = await server.mapped();
-  const ranker = new OverlapRanker(mcp.map((m) => m.definition.id));
-  const custom = buildWorld({ mcp, ranker });
+  const ranker = new RankerProbe();
+  const custom = buildWorld({ mcp, ranker: ranker.factory });
   await run(custom);
   const fullLog = await custom.store.read(EXECUTION_ID);
 
   const afterCustom = [...server.log.calls];
   const crashed = await crashBefore(fullLog, `${AGENT_ID}#turn:2`);
   const crashedLog = await crashed.read(EXECUTION_ID);
-  const resumedRanker = new OverlapRanker(mcp.map((m) => m.definition.id));
-  const resumed = buildWorld({ mcp: await server.mapped(), ranker: resumedRanker, store: crashed });
+  const resumedRanker = new RankerProbe();
+  const resumed = buildWorld({
+    mcp: await server.mapped(),
+    ranker: resumedRanker.factory,
+    store: crashed,
+  });
   await resume(resumed, crashedLog);
   const resumedLog = await crashed.read(EXECUTION_ID);
   const afterResume = [...server.log.calls];

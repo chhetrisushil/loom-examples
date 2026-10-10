@@ -21,14 +21,16 @@ async function main(): Promise<void> {
     for (const l of digest(acts.plain)) console.log(l);
     console.log(
       "  charge_invoice's description is the SERVER's text (it says: ignore every other tool).\n" +
-        "  It is withheld, never ranked on, and the result is tainted. The alias is the HOST's."
+        "  It is withheld, never ranked on, and the result is tainted. The alias is the HOST's.\n" +
+        '  The built-in ranker drops query stopwords ("the"), so charge_invoice comes back ALONE:\n' +
+        '  no refund_payment ("give the money back") or slow_queries ("why is the database slow").'
     );
     console.log(
       `  menu at the last turn: ${menuOf(acts.plain, acts.plain.requests.length - 1).join(", ")}`
     );
 
     heading(
-      "3. Same task, custom ranker: tools and skills are ranked separately, then interleaved"
+      "3. Same task, custom ranker FACTORY: tools and skills are ranked separately, then interleaved"
     );
     for (const d of searchRecords(acts.fullLog)) {
       const v = d.choice as {
@@ -41,12 +43,20 @@ async function main(): Promise<void> {
         `  recorded: ranker=${v.ranker} skillRanker=${v.skillRanker} tools=[${v.results}] skills=[${v.skills}]`
       );
     }
-    console.log(`  ranker calls live: ${acts.ranker.calls}`);
+    console.log(
+      `  factory calls live: ${acts.ranker.factoryCalls} (lazy, once per run); ranker calls: ${acts.ranker.calls}`
+    );
+    const docs = acts.ranker.docsSeen[0] ?? [];
+    const charge = docs.find((d) => d.id === "charge_invoice");
+    console.log(
+      `  the factory got ${docs.length} sanitized docs; charge_invoice: aliases=${JSON.stringify(charge?.aliases)}, ` +
+        `description ${charge?.description === undefined ? "absent (the server's text is excluded)" : "PRESENT"}`
+    );
 
     heading("4. Crash before the skill activation, then resume from the log");
     console.log(`  log prefix kept: ${acts.crashedLog.length} of ${acts.fullLog.length} events`);
     console.log(
-      `  ranker calls during the resume: ${acts.resumedRanker.calls} (the searches are recorded facts)`
+      `  factory calls during the resume: ${acts.resumedRanker.factoryCalls}, ranker calls: ${acts.resumedRanker.calls} (the searches are recorded facts)`
     );
     const before = JSON.stringify(searchRecords(acts.fullLog));
     const after = JSON.stringify(searchRecords(acts.resumedLog));
