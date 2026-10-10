@@ -6,6 +6,7 @@ import {
   replay,
 } from "@loom-ui/core";
 import { renderBlueprintDom } from "@loom-ui/renderer-lit/dom";
+import "@loom-ui/renderer-lit/register";
 import {
   type Blueprint,
   type Layout,

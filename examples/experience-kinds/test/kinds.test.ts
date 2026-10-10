@@ -2,6 +2,7 @@ import { compile } from "@loom-ui/core";
 import { HYDRATION_PROJECTION_ID, HYDRATION_PROJECTION_VERSION } from "@loom-ui/hydration";
 import { currentLocale, setLocale } from "@loom-ui/renderer-lit";
 import { frameworkKindContracts, litRegistry, renderBlueprintDom } from "@loom-ui/renderer-lit/dom";
+import "@loom-ui/renderer-lit/register";
 import { renderExperience, terminalRegistry } from "@loom-ui/renderer-terminal";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { PICK_LIST, TITLES, createApp } from "../src/app";

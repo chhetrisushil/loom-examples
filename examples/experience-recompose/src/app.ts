@@ -27,6 +27,7 @@ import {
   litRegistry,
   renderBlueprintDom,
 } from "@loom-ui/renderer-lit/dom";
+import "@loom-ui/renderer-lit/register";
 import { type Blueprint, RendererRegistry } from "@loom/blueprint-runtime";
 import { InMemoryProjectionRuntime } from "@loom/projection-runtime";
 import { catalog } from "./catalog";

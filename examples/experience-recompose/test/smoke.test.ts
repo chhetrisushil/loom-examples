@@ -1,5 +1,6 @@
 import { HYDRATION_PROJECTION_ID, HydrationStore } from "@loom-ui/hydration";
 import { litRegistry, renderBlueprintDom } from "@loom-ui/renderer-lit/dom";
+import "@loom-ui/renderer-lit/register";
 import { MetricCard, blueprint$, cell, grid } from "@loom/blueprint-runtime";
 import { InMemoryProjectionRuntime } from "@loom/projection-runtime";
 import { describe, expect, it } from "vitest";
