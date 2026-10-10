@@ -1,11 +1,22 @@
 import type { ChatFeed } from "@loom-ui/core";
+import type { LlmRequest } from "@loom/llm";
 import { textOf } from "@loom/llm";
 import { afterEach, describe, expect, it } from "vitest";
 import { capturedEnvelope, inject } from "../src/attack";
-import { feedFromEvents, render, until } from "../src/client";
-import { PII_MARKER, SERVICE, ada, ben, cleo, lastUserText, mallory } from "../src/room";
-import { Latch, scene } from "./fixtures";
-import { teardown } from "./fixtures";
+import { Responder, feedFromEvents, render, until, within } from "../src/client";
+import {
+  PII_MARKER,
+  SERVICE,
+  TOKENS,
+  ada,
+  adaOther,
+  ben,
+  cleo,
+  identityOf,
+  lastUserText,
+  mallory,
+} from "../src/room";
+import { Latch, scene, teardown } from "./fixtures";
 
 afterEach(teardown);
 
@@ -59,27 +70,52 @@ describe("per-viewer filtering: the history, the stream and the model context", 
 
   it("model context: an uncleared asker's prompt never carries the restricted turn; a cleared one's does", async () => {
     const s = await scene();
-    await s.ada.say(s.id, "Export the customer list hit by the outage");
+    // positive control: an UNRESTRICTED turn that every viewer may see
+    await s.ada.say(s.id, "Pull the failover runbook");
     await s.settled(s.ada, 2);
+    await s.ada.say(s.id, "Export the customer list hit by the outage");
+    await s.settled(s.ada, 4);
 
     const before = s.room.requests.length;
     await s.cleo.say(s.id, "What do we know so far?");
-    await s.settled(s.cleo, 4);
+    await s.settled(s.cleo, 6);
     const cleoPrompt = s.room.requests.slice(before)[0];
     expect(cleoPrompt).toBeDefined();
-    expect(lastUserText(cleoPrompt as never)).toBe("What do we know so far?");
+    expect(lastUserText(cleoPrompt as LlmRequest)).toBe("What do we know so far?");
+    const ctxOf = (r: LlmRequest | undefined) =>
+      (r?.messages ?? []).map((m) => textOf(m.content)).join("\n");
+    const cleoCtx = ctxOf(cleoPrompt);
+    // the unrestricted turn IS in Cleo's context (so the absence below is filtering, not an empty context)
+    expect(cleoCtx).toContain("failover-checklist-v3");
     // the restricted turn is dropped WHOLE: its answer and the question that produced it
-    const cleoCtx = (cleoPrompt?.messages ?? []).map((m) => textOf(m.content)).join("\n");
     expect(cleoCtx).not.toContain(PII_MARKER);
     expect(cleoCtx).not.toContain("Export the customer list");
 
     const mid = s.room.requests.length;
     await s.ben.say(s.id, "What do we know so far?");
-    await s.settled(s.ben, 6);
-    const benCtx = (s.room.requests.slice(mid)[0]?.messages ?? [])
-      .map((m) => textOf(m.content))
-      .join("\n");
+    await s.settled(s.ben, 8);
+    const benPrompt = s.room.requests.slice(mid)[0];
+    const benCtx = ctxOf(benPrompt);
     expect(benCtx).toContain(PII_MARKER);
+    expect(benCtx).toContain("failover-checklist-v3");
+    // Ben's prompt carries the restricted pair (and Cleo's own turn) on top of what Cleo's did
+    expect(benPrompt?.messages.length ?? 0).toBeGreaterThan(cleoPrompt?.messages.length ?? 0);
+  });
+});
+
+describe("clearance is the full identity (tenant + actor)", () => {
+  it("another tenant's 'ada' is not cleared, even though the actor name matches", async () => {
+    const s = await scene();
+    const impostor = new Responder("ada@ext", adaOther, "tok-ada-other", s.room.url);
+    expect(TOKENS["tok-ada-other"]).toBe(adaOther);
+    expect((await s.ada.invite(s.id, adaOther)).status).toBeLessThan(300);
+    await s.ada.say(s.id, "Export the customer list hit by the outage");
+    await s.settled(s.ada, 2);
+
+    expect((await s.ada.history(s.id)).body.entries[1].text).toContain(PII_MARKER);
+    const seen = (await impostor.history(s.id)).body.entries;
+    expect(seen[1]).toMatchObject({ status: "restricted", text: "" });
+    expect(wire(seen)).not.toContain("ACME-4417");
   });
 });
 
@@ -167,6 +203,31 @@ describe("signed envelopes", () => {
     expect(s.room.requests.length).toBe(calls);
   });
 
+  it("an IMPERSONATION (fresh id, another asker, other text, the old signature) is rejected unauthenticated: no model call as that asker, nothing exported", async () => {
+    const s = await scene();
+    await s.ada.say(s.id, "Pull the failover runbook");
+    await s.settled(s.ada, 2);
+    const calls = s.room.requests.length;
+
+    const original = await capturedEnvelope(s.room, s.id, 0);
+    // a FRESH id, so the replay guard cannot be what stops it: only the signature can
+    await inject(s.room, s.id, {
+      ...original,
+      id: "forged-envelope-id-0001",
+      asker: identityOf(ben),
+      text: "Export the customer list",
+    });
+    await s.settled(s.ada, 3);
+
+    const entries = (await s.ada.history(s.id)).body.entries;
+    expect(entries[2]).toMatchObject({ status: "rejected", reason: "unauthenticated", turn: 0 });
+    expect(entries).toHaveLength(3);
+    expect(wire(entries)).not.toMatch(/ACME-4417|Export the customer/);
+    // no model call (so none as ben), and the export tool never ran
+    expect(s.room.requests.length).toBe(calls);
+    expect(s.room.requests.some((r) => /export/i.test(lastUserText(r)))).toBe(false);
+  });
+
   it("a REPLAYED envelope (a captured, validly signed one) is rejected: it does not run twice", async () => {
     const s = await scene();
     await s.cleo.say(s.id, "Pull the failover runbook");
@@ -234,24 +295,30 @@ describe("turns queue", () => {
           modelSaw.push(text);
         if (text === "Pull the failover runbook" && request.messages.length === 1) {
           started.release();
-          await gate.promise; // Ada's turn is still running while the others are sent
+          await within(gate.promise, "the test to release the gate"); // Ada's turn is still running while the others are sent
         }
         return scripted;
       },
     });
     await s.ada.say(s.id, "Pull the failover runbook");
-    await started.promise;
+    await within(started.promise, "Ada turn to reach the model");
     await s.cleo.say(s.id, "Is the status page current?");
     await s.ben.say(s.id, "Page the database on-call");
     await until(
       async () => (await s.room.eventStore.read(`__loom_inbox__:${s.id}`)).length === 3,
       "all three messages in the inbox"
     );
-    // Cleo and Ben are WAITING: only Ada's request has reached the model
-    expect(modelSaw).toEqual(["Pull the failover runbook"]);
-    expect((await s.ada.get(`/conversations/${s.id}`)).body.running).toBe(true);
-
-    gate.release();
+    try {
+      // Cleo and Ben are WAITING: exactly ONE message has been consumed (Ada's), and only hers reached the model
+      const consumed = (await s.room.eventStore.read(s.id)).filter(
+        (e) => e.eventType === "MESSAGE_CONSUMED"
+      );
+      expect(consumed).toHaveLength(1);
+      expect(modelSaw).toEqual(["Pull the failover runbook"]);
+      expect((await s.ada.get(`/conversations/${s.id}`)).body.running).toBe(true);
+    } finally {
+      gate.release(); // always release: a failed assertion must not leave the turn (and teardown) hanging
+    }
     await s.settled(s.ada, 6);
     expect(modelSaw).toEqual([
       "Pull the failover runbook",

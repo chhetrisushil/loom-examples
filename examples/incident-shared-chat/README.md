@@ -50,7 +50,7 @@ pnpm --filter @loom/incident-shared-chat test    # the tests ARE the proof
 - `src/room.ts`: every host decision (participants, classes, clearance, grants, service principal, policy, key)
   and the scripted model.
 - `src/client.ts`: a responder's `fetch` + SSE client and the `ChatFeed` folding.
-- `src/attack.ts`: raw inbox writes (capture a signed envelope, re-inject it).
+- `src/attack.ts`: ATTACK DEMONSTRATION, never copy into a host (hosts never write to the inbox): raw inbox writes (capture a signed envelope, re-inject it).
 - `src/main.ts`: the narrated run. `test/sharedChat.test.ts`: one test per claim.
 
 Message content is read through `@loom/llm`'s `textOf`. Waits are on conditions (`until`), never fixed sleeps.

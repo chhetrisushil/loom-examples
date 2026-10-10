@@ -17,6 +17,7 @@ import {
   createConversations,
   inboxBargeIn,
   logParticipants,
+  sameIdentity,
 } from "@loom/conversation";
 import { agent$, tool$ } from "@loom/core";
 import { EffectRuntime, GrantTable, ToolEffect } from "@loom/effect-runtime";
@@ -37,16 +38,20 @@ export const ada: PrincipalChain = { actor: "ada", tenant: "sre" };
 export const ben: PrincipalChain = { actor: "ben", tenant: "dba" };
 /** The comms responder: NOT cleared for customer data, and has no grant on the export tool. */
 export const cleo: PrincipalChain = { actor: "cleo", tenant: "comms" };
+/** A DIFFERENT person who happens to share Ada's actor name in another tenant: NOT cleared. */
+export const adaOther: PrincipalChain = { actor: "ada", tenant: "ext" };
 /** Authenticated, but never invited. */
 export const mallory: PrincipalChain = { actor: "mallory", tenant: "ext" };
 /** Owns every coordinating execution. No end-user identity may equal it. */
 export const SERVICE: PrincipalChain = { actor: "incident-service", tenant: "svc" };
 
+// DEMO ONLY: load from a secret manager; loom requires >= 8 characters and supports previousKeys for rotation.
 export const TOKENS: Readonly<Record<string, PrincipalChain>> = {
   "tok-ada": ada,
   "tok-ben": ben,
   "tok-cleo": cleo,
   "tok-mallory": mallory,
+  "tok-ada-other": adaOther,
 };
 
 export const identityOf = (p: PrincipalChain): Identity => ({
@@ -81,10 +86,11 @@ const customerExport = tool$({
 const classOf = (tool: string): string | undefined =>
   tool === "runbook-search" ? PUBLIC : tool === "customer-export" ? CUSTOMER_PII : undefined;
 /** Fail closed: a label this function does not recognise is `false`. Must return exactly `true` to clear. */
+const PII_CLEARED: readonly Identity[] = [identityOf(ada), identityOf(ben)];
 const cleared = (viewer: Identity, classes: readonly string[]): boolean =>
   classes.every(
     (c) =>
-      c === PUBLIC || (c === CUSTOMER_PII && (viewer.actor === "ada" || viewer.actor === "ben"))
+      c === PUBLIC || (c === CUSTOMER_PII && PII_CLEARED.some((who) => sameIdentity(who, viewer)))
   );
 
 // ── the scripted, deterministic model ──────────────────────────────────────────────────────────
@@ -129,6 +135,7 @@ export function incidentModel(request: LlmRequest): LlmResponse {
 }
 
 // ── the room ────────────────────────────────────────────────────────────────────────────────────
+// DEMO ONLY: load from a secret manager; loom requires >= 8 characters and supports previousKeys for rotation.
 export const ENVELOPE_KEY = "incident-room-envelope-key";
 
 export interface RoomOptions {

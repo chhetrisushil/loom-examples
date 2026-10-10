@@ -1,3 +1,4 @@
+// ATTACK DEMONSTRATION. Never expose or copy this into a host; hosts never write to the inbox.
 // Writes to the inbox that the host's client did NOT make. The runtime's policy is owner-scoped, so a
 // peer cannot do this with an ordinary principal; this plays the worst case ADR 0122 D8 designs for: a
 // policy slip (or a hostile node) that lets raw bytes into the coordinator's inbox. What arrives is data,

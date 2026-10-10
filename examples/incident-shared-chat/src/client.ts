@@ -15,13 +15,22 @@ export interface SseEvent {
 export async function until(
   cond: () => boolean | Promise<boolean>,
   what = "condition",
-  ms = 20_000
+  ms = 4_000
 ): Promise<void> {
   const t0 = Date.now();
   while (!(await cond())) {
     if (Date.now() - t0 > ms) throw new Error(`timed out waiting for ${what}`);
     await new Promise((r) => setTimeout(r, 2));
   }
+}
+
+/** Await a promise, but fail with a named timeout instead of hanging (bounded below vitest's 5 s). */
+export function within<T>(p: Promise<T>, what: string, ms = 4_000): Promise<T> {
+  let timer: ReturnType<typeof setTimeout>;
+  const timeout = new Promise<never>((_, rej) => {
+    timer = setTimeout(() => rej(new Error(`timed out waiting for ${what}`)), ms);
+  });
+  return Promise.race([p, timeout]).finally(() => clearTimeout(timer));
 }
 
 export interface Reply {
@@ -139,7 +148,10 @@ export class Responder {
 /** Fold SSE events (the same wire, live) into a ChatFeed. */
 export function feedFromEvents(viewer: PrincipalChain, events: readonly SseEvent[]): ChatFeed {
   const feed = new ChatFeed({ viewer: identityOf(viewer), mode: "shared" });
-  for (const e of events) feed.applyEvent(e.event, e.data);
+  for (const e of events) {
+    const result = feed.applyEvent(e.event, e.data);
+    if (!result.ok) throw new Error(`event ${e.event} refused by ChatFeed: ${result.finding.code}`);
+  }
   return feed;
 }
 
