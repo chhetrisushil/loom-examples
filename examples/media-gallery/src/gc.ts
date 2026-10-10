@@ -36,7 +36,8 @@ export function sweepMedia(
     pinnedEventTypes: [],
     olderThanMs: options.olderThanMs ?? 7 * DAY_MS,
     now: options.now,
-    reclaimOrphans: true,
+    // The caller asserts the scan is COMPLETE (every store that may cite a blob, live before archive).
+    reclaimOrphans: { completeScan: true },
     ...(options.dryRun === true && { dryRun: true }),
     ...(options.roots !== undefined && { roots: options.roots }),
   });

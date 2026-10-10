@@ -1,15 +1,14 @@
 import { createAgentModelEffect } from "@loom/agent";
-import { unwrapTainted } from "@loom/classify";
 import {
   ConversationHub,
   conversation$,
   createConversations,
   inboxBargeIn,
+  summarizerText,
 } from "@loom/conversation";
 import { agent$ } from "@loom/core";
 import { EffectRuntime, type PrincipalChain, ToolEffect } from "@loom/effect-runtime";
 import { InMemoryAsyncEventStore, InMemoryTimerStore } from "@loom/event-runtime";
-import { textOf } from "@loom/llm";
 import { createConversationSseServer } from "@loom/plugin-conversation-sse";
 import { InMemoryAsyncSnapshotStore } from "@loom/snapshot-runtime";
 import { WorkflowRuntime, executionAccessPolicy } from "@loom/workflow-runtime";
@@ -61,14 +60,10 @@ export async function startChat(opts: ChatOptions = {}) {
     "summarize",
     new ToolEffect(async (input: unknown) => {
       const { messages } = input as { messages: { content: unknown }[] };
-      // The conversation hands the summarizer the user's words TAINTED ({ __loomTainted, value }),
-      // which is not a string-or-parts, so `textOf` on the raw content throws. A summarizer unwraps
-      // (it is the one place that may), then reads the content with `textOf`.
-      const said = messages.map((m) =>
-        textOf(unwrapTainted(m.content) as Parameters<typeof textOf>[0])
-          .replace(/\s+/g, " ")
-          .slice(0, 24)
-      );
+      // The conversation hands the summarizer the user's words TAINTED, possibly nested in parts.
+      // `summarizerText` unwraps every level deliberately; the result is untrusted DATA (this
+      // summarizer is extractive and calls no model; one that did would re-wrap it with tainted()).
+      const said = messages.map((m) => summarizerText(m.content).replace(/\s+/g, " ").slice(0, 24));
       return { summary: `earlier: ${said.join(" | ")}`.slice(0, 160) };
     })
   );
