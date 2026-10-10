@@ -1,0 +1,37 @@
+{
+  "name": "@loom/media-gallery",
+  "version": "0.0.1",
+  "description": "Multi-modal media, claim-checked by ADDRESS (loom R5 + loom-ui U9/U9b): an agent loop whose tool returns a tiny generated PNG as a ContentRef, a scripted vision model that sees the resolved bytes, a ContentResolver that authorizes per tenant, a provider capability allowlist with a text-only fallback, an x-content-ref tool argument that only accepts a ref the caller may read, a loom-ui gallery of Image widgets, and content GC that pins refs a log still cites. Headless and offline.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --build",
+    "start": "tsx src/main.ts",
+    "test": "vitest run",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@loom-ui/core": "*",
+    "@loom-ui/hydration": "*",
+    "@loom-ui/planner": "*",
+    "@loom-ui/renderer-terminal": "*",
+    "@loom/agent": "*",
+    "@loom/core": "*",
+    "@loom/effect-runtime": "*",
+    "@loom/event-runtime": "*",
+    "@loom/llm": "*",
+    "@loom/plugin-content": "*",
+    "@loom/plugin-mcp": "*",
+    "@loom/projection-runtime": "*",
+    "@loom/replay-vm": "*",
+    "@loom/snapshot-runtime": "*",
+    "@loom/workflow-runtime": "*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "^5.6.3",
+    "vitest": "catalog:"
+  }
+}
