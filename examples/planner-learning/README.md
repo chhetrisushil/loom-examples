@@ -54,7 +54,7 @@ learn                       trajectories -> evaluatePolicy (SNIPS + unit bootstr
 ## Sample output (abridged)
 
 ```
-== 2. v2 (by-segment layout, trained on epoch-1 votes): offline -> shadow -> canary ==
+== 2. v2 (by-segment layout via the host feature store, trained on epoch-1 votes): offline -> shadow -> canary ==
   offline  v2: logged 0.536 -> est 0.781 lift 0.245 CI[0.208, 0.278] ... => gate PASS
   shadow   60 users served by v1 only; v2: ... lift 0.295 ... => gate PASS
   canary   23 users on v2 (mean rating 0.438) vs 67 on v1 (0.463)

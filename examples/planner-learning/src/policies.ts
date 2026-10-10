@@ -38,9 +38,15 @@ export class SegmentStore {
   set(unit: string, segment: Segment): void {
     this.bySegment.set(unit, segment);
   }
-  /** A miss is the safe default, never a throw: an unknown unit is treated as casual. */
+  /**
+   * A miss THROWS. A silent default (say "casual") would quietly pick that segment's arm for every
+   * unknown unit and skew both the served traffic and the SNIPS estimate toward it; a real feature
+   * store must surface the miss too. Every unit is enrolled before it is served or evaluated.
+   */
   get(unit: unknown): Segment {
-    return (typeof unit === "string" ? this.bySegment.get(unit) : undefined) ?? "casual";
+    const segment = typeof unit === "string" ? this.bySegment.get(unit) : undefined;
+    if (segment === undefined) throw new Error(`no segment recorded for unit ${String(unit)}`);
+    return segment;
   }
 }
 

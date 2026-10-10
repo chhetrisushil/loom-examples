@@ -325,6 +325,18 @@ export class Lab {
     out: TurnOutput
   ): Promise<Surface> {
     this.tick();
+    // What was RENDERED must be what was chosen: ratings, rewards and the gate all key on the chosen
+    // variant, so a planner that silently drew the other layout would make the whole lifecycle learn
+    // about layouts nobody saw. A tabs surface carries a `tabs` container; a flat one does not.
+    const rendered: Layout = out.ops.some(
+      (op) =>
+        (op as { type?: string; node?: { role?: string } }).type === "insertNode" &&
+        (op as { node?: { role?: string } }).node?.role === "tabs"
+    )
+      ? "tabs"
+      : "flat";
+    if (rendered !== out.layout)
+      throw new Error(`the planner chose "${out.layout}" but rendered a ${rendered} surface`);
     const experienceId = `surface-${executionId}`;
     const start = must(await this.lineage.start(genesis({ experienceId, intent, meta }), HOST));
     const committed = must(
