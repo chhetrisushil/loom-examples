@@ -53,6 +53,15 @@ export const LEAD: Viewer = { clearance: "secret" };
 export const AGENT: Viewer = { clearance: "internal" };
 
 /**
+ * DEMO SECRET. The key that makes a restricted node's placeholder id opaque (U10c): without it a
+ * hidden node's own lexical id ("refund-queue") would say what it is about. A real host reads
+ * this from its secret store (at least 16 bytes) and holds it on the server only; it is the
+ * same for every replica, so aliases and fingerprints are stable across restarts. This
+ * constant is committed to the repo and so protects nothing: never reuse it.
+ */
+export const DEMO_PLACEHOLDER_KEY = "demo-secret-placeholder-key-do-not-reuse";
+
+/**
  * The triage view for ONE viewer: a planner that composes and revises it, the hydration that
  * feeds it, the web render (loom-ui's reference container renderers) and the terminal render.
  * The experience itself is never redacted — each render compiles it FOR the viewer.
@@ -261,19 +270,32 @@ export class Triage {
 
   // ── internals ───────────────────────────────────────────────────────────────────────────
 
+  /** The ids (keyed aliases) of every node this viewer sees as a bare placeholder. */
+  placeholderIds(): readonly string[] {
+    return this.compileFor("web").fingerprint.placeholderNodes;
+  }
+
   private blueprint(surface: "web" | "terminal"): Blueprint {
+    return this.compileFor(surface).blueprint;
+  }
+
+  private compileFor(surface: "web" | "terminal") {
     const r = compile(this.experience, {
       surface,
       catalog,
       hydrationProjectionId: HYDRATION_PROJECTION_ID,
       hydrationProjectionVersion: HYDRATION_PROJECTION_VERSION,
       viewer: this.viewer,
+      // Server-held secret: placeholders and the fingerprint are keyed, not random per process.
+      placeholderKey: DEMO_PLACEHOLDER_KEY,
+      // Production posture: a compile that redacts something refuses to run without the key.
+      requirePlaceholderKey: true,
       ...(this.readPolicy.declaredToolClasses !== undefined && {
         declaredToolClasses: this.readPolicy.declaredToolClasses,
       }),
     });
     if (!r.ok) throw new Error(`compile (${surface}): ${r.findings.map(msg).join("; ")}`);
-    return r.blueprint;
+    return r;
   }
 
   /** Commit `ops` (authored by `by`) onto the lineage's head, then draw the version it produced. */
