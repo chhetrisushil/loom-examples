@@ -1,4 +1,5 @@
 import type { LlmProvider, LlmRequest, LlmResponse, LlmStreamChunk } from "@loom/llm";
+import { textOf } from "@loom/llm";
 
 // ── DemoLlmProvider ───────────────────────────────────────────────────────────
 //
@@ -25,7 +26,7 @@ const SIMPLE_PLAN = ["diagnose-schema", "assess-migration", "apply-migration"];
 const COMPLEX_PLAN = ["diagnose-schema", "assess-migration", "plan-migration"];
 
 function goalOf(request: LlmRequest): string {
-  const raw = request.messages.map((m) => m.content).join("\n");
+  const raw = request.messages.map((m) => textOf(m.content)).join("\n");
   // The planner/intent prompts embed a capability menu. Classify off the actual
   // goal line only — "Goal: …" or "Request: …" — falling back to the whole prompt
   // for the narrator role.

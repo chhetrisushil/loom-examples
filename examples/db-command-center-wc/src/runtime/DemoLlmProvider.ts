@@ -1,4 +1,5 @@
 import type { LlmProvider, LlmRequest, LlmResponse, LlmStreamChunk } from "@loom/llm";
+import { textOf } from "@loom/llm";
 
 // ── DemoLlmProvider ───────────────────────────────────────────────────────────
 //
@@ -22,7 +23,7 @@ const CPU_PLAN = ["diagnose-cpu", "assess-remediation", "apply-remediation"];
 const REPLICA_PLAN = ["diagnose-replica-lag", "assess-remediation", "scale-read-replicas"];
 
 function goalOf(request: LlmRequest): string {
-  const raw = request.messages.map((m) => m.content).join("\n");
+  const raw = request.messages.map((m) => textOf(m.content)).join("\n");
   // The planner/intent prompts embed a capability menu (full of "replica"/"lag"
   // words). Classify off the actual goal line only — "Goal: …" or "Request: …" —
   // falling back to the whole prompt for the narrator role.

@@ -1,4 +1,5 @@
 import type { LlmProvider, LlmRequest, LlmResponse } from "@loom/llm";
+import { textOf } from "@loom/llm";
 import type { Topic } from "./catalogue";
 import { TOPIC_MODELS } from "./topics";
 
@@ -14,7 +15,7 @@ export interface Classification {
 export class ObservabilityLlmProvider implements LlmProvider {
   async complete(request: LlmRequest): Promise<LlmResponse> {
     const q = request.messages
-      .map((m) => m.content)
+      .map((m) => textOf(m.content))
       .join("\n")
       .toLowerCase();
     const topic = classifyTopic(q);
