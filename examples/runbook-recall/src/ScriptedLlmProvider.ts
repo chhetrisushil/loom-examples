@@ -1,4 +1,4 @@
-import type { LlmProvider, LlmRequest, LlmResponse } from "@loom/llm";
+import { type LlmProvider, type LlmRequest, type LlmResponse, textOf } from "@loom/llm";
 
 /**
  * A deterministic provider, so the example is offline and its executions replay
@@ -29,7 +29,7 @@ export class ScriptedLlmProvider implements LlmProvider {
 export function citingAnswer(request: LlmRequest): string {
   const ids = new Set<string>();
   for (const message of request.messages) {
-    for (const match of message.content.matchAll(/runbook:(RB-\d+)/g)) {
+    for (const match of textOf(message.content).matchAll(/runbook:(RB-\d+)/g)) {
       ids.add(match[1] as string);
     }
   }
