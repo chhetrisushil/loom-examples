@@ -1,11 +1,11 @@
 import {
   type AgentOutput,
   SkillRegistry,
-  agentLoop$,
   createAgentModelEffect,
   memoryWriteBackEffect,
+  selectedSkillsOf,
 } from "@loom/agent";
-import { defineConfig } from "@loom/app";
+import { defineConfig, runAgentOnce } from "@loom/app";
 import { CapabilityCatalog } from "@loom/capability";
 import { agent$, flow$, handler$, instructions$, skill$, step$ } from "@loom/core";
 import { IntentRuntime } from "@loom/intent";
@@ -44,12 +44,10 @@ function section(title: string): void {
 }
 
 async function main(): Promise<void> {
-  // The agent loop (agentLoop$) runs FROM a flow's runner body, so it needs a WorkflowRuntime;
-  // its model call and every tool call (the MCP tools below) resolve through this app's
-  // EffectRuntime, one journaled frame each. The A2A-fronted service and the capability app
-  // further down are separate defineConfig roots.
-  const agentApp = defineConfig({ storage: { kind: "memory" } });
-  const effectRuntime = agentApp.effectRuntime;
+  // The agent loop (agentLoop$) needs an ExecutionContext, which only a flow has. This is a script, so
+  // `runAgentOnce` (@loom/app) builds the throwaway in-memory app + one-off flow for each run; its model
+  // call and every tool call (the MCP tools below) resolve through that app's EffectRuntime, one journaled
+  // frame each. The A2A-fronted service and the capability app further down are separate defineConfig roots.
 
   // ══ 1. Configurable LLM ═════════════════════════════════════════════════════
   // The provider is the only place the model is chosen. Everything else is
@@ -78,7 +76,9 @@ async function main(): Promise<void> {
   const mcp = await startFakeMcpServer();
   const mcpClient = new McpClient({ transport: "http", url: mcp.url });
   await mcpClient.connect();
-  const mcpDefs = await mcpClient.registerInto(effectRuntime);
+  // listTools (not registerInto): runAgentOnce owns the EffectRuntime, so the effects are handed to it below.
+  const mcpTools = await mcpClient.listTools();
+  const mcpDefs = mcpTools.map((t) => t.definition);
   console.log(`Discovered ${mcpDefs.length} MCP tool(s):`, mcpDefs.map((d) => d.id).join(", "));
 
   // ══ 2. Bring-your-own agent ═════════════════════════════════════════════════
@@ -122,39 +122,23 @@ async function main(): Promise<void> {
     })
   );
 
-  effectRuntime.register("ops-model", createAgentModelEffect(provider));
-  const opsFlow = flow$({
-    id: "ops-agent-run",
-    name: "Ops agent run",
-    version: "1.0.0",
-    inputSchema: z.object({ prompt: z.string() }),
-    outputSchema: z.object({ content: z.string() }).passthrough(),
-    steps: [],
+  const ops = await runAgentOnce({
+    agent: opsAgent,
+    provider,
+    registerEffects: (effects) => {
+      for (const { definition, effect } of mcpTools) effects.register(definition.id, effect);
+    },
+    input: "The primary database is at 87% CPU and connections are exhausted. What do I do?",
+    loop: {
+      systemPrompt: "You are an SRE. Use the runbook tools to resolve incidents.",
+      skills,
+    },
+    executionId: "demo",
   });
-  agentApp.runtime.registerFlow(opsFlow, (async (ctx, input: { prompt: string }) =>
-    agentLoop$(
-      ctx,
-      {
-        definition: opsAgent,
-        modelToolId: "ops-model",
-        systemPrompt: "You are an SRE. Use the runbook tools to resolve incidents.",
-        skills,
-      },
-      { prompt: input.prompt }
-    )) as FlowRunner<unknown, unknown>);
-
-  const opsRun = await agentApp.runtime.start(
-    opsFlow,
-    { prompt: "The primary database is at 87% CPU and connections are exhausted. What do I do?" },
-    { executionId: "demo" }
-  );
-  const agentOutput = (await opsRun.waitForCompletion()).variables._output as AgentOutput;
+  const agentOutput = ops.output;
+  if (agentOutput === undefined) throw new Error(`ops agent did not complete (${ops.status})`);
   // agentLoop$ emits no SKILLS_SELECTED event: the selection is a recorded decision in the log.
-  const selectedSkills = (await agentApp.stores.eventStore.read("demo"))
-    .filter((e) => e.eventType === "DECISION_RECORDED")
-    .map((e) => e.payload as { decisionId: string; choice: unknown })
-    .filter((d) => d.decisionId.endsWith("#skills"))
-    .flatMap((d) => d.choice as string[]);
+  const selectedSkills = selectedSkillsOf(ops.events, { loopId: opsAgent.id }).upfront;
   console.log(`Skills loaded on demand: ${selectedSkills.join(", ") || "(none)"}`);
   console.log(
     `Agent used ${agentOutput.toolCallLog.length} tool call(s) over ${agentOutput.iterations} iteration(s).`
@@ -281,38 +265,29 @@ async function main(): Promise<void> {
     ], // Shared by two executions: the second one's transcript carries the recalled first turn.
     (request) => (plainUserMessages(request) > 1 ? 1 : 0)
   );
-  effectRuntime.register("chat-model", createAgentModelEffect(chatProvider));
   const MEMORY_WRITE_BACK_ID = "memory-write-back";
-  agentApp.effectRuntime.register(MEMORY_WRITE_BACK_ID, memoryWriteBackEffect(memory));
-  const chatFlow = flow$({
-    id: "chat-agent-run",
-    name: "Chat agent run",
-    version: "1.0.0",
-    inputSchema: z.object({ prompt: z.string() }),
-    outputSchema: z.object({ content: z.string() }).passthrough(),
-    steps: [],
-  });
-  agentApp.runtime.registerFlow(chatFlow, (async (ctx, input: { prompt: string }) =>
-    agentLoop$(
-      ctx,
-      {
-        definition: chatAgent,
-        modelToolId: "chat-model",
+  const chatTurn = async (id: string, prompt: string): Promise<AgentOutput> => {
+    const run = await runAgentOnce({
+      agent: chatAgent,
+      provider: chatProvider,
+      // The write-back goes through the effect ring (ADR 0121 D4): it is a journaled
+      // ctx.execute against memoryWriteBackEffect(memory), registered here, so authorization,
+      // tenant checks and the kill switch apply and a replay serves the write.
+      registerEffects: (effects) =>
+        effects.register(MEMORY_WRITE_BACK_ID, memoryWriteBackEffect(memory)),
+      input: prompt,
+      loop: {
         // Recall the user's prior turns from the "chat" tier, and write this turn back to it.
         // Two EXECUTIONS share one scope ("user-1"), so the second run remembers the first.
         memory,
         memoryTier: "chat",
         memoryScope: "user-1",
-        // The write-back goes through the effect ring (ADR 0121 D4): it is a journaled
-        // ctx.execute against memoryWriteBackEffect(memory), registered above, so authorization,
-        // tenant checks and the kill switch apply and a replay serves the write.
         writeBack: { toolId: MEMORY_WRITE_BACK_ID },
       },
-      { prompt: input.prompt }
-    )) as FlowRunner<unknown, unknown>);
-  const chatTurn = async (id: string, prompt: string): Promise<AgentOutput> => {
-    const run = await agentApp.runtime.start(chatFlow, { prompt }, { executionId: id });
-    return (await run.waitForCompletion()).variables._output as AgentOutput;
+      executionId: id,
+    });
+    if (run.output === undefined) throw new Error(`chat turn ${id} did not complete`);
+    return run.output;
   };
   await chatTurn("chat-1", "My cluster is prod-postgres");
   const recalled = await chatTurn("chat-2", "Which cluster did I mention?");
@@ -330,7 +305,6 @@ async function main(): Promise<void> {
   await mcp.close();
   await serverApp.close();
   await app.close();
-  await agentApp.close();
   section("Done — full agentic pipeline demonstrated offline.");
 }
 

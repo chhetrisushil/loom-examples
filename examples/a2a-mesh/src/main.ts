@@ -1,6 +1,7 @@
-import { type AgentOutput, agentLoop$, createAgentModelEffect, toolSpecFor } from "@loom/agent";
-import { defineConfig } from "@loom/app";
+import { toolSpecFor } from "@loom/agent";
+import { defineConfig, runAgentOnce } from "@loom/app";
 import { agent$, flow$, handler$, step$ } from "@loom/core";
+import type { Effect, EffectRuntime } from "@loom/effect-runtime";
 import { type LlmProvider, type LlmRequest, type LlmResponse, toParts } from "@loom/llm";
 import {
   A2APeerClient,
@@ -63,10 +64,9 @@ class ScriptedLlmProvider implements LlmProvider {
 }
 
 async function main(): Promise<void> {
-  // The outbound composition root: the agent loop runs FROM a flow's runner body, so it needs a
-  // WorkflowRuntime, and its model call + every tool call resolve through this app's EffectRuntime.
-  const outbound = defineConfig({ storage: { kind: "memory" } });
-  const effectRuntime = outbound.effectRuntime;
+  // The outbound side is a script-style run: `runAgentOnce` (@loom/app) builds the throwaway in-memory app
+  // and one-off flow the agent loop needs, and the model call + every tool call resolve through its
+  // EffectRuntime. The peer is discovered up front with `map()` and its effect handed over below.
   const registry = new AgentRegistry();
 
   // ── The "external" peer (ADK/LangGraph stand-in) ────────────────────────────
@@ -82,7 +82,13 @@ async function main(): Promise<void> {
     toolId: "remote-diagnostics",
     pollIntervalMs: 50,
   });
-  const remoteTool = await peer.registerInto(effectRuntime, registry);
+  // runAgentOnce owns the EffectRuntime, and discovery is async while `registerEffects` is sync, so the
+  // peer registers into a small collector now and the effects are handed over below.
+  const discovered: Array<[string, Effect]> = [];
+  const collector = {
+    register: (id: string, effect: Effect) => void discovered.push([id, effect]),
+  };
+  const remoteTool = await peer.registerInto(collector as unknown as EffectRuntime, registry);
   console.log(`Registered remote peer as tool "${remoteTool.id}" (kind: ${remoteTool.kind}).`);
   console.log(`Description the PEER advertised on its card: ${remoteTool.description}`);
   // That text is the peer's, not ours. A2A tools are third-party, so the model-facing spec withholds
@@ -130,33 +136,18 @@ async function main(): Promise<void> {
     },
   ]);
 
-  // The model is an effect (one journaled frame per call); the tool calls are frames too.
-  effectRuntime.register("ops-model", createAgentModelEffect(provider));
-  const opsFlow = flow$({
-    id: "ops-agent-run",
-    name: "Ops agent run",
-    version: "1.0.0",
-    inputSchema: z.object({ prompt: z.string() }),
-    outputSchema: z.object({ content: z.string() }).passthrough(),
-    steps: [],
+  const ops = await runAgentOnce({
+    agent: opsAgent,
+    provider,
+    registerEffects: (effects) => {
+      for (const [id, effect] of discovered) effects.register(id, effect);
+    },
+    input: "prod-postgres is at 92% CPU and connections are exhausted. Remediate.",
+    loop: { systemPrompt: "You are an SRE orchestrator. Delegate diagnosis to your tools." },
+    executionId: "mesh-demo",
   });
-  outbound.runtime.registerFlow(opsFlow, (async (ctx, input: { prompt: string }) =>
-    agentLoop$(
-      ctx,
-      {
-        definition: opsAgent,
-        modelToolId: "ops-model",
-        systemPrompt: "You are an SRE orchestrator. Delegate diagnosis to your tools.",
-      },
-      { prompt: input.prompt }
-    )) as FlowRunner<unknown, unknown>);
-
-  const opsRun = await outbound.runtime.start(
-    opsFlow,
-    { prompt: "prod-postgres is at 92% CPU and connections are exhausted. Remediate." },
-    { executionId: "mesh-demo" }
-  );
-  const agentOutput = (await opsRun.waitForCompletion()).variables._output as AgentOutput;
+  const agentOutput = ops.output;
+  if (agentOutput === undefined) throw new Error(`ops agent did not complete (${ops.status})`);
 
   const remoteCall = agentOutput.toolCallLog.find((c) => c.toolName === "remote-diagnostics");
   console.log("\nRemote agent replied:");
@@ -247,7 +238,6 @@ async function main(): Promise<void> {
   await server.stop();
   await external.close();
   await app.close();
-  await outbound.close();
   section("Done — bidirectional A2A mesh demonstrated offline.");
 }
 
