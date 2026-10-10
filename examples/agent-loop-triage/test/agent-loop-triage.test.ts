@@ -1,3 +1,7 @@
+import { isTainted } from "@loom/classify";
+import { InMemoryAsyncEventStore } from "@loom/event-runtime";
+import type { LlmRequest } from "@loom/llm";
+import { textOf } from "@loom/llm";
 import { beforeAll, describe, expect, it } from "vitest";
 import { DEEP, FAST, TICKET_A, TICKET_B, TICKET_C } from "../src/model";
 import {
@@ -13,10 +17,13 @@ import {
   ALL_GRANTS,
   Backend,
   MEMORY_SCOPE,
+  approve,
   boot,
   decisionsOf,
   outputOf,
   runTicket,
+  settled,
+  start,
 } from "../src/world";
 
 let acts: Acts;
@@ -113,6 +120,31 @@ describe("a consumed failure is not re-run on replay", () => {
     expect(seen.find((r) => r.id === "a2")?.isError).toBe(true);
   });
 
+  it("NEGATIVE: without the outcome decisions the consumed failure DOES re-run (ADR 0121's crash window)", async () => {
+    // Process 1 parks; then the log loses the outcome records, as if the process died between
+    // each step's completion and its outcome decision.
+    const first = new Backend();
+    const p1 = boot({ backend: first, prompt: TICKET_A });
+    await (await start(p1, "ticket-crash")).waitForSuspend();
+    expect(first.runs.carrier_status).toBe(1);
+    const stripped = new InMemoryAsyncEventStore();
+    for (const e of await first.store.read("ticket-crash")) {
+      const isOutcome =
+        e.eventType === "DECISION_RECORDED" &&
+        (e.payload as { source?: string }).source === "agent-outcome";
+      if (!isOutcome) await stripped.append(e);
+    }
+    // Same world, same downstream counters, but the log without the outcomes.
+    const crashed = new Backend(stripped);
+    Object.assign(crashed.runs, first.runs);
+    crashed.carrierFailures = 0; // the carrier has recovered, so a re-run would succeed
+    const p2 = boot({ backend: crashed, prompt: TICKET_A });
+    await approve(p2, "ticket-crash");
+    await settled(p2, "ticket-crash");
+    expect(p2.toolRuns).toContain("carrier_status"); // re-run: the outcome was not served
+    expect(crashed.runs.carrier_status).toBe(2);
+  });
+
   it("the outcome is a recorded decision, one per call", async () => {
     const outcomes = decisionsOf(await acts.backend.store.read("ticket-1001")).filter(
       (d) => d.source === "agent-outcome"
@@ -140,6 +172,45 @@ describe("writeBack memory", () => {
   it("NEGATIVE: with an empty memory the same ticket has nothing to recall", async () => {
     const answer = outputOf((await acts.control.runtime.loadState("ticket-2001")) as never).content;
     expect(answer).toContain("no record");
+  });
+
+  it("ticket 1001's answer is stored TAINTED (it saw a tool error) and ticket 1002 gets it fenced", async () => {
+    const entries = await acts.backend.memory.recall("working", MEMORY_SCOPE);
+    const answers = entries.filter((e) => e.role === "assistant");
+    // Ticket 1001's answer is tainted; ticket 1002 saw no tool, so its own answer is not.
+    expect(answers.map((e) => isTainted(e.content))).toEqual([true, false]);
+
+    // What ticket 1002's model was actually shown: the recall sits inside the untrusted fence,
+    // in a `user` message, and is not in any instruction position (system or assistant).
+    const req = acts.third.requests[0] as LlmRequest;
+    const fencedText = (m: LlmRequest["messages"][number]) =>
+      /<untrusted-input origin="[^"]*">[\s\S]*Refunded order 1042[\s\S]*<\/untrusted-input>/.test(
+        textOf(m.content)
+      );
+    const carrying = req.messages.filter((m) => textOf(m.content).includes("Refunded order 1042"));
+    expect(carrying.length).toBeGreaterThan(0);
+    for (const m of carrying) {
+      expect(m.role).toBe("user");
+      expect(fencedText(m)).toBe(true);
+    }
+    expect(textOf(req.system ?? "")).not.toContain("Refunded order 1042");
+  });
+
+  it("the fork guard: `unless` returning true writes nothing and records the skip", async () => {
+    const backend = new Backend();
+    const p = boot({ backend, prompt: TICKET_B, fork: true });
+    expect((await runTicket(p, "ticket-fork")).status).toBe("completed");
+    expect(await backend.memory.recall("working", MEMORY_SCOPE)).toEqual([]);
+    const events = await backend.store.read("ticket-fork");
+    const skip = decisionsOf(events).find((d) => /#writeback:skip$/.test(d.decisionId));
+    expect(skip?.choice).toBe(true);
+    expect(
+      events.some(
+        (e) =>
+          e.eventType === "STEP_COMPLETED" &&
+          /#writeback$/.test(String((e.payload as { stepId?: string }).stepId))
+      )
+    ).toBe(false);
   });
 
   it("the write is a journaled effect (ring), not a direct call", async () => {
@@ -195,5 +266,18 @@ describe("config errors", () => {
     });
     expect((await runTicket(ok, "cfg-3")).status).toBe("completed");
     expect(ok.configErrors).toEqual([]);
+  });
+});
+
+describe("settled() is bounded", () => {
+  it("throws with the status on a deadline, and on an abort, instead of polling forever", async () => {
+    const p = boot({ backend: new Backend(), prompt: TICKET_A });
+    // An execution that never produces a terminal state: the poll must give up, not hang.
+    await expect(settled(p, "never-started", { timeoutMs: 20 })).rejects.toThrow(
+      /never-started not settled within 20ms \(status: no state\)/
+    );
+    const ac = new AbortController();
+    ac.abort();
+    await expect(settled(p, "never-started", { signal: ac.signal })).rejects.toThrow(/aborted/);
   });
 });

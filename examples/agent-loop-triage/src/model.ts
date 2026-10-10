@@ -43,7 +43,6 @@ const transcript = (request: LlmRequest): string =>
 export function triageScript(request: LlmRequest): LlmResponse {
   const turn = request.messages.filter((m) => m.role === "assistant").length;
   const text = transcript(request);
-  const lastUser = request.messages[request.messages.length - 1];
   const prompt = text.includes(TICKET_C) ? TICKET_C : text.includes(TICKET_B) ? TICKET_B : TICKET_A;
 
   if (prompt === TICKET_C) {
@@ -86,7 +85,6 @@ export function triageScript(request: LlmRequest): LlmResponse {
       stopReason: "tool_use",
     };
   }
-  void lastUser;
   return {
     content:
       "Refunded order 1042 ($49). The carrier lookup failed, so delivery was not verified; the refund rests on the order record.",
