@@ -1,6 +1,6 @@
 import { stableBucketPolicy } from "@loom-ui/planner";
 import { type Policy, type PolicyChoice, type PolicyContext, contentHash } from "@loom/learning";
-import type { Layout } from "./world";
+import type { Layout, Segment } from "./world";
 
 // ── The policies ────────────────────────────────────────────────────────────────────────────
 // ONE policy id ("layout"), several immutable versions. Training is out of band (ADR 0080): a
@@ -28,15 +28,31 @@ const uniform = stableBucketPolicy({
   weights: { flat: 1, tabs: 1 },
 });
 
+/**
+ * The host's feature store: unit -> segment, written when the host knows the user. The planner's
+ * choice context is its own ({ kind, unit, key, catalogId }) and carries no segment, so a
+ * contextual policy reads its features by `unit`, as a real one reads a feature store.
+ */
+export class SegmentStore {
+  private readonly bySegment = new Map<string, Segment>();
+  set(unit: string, segment: Segment): void {
+    this.bySegment.set(unit, segment);
+  }
+  /** A miss is the safe default, never a throw: an unknown unit is treated as casual. */
+  get(unit: unknown): Segment {
+    return (typeof unit === "string" ? this.bySegment.get(unit) : undefined) ?? "casual";
+  }
+}
+
 /** Candidate 2: tabs for power users, flat for casual ones (right in epoch 1). Deterministic. */
-const bySegment: Policy<Layout> = {
+const bySegmentOf = (segments: SegmentStore): Policy<Layout> => ({
   id: POLICY_ID,
   version: "2",
   select: (ctx: PolicyContext): PolicyChoice<Layout> => ({
-    action: ctx.segment === "power" ? "tabs" : "flat",
+    action: segments.get(ctx.unit) === "power" ? "tabs" : "flat",
     propensity: 1,
   }),
-};
+});
 
 /** Candidate 3: tabs for everyone (what epoch-2 votes teach). Deterministic. */
 const alwaysTabs: Policy<Layout> = {
@@ -46,11 +62,6 @@ const alwaysTabs: Policy<Layout> = {
 };
 
 export type Version = "1" | "2" | "3";
-const BY_VERSION: Record<Version, Policy<string>> = {
-  "1": uniform,
-  "2": bySegment as Policy<string>,
-  "3": alwaysTabs as Policy<string>,
-};
 
 /**
  * The code this process can run for each registered version, with a call log. The registry only
@@ -58,13 +69,23 @@ const BY_VERSION: Record<Version, Policy<string>> = {
  * code for acts as the incumbent (fail closed), never as something else.
  */
 export class PolicyBook {
+  private readonly byVersion: Record<Version, Policy<string>>;
+
+  constructor(segments: SegmentStore) {
+    this.byVersion = {
+      "1": uniform,
+      "2": bySegmentOf(segments) as Policy<string>,
+      "3": alwaysTabs as Policy<string>,
+    };
+  }
+
   /** Every `select` call, in order: `<version>` per call. */
   readonly calls: string[] = [];
 
   /** The `PolicyResolver` `decideWithRollout` takes. */
   readonly resolve = (id: string, version: string): Policy<string> | undefined => {
     if (id !== POLICY_ID) return undefined;
-    const p = BY_VERSION[version as Version];
+    const p = this.byVersion[version as Version];
     if (p === undefined) return undefined;
     return {
       id: p.id,
@@ -78,6 +99,6 @@ export class PolicyBook {
 
   /** A candidate as a bare policy, for offline evaluation (it makes no recorded call). */
   candidate(version: Version): Policy<Layout> {
-    return BY_VERSION[version] as Policy<Layout>;
+    return this.byVersion[version] as Policy<Layout>;
   }
 }

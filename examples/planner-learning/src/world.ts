@@ -120,16 +120,24 @@ export const replies: Record<Layout, string> = {
   }),
 };
 
-/** A planner model that always gives `reply` and counts its calls. */
-export function scriptedModel(reply: string): {
+/**
+ * Application-authored layout guidance, one line per variant. The planner appends it to the system
+ * prompt, which is how the scripted model knows which variant it is being asked for (a real model
+ * would simply follow it).
+ */
+export const FLAT_GUIDANCE = "Lay the two metrics out as one flat row.";
+export const TABS_GUIDANCE = "Group the metrics under one tabs container.";
+
+/** The ONE planner model: answers per the variant's guidance in the prompt, and counts its calls. */
+export function layoutModel(): {
   calls: number;
-  complete(): Promise<{ content: string }>;
+  complete(req: { system?: string }): Promise<{ content: string }>;
 } {
   const m = {
     calls: 0,
-    async complete() {
+    async complete(req: { system?: string }) {
       m.calls += 1;
-      return { content: reply };
+      return { content: req.system?.includes(TABS_GUIDANCE) ? replies.tabs : replies.flat };
     },
   };
   return m;

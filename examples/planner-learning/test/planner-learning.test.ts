@@ -1,3 +1,4 @@
+import type { PlanVariantReport } from "@loom-ui/planner";
 import { PromotionRefusedError, rolloutBucket } from "@loom/learning";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { BUCKET_SECRET, type Batch, Lab } from "../src/lab";
@@ -21,7 +22,7 @@ const stampsOf = async (lab: Lab, batch: Batch) =>
       const ev = (await lab.eventStore.read(s.executionId)).find(
         (e) =>
           e.eventType === "DECISION_RECORDED" &&
-          (e.payload as { decisionId: string }).decisionId === "layout"
+          (e.payload as { decisionId: string }).decisionId === s.ref.decisionId
       );
       return { surface: s, payload: ev?.payload as { choice: string; policy: Stamp } };
     })
@@ -185,8 +186,10 @@ describe("the R18 lifecycle", () => {
     const parked = await lab.parkedTurn({ userId: "replay@example.com", segment: "casual" });
     const log0 = await lab.eventStore.read(parked.executionId);
     const rec0 = log0.filter((e) => e.eventType === "DECISION_RECORDED");
-    const choice = rec0.find((e) => (e.payload as { decisionId: string }).decisionId === "layout")
-      ?.payload as {
+    const choice = rec0.find((e) =>
+      (e.payload as { decisionId: string }).decisionId.startsWith("plan-variant:")
+    )?.payload as {
+      decisionId: string;
       choice: string;
       policy: { version: string };
     };
@@ -198,7 +201,7 @@ describe("the R18 lifecycle", () => {
       now: 0,
       note: "registry moves under a parked run",
     });
-    const modelCalls = lab.models.flat.calls + lab.models.tabs.calls;
+    const modelCalls = lab.model.calls;
     const selects = lab.policies.calls.length;
     const resumed = await lab.runtime.resume(parked.executionId, {
       eventType: "ReplayGate",
@@ -210,10 +213,32 @@ describe("the R18 lifecycle", () => {
       (e) => e.eventType === "DECISION_RECORDED"
     );
     expect(rec1).toHaveLength(rec0.length);
-    expect(lab.models.flat.calls + lab.models.tabs.calls).toBe(modelCalls);
+    expect(lab.model.calls).toBe(modelCalls);
     // loom #529: the registry read and select run inside ctx.decide, so a served decision consults no policy.
     expect(lab.policies.calls.length).toBe(selects);
-    expect((final.variables._output as { layout: string }).layout).toBe(choice.choice);
+    const out = final.variables._output as { layout: string; variant: PlanVariantReport };
+    expect(out.layout).toBe(choice.choice);
+    // the replayed report names the policy but NOT a version (the registry now says v1, the log says v3),
+    // and claims no rollout stamp or propensity: the recorded DECISION_RECORDED stamp is the truth
+    expect(out.variant.decisionId).toBe(choice.decisionId);
+    expect(out.variant.policy).toEqual({ id: POLICY_ID });
+    expect(out.variant.policy.version).toBeUndefined();
+    expect(out.variant.rollout).toBeUndefined();
+  });
+});
+
+describe("what a FRESH turn reports (loom-ui friction)", () => {
+  // KNOWN GAP: ReferencePlanner reads the rollout stamp from `ctx.decide`'s options at CALL time
+  // (loom-ui packages/planner/src/reference.ts:206), but loom >= #529 sets `options.policy` inside the
+  // decider, so a fresh turn's `report.variant.policy.version` / `.rollout` are never populated and the
+  // DECISION_RECORDED stamp is the only place the acting version is visible. `it.fails` flips red when
+  // loom-ui reads the stamp after the decision resolves: then delete `.fails` and assert it for real.
+  it.fails("report.variant names the acting version and the rollout stamp", async () => {
+    const lab = new Lab();
+    await lab.bootstrap();
+    const s = await lab.turn({ userId: "fresh@example.com", segment: "power" });
+    expect(s.report.policy).toEqual({ id: POLICY_ID, version: "1" });
+    expect(s.report.rollout?.mode).toBe("full");
   });
 });
 

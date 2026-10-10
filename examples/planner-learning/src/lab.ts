@@ -29,7 +29,7 @@ import {
   eventStoreLineageStore,
   seenStoreOptions,
 } from "@loom-ui/lineage";
-import { ReferencePlanner, plannerProvenance } from "@loom-ui/planner";
+import { type PlanVariantReport, ReferencePlanner, plannerProvenance } from "@loom-ui/planner";
 import { flow$ } from "@loom/core";
 import { EffectRuntime } from "@loom/effect-runtime";
 import { InMemoryAsyncEventStore } from "@loom/event-runtime";
@@ -38,7 +38,6 @@ import {
   PolicyRegistry,
   type PromotionThresholds,
   type Trajectory,
-  decideWithRollout,
   trajectories,
 } from "@loom/learning";
 import { InMemoryContentStore } from "@loom/plugin-content";
@@ -50,28 +49,29 @@ import {
   executionAccessPolicy,
 } from "@loom/workflow-runtime";
 import { z } from "zod";
-import { POLICY_ID, PolicyBook, versionHash } from "./policies";
+import { POLICY_ID, PolicyBook, SegmentStore, versionHash } from "./policies";
 import {
   type Epoch,
+  FLAT_GUIDANCE,
   LAYOUTS,
   type Layout,
   NODES,
   SEGMENTS,
   type Segment,
+  TABS_GUIDANCE,
   TENANT,
   appeal,
   capabilities,
   catalog,
-  replies,
-  scriptedModel,
+  layoutModel,
   seededRng,
   stars,
 } from "./world";
 
 // ── The lab: one process holding every moving part of the loop ───────────────────────────────
 //
-//   planner turn (flow)  -> decideWithRollout picks the LAYOUT through the registry
-//                        -> ReferencePlanner composes the surface in that layout
+//   planner turn (flow)  -> ONE ReferencePlanner: its `variants.rollout` picks the LAYOUT through the
+//                           registry (decideWithRollout inside the planner), then composes the surface
 //   host publishes it    -> Lineage version, DecisionLink (execution + decision), views in SeenLog
 //   viewers vote         -> SignalIngestor (authenticated viewer, exposure REQUIRED) -> VoteLedger
 //   close                -> settleRewards: ONE late reward per decision, by a reward-pipeline principal
@@ -124,6 +124,8 @@ export interface Surface {
   /** The layout actually served (what the flow returned). */
   served: Layout;
   ref: DecisionRef;
+  /** `plan.report.variant` from the turn that composed this surface. */
+  report: PlanVariantReport;
 }
 
 export interface Batch {
@@ -147,8 +149,10 @@ export class Lab {
     scope: TENANT,
     thresholds: GATE,
   });
-  readonly policies = new PolicyBook();
-  readonly models = { flat: scriptedModel(replies.flat), tabs: scriptedModel(replies.tabs) };
+  /** The host's feature store: unit -> segment. The v2 policy reads it; the planner's context cannot carry it. */
+  readonly segments = new SegmentStore();
+  readonly policies = new PolicyBook(this.segments);
+  readonly model = layoutModel();
   readonly lineage: Lineage;
   readonly seenLog: SeenLog;
   readonly links = new DecisionLinks();
@@ -158,7 +162,7 @@ export class Lab {
   private t = Date.parse("2026-10-10T09:00:00Z");
   private n = 0;
   private batchNo = 0;
-  private readonly planners: Record<Layout, ReferencePlanner>;
+  private readonly planner: ReferencePlanner;
   private readonly viewersPerSurface: number;
 
   constructor(opts: LabOptions = {}) {
@@ -170,9 +174,25 @@ export class Lab {
       // The reward pipeline may annotate any execution of its tenant; nobody else may (ADR 0116).
       executionAuthorizer: executionAccessPolicy({ rules: { annotate: "tenant" } }),
     });
-    const mk = (l: Layout) =>
-      new ReferencePlanner({ modelId: `scripted-${l}`, model: this.models[l], maxAttempts: 1 });
-    this.planners = { flat: mk("flat"), tabs: mk("tabs") };
+    // ONE planner. Its rollout option makes the layout a registry-resolved, recorded decision with
+    // `unit` as the traffic key; each variant is a way of asking for the same surface.
+    this.planner = new ReferencePlanner({
+      modelId: "scripted-layout",
+      model: this.model,
+      maxAttempts: 1,
+      variants: {
+        rollout: {
+          source: this.registry,
+          policyId: POLICY_ID,
+          resolve: this.policies.resolve,
+          bucketSecret: BUCKET_SECRET,
+        },
+        variants: {
+          flat: { guidance: FLAT_GUIDANCE },
+          tabs: { containers: REFERENCE_CONTAINER_ROLES, guidance: TABS_GUIDANCE },
+        },
+      },
+    });
 
     const content = new InMemoryContentStore({ now: () => this.t });
     this.lineage = new Lineage({
@@ -218,37 +238,21 @@ export class Lab {
       resumeSchemas: { ReplayGate: ResumeGate },
     });
     const runner: FlowRunner<TurnInput, unknown> = async (ctx, input) => {
-      // 1. The learned decision: WHICH layout. Resolved through the registry (who is live, who is
-      //    only watching), recorded once with the acting version, its propensity and the shadow arm.
-      const layout = (await decideWithRollout(
-        ctx,
-        "layout",
-        { source: this.registry, policyId: POLICY_ID, resolve: this.policies.resolve },
-        input.unit,
-        { unit: input.unit, segment: input.segment },
-        [...LAYOUTS],
-        { source: "planner-learning", bucketSecret: BUCKET_SECRET }
-      )) as Layout;
-
-      // 2. The planner composes the surface in that layout. The model call lives inside the
-      //    planner's own ctx.decide, so a replay serves it from the log.
-      const plan = await this.planners[layout].compose(
-        {
-          intent,
-          catalog,
-          capabilities,
-          ...(layout === "tabs" && { containers: REFERENCE_CONTAINER_ROLES }),
-        },
+      // One call: the planner chooses the layout through the registry (recorded with the acting
+      // version, propensity and shadow arm), then composes it. The model call lives inside the
+      // planner's own ctx.decide, so a replay serves both from the log.
+      const plan = await this.planner.compose(
+        { intent, catalog, capabilities, unit: input.unit },
         ctx as never
       );
-      // The ops are stamped with the decision a reward will attach to.
-      const by = {
-        ...plannerProvenance(plan, { agentId: "layout-planner" }),
-        policyDecisionId: "layout",
-      };
+      const variant = plan.report.variant;
+      if (variant === undefined)
+        throw new Error(`planner refused the turn: ${plan.findings.map((f) => f.code).join(", ")}`);
+      // The ops are stamped with the decision a reward will attach to (policyDecisionId = variant.decisionId).
+      const by = plannerProvenance(plan, { agentId: "layout-planner" });
 
       if (input.park) await ctx.suspend<Record<string, never>>({ on: "ReplayGate" });
-      return { layout, ops: plan.ops, by };
+      return { layout: variant.id as Layout, ops: plan.ops, by, variant };
     };
     this.flow = { definition, runner } as unknown as RegisteredFlow;
     this.runtime.registerFlow(this.flow.definition, this.flow.runner);
@@ -281,30 +285,35 @@ export class Lab {
     }));
   }
 
+  /** The host knows its user: alias them and record their segment in the feature store the v2 policy reads. */
+  private enroll(user: UserSpec): string {
+    const unit = unitAlias(KEY, user.userId);
+    this.segments.set(unit, user.segment);
+    return unit;
+  }
+
   // ── one planner turn ────────────────────────────────────────────────────────────────────
 
   /** Run one planner turn for a user and publish what it composed. Terminal, so it can be rewarded. */
   async turn(user: UserSpec): Promise<Surface> {
-    const unit = unitAlias(KEY, user.userId);
+    const unit = this.enroll(user);
     const executionId = `ex-${this.n++}`;
-    const handle = await this.runtime.start(
-      this.flow,
-      { unit, segment: user.segment } satisfies TurnInput,
-      { executionId, principal: owner(user.userId) }
-    );
+    const handle = await this.runtime.start(this.flow, { unit } satisfies TurnInput, {
+      executionId,
+      principal: owner(user.userId),
+    });
     const final = await handle.waitForCompletion();
     return this.publish(executionId, unit, user.segment, final.variables._output as TurnOutput);
   }
 
   /** A turn that parks at a gate right after deciding and composing: the thing a replay re-enters. */
   async parkedTurn(user: UserSpec) {
-    const unit = unitAlias(KEY, user.userId);
+    const unit = this.enroll(user);
     const executionId = `ex-${this.n++}`;
-    const handle = await this.runtime.start(
-      this.flow,
-      { unit, segment: user.segment, park: true } satisfies TurnInput,
-      { executionId, principal: owner(user.userId) }
-    );
+    const handle = await this.runtime.start(this.flow, { unit, park: true } satisfies TurnInput, {
+      executionId,
+      principal: owner(user.userId),
+    });
     await handle.waitForSuspend();
     return { executionId, unit, handle };
   }
@@ -327,7 +336,7 @@ export class Lab {
       })
     );
     const versionHash = committed.experience.versionHash;
-    const ref: DecisionRef = { executionId, decisionId: "layout" };
+    const ref: DecisionRef = { executionId, decisionId: out.variant.decisionId };
     // The link is READ OFF the provenance ledger: each node maps to the decision stamped on the op
     // that wrote it, and a node with no stamped decision earns no planner reward.
     this.links.register(
@@ -338,7 +347,16 @@ export class Lab {
         tenant: TENANT,
       })
     );
-    return { executionId, experienceId, versionHash, unit, segment, served: out.layout, ref };
+    return {
+      executionId,
+      experienceId,
+      versionHash,
+      unit,
+      segment,
+      served: out.layout,
+      ref,
+      report: out.variant,
+    };
   }
 
   // ── viewers ─────────────────────────────────────────────────────────────────────────────
@@ -432,11 +450,11 @@ export class Lab {
 
 interface TurnInput {
   unit: string;
-  segment: Segment;
   park?: boolean;
 }
 interface TurnOutput {
   layout: Layout;
   ops: readonly Operation[];
   by: Provenance;
+  variant: PlanVariantReport;
 }
