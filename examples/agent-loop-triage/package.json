@@ -1,0 +1,32 @@
+{
+  "name": "@loom/agent-loop-triage",
+  "version": "0.0.1",
+  "description": "A support-ticket triage agent on the canonical agentLoop$ (ADR 0121): the model is routed through the capability ring, one turn's lookups run in parallel and a flaky one comes back as an isError tool result (a terminal quota error still stops the run), a refund parks on a human approval and resumes in a fresh runtime over the same store without re-running a tool, a consumed failure is never re-run, writeBack (ring / unless / allowDirect) lets the next ticket recall the first, and bare writeBack: true or a response cache without cacheScope is a config error. Offline, scripted model.",
+  "private": true,
+  "scripts": {
+    "build": "tsc --build",
+    "start": "tsx src/main.ts",
+    "test": "vitest run",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@loom/agent": "*",
+    "@loom/core": "*",
+    "@loom/effect-runtime": "*",
+    "@loom/event-runtime": "*",
+    "@loom/llm": "*",
+    "@loom/memory": "*",
+    "@loom/middleware": "*",
+    "@loom/reasoning": "*",
+    "@loom/replay-vm": "*",
+    "@loom/snapshot-runtime": "*",
+    "@loom/workflow-runtime": "*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "^5.6.3",
+    "vitest": "catalog:"
+  }
+}
