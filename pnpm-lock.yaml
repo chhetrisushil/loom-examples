@@ -278,9 +278,6 @@ importers:
       '@loom/reasoning':
         specifier: link:../../../loom/packages/reasoning
         version: link:../../../loom/packages/reasoning
-      '@loom/replay-vm':
-        specifier: link:../../../loom/packages/replay-vm
-        version: link:../../../loom/packages/replay-vm
       '@loom/snapshot-runtime':
         specifier: link:../../../loom/packages/snapshot-runtime
         version: link:../../../loom/packages/snapshot-runtime
