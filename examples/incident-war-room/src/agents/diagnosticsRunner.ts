@@ -12,13 +12,13 @@ import { fetchMetrics } from "./tools";
 //
 // STATELESS on purpose. The loop is replayed from the event log, and the model
 // effect may be re-invoked after a recovery, so the script decides its turn from
-// the transcript it is handed (has a tool_result come back yet?) rather than from
+// the transcript it is handed (is the LAST message a tool_result?) rather than from
 // a counter on the instance, which would drift across executions and replays.
-class DiagnosticsScript implements LlmProvider {
+export class DiagnosticsScript implements LlmProvider {
   async complete(request: LlmRequest): Promise<LlmResponse> {
-    const sawToolResult = request.messages.some((m) =>
-      toParts(m.content).some((p) => p.type === "tool_result")
-    );
+    const last = request.messages[request.messages.length - 1];
+    const sawToolResult =
+      last !== undefined && toParts(last.content).some((p) => p.type === "tool_result");
     if (!sawToolResult) {
       const target = readTarget(request);
       return {

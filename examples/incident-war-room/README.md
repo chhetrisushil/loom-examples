@@ -127,3 +127,5 @@ a Postgres reference (schema + `LISTEN/NOTIFY`) lives in
   A2A HTTP service (`createA2AServer`) is the natural next step.
 - **Non-linear branch history.** Branches fork from a single approval gate; forking a fork (deep DAGs) works
   at the `BranchRegistry` level but isn't surfaced in the UI.
+
+> **Wiring note:** the diagnose flow runs `agentLoop$`, which resolves its model and tool calls through the app's `EffectRuntime`. Any new composition root that registers the diagnose flow must also pass `execution.registerEffects` (`registerDiagnosticsEffects` from `src/agents/diagnosticsRunner.ts`); without it the run fails at runtime with `No effect registered for toolId`.

@@ -1,7 +1,7 @@
 import { type AgentOutput, agentLoop$, createAgentModelEffect, toolSpecFor } from "@loom/agent";
 import { defineConfig } from "@loom/app";
 import { agent$, flow$, handler$, step$ } from "@loom/core";
-import type { LlmProvider, LlmRequest, LlmResponse } from "@loom/llm";
+import { type LlmProvider, type LlmRequest, type LlmResponse, toParts } from "@loom/llm";
 import {
   A2APeerClient,
   createA2AClientEffect,
@@ -43,12 +43,22 @@ function section(title: string): void {
 // production this becomes `new AnthropicProvider({ model: "claude-opus-4-8" })`
 // (or OpenAiProvider) — the model is pure configuration.
 class ScriptedLlmProvider implements LlmProvider {
-  private index = 0;
   constructor(private readonly responses: LlmResponse[]) {}
-  async complete(_request: LlmRequest): Promise<LlmResponse> {
-    const response = this.responses[this.index] ?? { content: "(done)", stopReason: "end_turn" };
-    this.index = Math.min(this.index + 1, this.responses.length);
-    return response;
+  // Stateless: the turn is the number of tool-result messages after the last plain user prompt.
+  async complete(request: LlmRequest): Promise<LlmResponse> {
+    const isResult = (m: LlmRequest["messages"][number]): boolean =>
+      toParts(m.content).some((p) => p.type === "tool_result");
+    const msgs = request.messages;
+    let start = -1;
+    for (let i = msgs.length - 1; i >= 0; i--) {
+      const m = msgs[i];
+      if (m !== undefined && m.role === "user" && !isResult(m)) {
+        start = i;
+        break;
+      }
+    }
+    const turn = msgs.slice(start + 1).filter(isResult).length;
+    return this.responses[turn] ?? { content: "(done)", stopReason: "end_turn" };
   }
 }
 

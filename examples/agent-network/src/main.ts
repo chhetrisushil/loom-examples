@@ -1,7 +1,13 @@
-import { type AgentOutput, SkillRegistry, agentLoop$, createAgentModelEffect } from "@loom/agent";
+import {
+  type AgentOutput,
+  SkillRegistry,
+  agentLoop$,
+  createAgentModelEffect,
+  memoryWriteBackEffect,
+} from "@loom/agent";
 import { defineConfig } from "@loom/app";
 import { CapabilityCatalog } from "@loom/capability";
-import { agent$, flow$, handler$, instructions$, memory$, skill$, step$ } from "@loom/core";
+import { agent$, flow$, handler$, instructions$, skill$, step$ } from "@loom/core";
 import { IntentRuntime } from "@loom/intent";
 import { InMemoryMemoryStore, TieredMemory } from "@loom/memory";
 import { PlannerRuntime } from "@loom/planner";
@@ -26,7 +32,7 @@ import type { FlowRunner, RegisteredFlow } from "@loom/workflow-runtime";
  * Run with:  pnpm --filter @loom/agent-network start
  */
 import { z } from "zod";
-import { ScriptedLlmProvider } from "./ScriptedLlmProvider";
+import { ScriptedLlmProvider, plainUserMessages } from "./ScriptedLlmProvider";
 import { incidentBlueprint, investigateCapability, scaleCapability } from "./capabilities";
 import { startFakeMcpServer } from "./fakeMcpServer";
 
@@ -268,11 +274,16 @@ async function main(): Promise<void> {
     tiers: { chat: { maxEntries: 20 } },
   });
   const chatAgent = agent$({ id: "chat-agent", name: "Chat Agent", tools: [] });
-  const chatProvider = new ScriptedLlmProvider([
-    { content: "Noted — your cluster is prod-postgres.", stopReason: "end_turn" },
-    { content: "Your cluster is prod-postgres.", stopReason: "end_turn" },
-  ]);
+  const chatProvider = new ScriptedLlmProvider(
+    [
+      { content: "Noted — your cluster is prod-postgres.", stopReason: "end_turn" },
+      { content: "Your cluster is prod-postgres.", stopReason: "end_turn" },
+    ], // Shared by two executions: the second one's transcript carries the recalled first turn.
+    (request) => (plainUserMessages(request) > 1 ? 1 : 0)
+  );
   effectRuntime.register("chat-model", createAgentModelEffect(chatProvider));
+  const MEMORY_WRITE_BACK_ID = "memory-write-back";
+  agentApp.effectRuntime.register(MEMORY_WRITE_BACK_ID, memoryWriteBackEffect(memory));
   const chatFlow = flow$({
     id: "chat-agent-run",
     name: "Chat agent run",
@@ -292,9 +303,10 @@ async function main(): Promise<void> {
         memory,
         memoryTier: "chat",
         memoryScope: "user-1",
-        // Demo: a direct write outside the effect ring. A real deployment registers
-        // memoryWriteBackEffect(memory) and passes `writeBack: { toolId }` instead.
-        writeBack: { allowDirect: true },
+        // The write-back goes through the effect ring (ADR 0121 D4): it is a journaled
+        // ctx.execute against memoryWriteBackEffect(memory), registered above, so authorization,
+        // tenant checks and the kill switch apply and a replay serves the write.
+        writeBack: { toolId: MEMORY_WRITE_BACK_ID },
       },
       { prompt: input.prompt }
     )) as FlowRunner<unknown, unknown>);
