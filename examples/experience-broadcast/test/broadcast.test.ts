@@ -78,6 +78,26 @@ const everySecret = (): string[] => [
 ];
 
 describe("experience-broadcast: one support-desk Experience, two audiences", () => {
+  it("a surface cannot be opened without an audience, and the split controller holds the store to it", async () => {
+    const server = new DeskServer();
+    const terminal = server.open("terminal", "broadcast", AGENT);
+    // @ts-expect-error `audience` is required: the scope must say who the surface is for
+    const bad: Parameters<typeof openSurface>[2] = {};
+    expect(bad).toBeDefined();
+    const { SplitHydrationController } = await import("@loom-ui/hydration/client");
+    const { HydrationStore } = await import("@loom-ui/hydration/client");
+    const loader = { load: vi.fn(), loadMany: vi.fn() };
+    const store = new HydrationStore(new InMemoryProjectionRuntime(), {
+      experienceId: terminal.inventory.experienceId,
+      audience: "broadcast",
+    });
+    // a viewer-audience controller over a broadcast store is refused, and so is the reverse
+    expect(() => new SplitHydrationController({ loader, store })).toThrow(/audience/);
+    expect(
+      () => new SplitHydrationController({ loader, store, audience: "broadcast" })
+    ).not.toThrow();
+  });
+
   it("the agent's own surface shows everything (the control for every absence below)", async () => {
     const s = await open("viewer");
     const out = frame(s);

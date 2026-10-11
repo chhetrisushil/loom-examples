@@ -35,21 +35,30 @@ export function openSurface(
   inventory: HandleInventory,
   sendBatch: (body: string) => Promise<string>,
   scope: {
-    /** The audience of this surface: part of the store's scope, so a wallboard never shares state with a personal surface. */
-    readonly audience?: Audience;
+    /**
+     * REQUIRED: the audience of this surface. It is part of the store's scope (a wallboard never shares
+     * state with a personal surface) and the controller checks it against that scope, so a surface can
+     * not be opened without saying who it is for.
+     */
+    readonly audience: Audience;
     readonly principalId?: string;
     /** One runtime may back several surfaces; the scope keeps their state apart. */
     readonly runtime?: InMemoryProjectionRuntime;
-  } = {}
+  }
 ) {
   const loader = new JsonLoader(sendBatch);
   const runtime = scope.runtime ?? new InMemoryProjectionRuntime();
   const store = new HydrationStore(runtime, {
     experienceId: inventory.experienceId,
     ...(scope.principalId !== undefined && { principalId: scope.principalId }),
-    ...(scope.audience !== undefined && { audience: scope.audience }),
+    audience: scope.audience,
   });
-  const controller = new SplitHydrationController({ loader, store, batchWindowMs: 0 });
+  const controller = new SplitHydrationController({
+    loader,
+    store,
+    audience: scope.audience,
+    batchWindowMs: 0,
+  });
   const { findings } = controller.load(inventory);
   return { loader, store, runtime, controller, findings };
 }
