@@ -1,0 +1,20 @@
+{
+  "name": "@loom/experience-merge",
+  "version": "0.0.1",
+  "description": "loom-ui three-way merge for anyone: two volunteers fork one community-garden rota board and edit it independently, then mergeExperiences joins the forks — a clean merge, a node relabelled differently on both sides (edit/edit), a node moved to two sections (move/move), and one localization key given two meanings by two branches (message/message), which no structural comparison sees. The merge is unsealed; the caller seals it with both heads as parents.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --build",
+    "test": "vitest run",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@loom-ui/core": "*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "^5.6.3",
+    "vitest": "catalog:"
+  }
+}
