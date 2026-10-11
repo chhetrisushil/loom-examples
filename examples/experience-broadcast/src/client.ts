@@ -1,3 +1,4 @@
+import type { Audience } from "@loom-ui/core";
 import {
   type HandleInventory,
   type HandleLoadRequest,
@@ -32,12 +33,21 @@ export class JsonLoader implements HandleLoader {
 
 export function openSurface(
   inventory: HandleInventory,
-  sendBatch: (body: string) => Promise<string>
+  sendBatch: (body: string) => Promise<string>,
+  scope: {
+    /** The audience of this surface: part of the store's scope, so a wallboard never shares state with a personal surface. */
+    readonly audience?: Audience;
+    readonly principalId?: string;
+    /** One runtime may back several surfaces; the scope keeps their state apart. */
+    readonly runtime?: InMemoryProjectionRuntime;
+  } = {}
 ) {
   const loader = new JsonLoader(sendBatch);
-  const runtime = new InMemoryProjectionRuntime();
+  const runtime = scope.runtime ?? new InMemoryProjectionRuntime();
   const store = new HydrationStore(runtime, {
     experienceId: inventory.experienceId,
+    ...(scope.principalId !== undefined && { principalId: scope.principalId }),
+    ...(scope.audience !== undefined && { audience: scope.audience }),
   });
   const controller = new SplitHydrationController({ loader, store, batchWindowMs: 0 });
   const { findings } = controller.load(inventory);

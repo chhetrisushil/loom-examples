@@ -2,6 +2,7 @@ import type { Audience, Viewer } from "@loom-ui/core";
 import { litRegistry, renderBlueprintDom } from "@loom-ui/renderer-lit/dom";
 import "@loom-ui/renderer-lit/register";
 import { renderExperience } from "@loom-ui/renderer-terminal";
+import { InMemoryProjectionRuntime } from "@loom/projection-runtime";
 import { describe, expect, it, vi } from "vitest";
 import { openSurface } from "../src/client";
 import { DeskServer, SECRETS, TITLES } from "../src/desk";
@@ -11,10 +12,18 @@ import { DeskServer, SECRETS, TITLES } from "../src/desk";
 const AGENT: Viewer = { clearance: "secret" };
 
 /** Open one audience's surface end to end: compile, inventory, then the browser's own loads. */
-async function open(audience: Audience, server = new DeskServer()) {
+async function open(
+  audience: Audience,
+  server = new DeskServer(),
+  shared?: { runtime: InMemoryProjectionRuntime }
+) {
   const web = server.open("web", audience, AGENT);
   const terminal = server.open("terminal", audience, AGENT);
-  const surface = openSurface(terminal.inventory, (body) => server.hydrate(body, audience, AGENT));
+  const surface = openSurface(terminal.inventory, (body) => server.hydrate(body, audience, AGENT), {
+    audience,
+    principalId: "agent-1",
+    ...(shared && { runtime: shared.runtime }),
+  });
   const wanted = terminal.inventory.handles.map((h) => h.handle);
   await vi.waitFor(() => {
     for (const h of wanted) expect(surface.store.status(h)?.state, h).toBe("ready");
@@ -101,6 +110,20 @@ describe("experience-broadcast: one support-desk Experience, two audiences", () 
         .map((f) => f.nodeId)
         .sort()
     ).toEqual(["escalated", "refunds"]);
+  });
+
+  it("the wallboard and the agent's own surface share a runtime and a principal, never hydration state", async () => {
+    const runtime = new InMemoryProjectionRuntime();
+    const server = new DeskServer();
+    const mine = await open("viewer", server, { runtime });
+    expect(mine.store.value("refunds")).toBeDefined();
+    const wall = await open("broadcast", server, { runtime });
+    // Opening the wall removed nothing from the agent's surface, and gave the wall nothing of it.
+    expect(mine.store.value("refunds")).toBeDefined();
+    expect(mine.store.value("escalated")).toBeDefined();
+    expect(wall.store.value("refunds")).toBeUndefined();
+    expect(wall.store.executionId).not.toBe(mine.store.executionId);
+    expect(frame(mine)).toContain(SECRETS.customerA);
   });
 
   it("nothing withheld is in the broadcast Blueprint, its inventory, the browser's requests or the server's answers", async () => {
