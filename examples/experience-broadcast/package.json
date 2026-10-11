@@ -1,0 +1,26 @@
+{
+  "name": "@loom/experience-broadcast",
+  "version": "0.0.1",
+  "description": "loom-ui audience for anyone: ONE support-desk Experience rendered twice - a personal surface for the agent who asked (their clearance decides) and a broadcast wallboard on the lobby screen (the lowest-class ceiling applies, whoever is logged in). compile({ audience: 'broadcast' }) turns every classified widget into loom's redacted widget; the hydration inventory and server refuse the same handles, so the wallboard's browser never even asks for them; the renderers draw only a constant marker.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --build",
+    "test": "vitest run",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@loom-ui/core": "*",
+    "@loom-ui/hydration": "*",
+    "@loom-ui/renderer-lit": "*",
+    "@loom-ui/renderer-terminal": "*",
+    "@loom/blueprint-runtime": "*",
+    "@loom/plugin-mcp": "*",
+    "@loom/projection-runtime": "*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "^5.6.3",
+    "vitest": "catalog:"
+  }
+}
