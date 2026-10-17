@@ -16,7 +16,7 @@ async function main(): Promise<void> {
   await handle.waitForSuspend();
   const resumed = await app.runtime.resume(handle.executionId, {
     eventType: "ApprovalGranted",
-    payload: { approved: true, approvedBy: "ada@example.com" },
+    payload: { approved: true, approvedBy: "release-manager" },
   });
   await resumed.waitForCompletion();
 

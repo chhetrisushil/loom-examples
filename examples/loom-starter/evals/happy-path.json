@@ -2,26 +2,30 @@
   "name": "happy path — hotfix approved",
   "log": [
     {
-      "id": "01KWX1YY1STZJX5XGKMK9KAKK8-0",
+      "id": "01M541G1D2C0R6FTM9QWJK4TQG-0",
       "workflowId": "release-approval",
-      "executionId": "01KWX1YY1STZJX5XGKMK9KAKK8",
+      "executionId": "01M541G1D2C0R6FTM9QWJK4TQG",
       "eventType": "EXECUTION_STARTED",
       "sequence": 0,
-      "timestamp": 1783386568761,
+      "timestamp": 1792210896291,
       "payload": {
         "input": {
           "service": "checkout-api",
           "changeType": "hotfix"
+        },
+        "flowHash": "fnv1a:20137644",
+        "principal": {
+          "v": 1
         }
       }
     },
     {
-      "id": "01KWX1YY1STZJX5XGKMK9KAKK8-1",
+      "id": "01M541G1D2C0R6FTM9QWJK4TQG-1",
       "workflowId": "release-approval",
-      "executionId": "01KWX1YY1STZJX5XGKMK9KAKK8",
+      "executionId": "01M541G1D2C0R6FTM9QWJK4TQG",
       "eventType": "SURFACE_PATCH",
       "sequence": 1,
-      "timestamp": 1783386568761,
+      "timestamp": 1792210896292,
       "payload": {
         "surface": "ui",
         "patches": [
@@ -31,15 +35,18 @@
             "value": "assessing"
           }
         ]
+      },
+      "metadata": {
+        "flowEmit": "d3b5e2b306bcbd4c"
       }
     },
     {
-      "id": "01KWX1YY1STZJX5XGKMK9KAKK8-2",
+      "id": "01M541G1D2C0R6FTM9QWJK4TQG-2",
       "workflowId": "release-approval",
-      "executionId": "01KWX1YY1STZJX5XGKMK9KAKK8",
+      "executionId": "01M541G1D2C0R6FTM9QWJK4TQG",
       "eventType": "STEP_STARTED",
       "sequence": 2,
-      "timestamp": 1783386568761,
+      "timestamp": 1792210896292,
       "payload": {
         "stepId": "assess",
         "input": {
@@ -49,12 +56,12 @@
       }
     },
     {
-      "id": "01KWX1YY1STZJX5XGKMK9KAKK8-3",
+      "id": "01M541G1D2C0R6FTM9QWJK4TQG-3",
       "workflowId": "release-approval",
-      "executionId": "01KWX1YY1STZJX5XGKMK9KAKK8",
+      "executionId": "01M541G1D2C0R6FTM9QWJK4TQG",
       "eventType": "STEP_COMPLETED",
       "sequence": 3,
-      "timestamp": 1783386568762,
+      "timestamp": 1792210896293,
       "payload": {
         "stepId": "assess",
         "output": {
@@ -64,12 +71,12 @@
       }
     },
     {
-      "id": "01KWX1YY1STZJX5XGKMK9KAKK8-4",
+      "id": "01M541G1D2C0R6FTM9QWJK4TQG-4",
       "workflowId": "release-approval",
-      "executionId": "01KWX1YY1STZJX5XGKMK9KAKK8",
+      "executionId": "01M541G1D2C0R6FTM9QWJK4TQG",
       "eventType": "SURFACE_PATCH",
       "sequence": 4,
-      "timestamp": 1783386568762,
+      "timestamp": 1792210896293,
       "payload": {
         "surface": "ui",
         "patches": [
@@ -83,15 +90,18 @@
             }
           }
         ]
+      },
+      "metadata": {
+        "flowEmit": "4a4621bcfe150095"
       }
     },
     {
-      "id": "01KWX1YY1STZJX5XGKMK9KAKK8-5",
+      "id": "01M541G1D2C0R6FTM9QWJK4TQG-5",
       "workflowId": "release-approval",
-      "executionId": "01KWX1YY1STZJX5XGKMK9KAKK8",
+      "executionId": "01M541G1D2C0R6FTM9QWJK4TQG",
       "eventType": "STEP_STARTED",
       "sequence": 5,
-      "timestamp": 1783386568762,
+      "timestamp": 1792210896293,
       "payload": {
         "stepId": "notify",
         "input": {
@@ -101,24 +111,24 @@
       }
     },
     {
-      "id": "01KWX1YY1STZJX5XGKMK9KAKK8-6",
+      "id": "01M541G1D2C0R6FTM9QWJK4TQG-6",
       "workflowId": "release-approval",
-      "executionId": "01KWX1YY1STZJX5XGKMK9KAKK8",
+      "executionId": "01M541G1D2C0R6FTM9QWJK4TQG",
       "eventType": "approver_notified",
       "sequence": 6,
-      "timestamp": 1783386568762,
+      "timestamp": 1792210896293,
       "payload": {
         "service": "checkout-api",
         "level": "medium"
       }
     },
     {
-      "id": "01KWX1YY1STZJX5XGKMK9KAKK8-7",
+      "id": "01M541G1D2C0R6FTM9QWJK4TQG-7",
       "workflowId": "release-approval",
-      "executionId": "01KWX1YY1STZJX5XGKMK9KAKK8",
+      "executionId": "01M541G1D2C0R6FTM9QWJK4TQG",
       "eventType": "STEP_COMPLETED",
       "sequence": 7,
-      "timestamp": 1783386568762,
+      "timestamp": 1792210896293,
       "payload": {
         "stepId": "notify",
         "output": {
@@ -127,12 +137,12 @@
       }
     },
     {
-      "id": "01KWX1YY1STZJX5XGKMK9KAKK8-8",
+      "id": "01M541G1D2C0R6FTM9QWJK4TQG-8",
       "workflowId": "release-approval",
-      "executionId": "01KWX1YY1STZJX5XGKMK9KAKK8",
+      "executionId": "01M541G1D2C0R6FTM9QWJK4TQG",
       "eventType": "SURFACE_PATCH",
       "sequence": 8,
-      "timestamp": 1783386568762,
+      "timestamp": 1792210896293,
       "payload": {
         "surface": "ui",
         "patches": [
@@ -142,15 +152,18 @@
             "value": "awaiting-approval"
           }
         ]
+      },
+      "metadata": {
+        "flowEmit": "9bcf2cc0131e9208"
       }
     },
     {
-      "id": "01KWX1YY1STZJX5XGKMK9KAKK8-9",
+      "id": "01M541G1D2C0R6FTM9QWJK4TQG-9",
       "workflowId": "release-approval",
-      "executionId": "01KWX1YY1STZJX5XGKMK9KAKK8",
+      "executionId": "01M541G1D2C0R6FTM9QWJK4TQG",
       "eventType": "EXECUTION_SUSPENDED",
       "sequence": 9,
-      "timestamp": 1783386568762,
+      "timestamp": 1792210896293,
       "payload": {
         "condition": {
           "on": "ApprovalGranted",
@@ -160,94 +173,49 @@
       }
     },
     {
-      "id": "01KWX1YY1STZJX5XGKMK9KAKK8-10",
+      "id": "01M541G1D2C0R6FTM9QWJK4TQG-10",
       "workflowId": "release-approval",
-      "executionId": "01KWX1YY1STZJX5XGKMK9KAKK8",
-      "eventType": "ApprovalGranted",
+      "executionId": "01M541G1D2C0R6FTM9QWJK4TQG",
+      "eventType": "APPROVAL_GRANTED",
       "sequence": 10,
-      "timestamp": 1783386568762,
+      "timestamp": 1792210896296,
       "payload": {
-        "approved": true,
-        "approvedBy": "ada@example.com"
+        "actor": "release-manager",
+        "verifiedBy": "approver-list",
+        "on": "ApprovalGranted"
       }
     },
     {
-      "id": "01KWX1YY1STZJX5XGKMK9KAKK8-11",
+      "id": "01M541G1D2C0R6FTM9QWJK4TQG-11",
       "workflowId": "release-approval",
-      "executionId": "01KWX1YY1STZJX5XGKMK9KAKK8",
-      "eventType": "EXECUTION_RESUMED",
+      "executionId": "01M541G1D2C0R6FTM9QWJK4TQG",
+      "eventType": "ApprovalGranted",
       "sequence": 11,
-      "timestamp": 1783386568762,
+      "timestamp": 1792210896296,
       "payload": {
         "approved": true,
-        "approvedBy": "ada@example.com"
+        "approvedBy": "release-manager"
       }
     },
     {
-      "id": "01KWX1YY1STZJX5XGKMK9KAKK8-12",
+      "id": "01M541G1D2C0R6FTM9QWJK4TQG-12",
       "workflowId": "release-approval",
-      "executionId": "01KWX1YY1STZJX5XGKMK9KAKK8",
-      "eventType": "SURFACE_PATCH",
+      "executionId": "01M541G1D2C0R6FTM9QWJK4TQG",
+      "eventType": "EXECUTION_RESUMED",
       "sequence": 12,
-      "timestamp": 1783386568762,
+      "timestamp": 1792210896296,
       "payload": {
-        "surface": "ui",
-        "patches": [
-          {
-            "op": "set",
-            "path": "phase",
-            "value": "assessing"
-          }
-        ]
+        "approved": true,
+        "approvedBy": "release-manager"
       }
     },
     {
-      "id": "01KWX1YY1STZJX5XGKMK9KAKK8-13",
+      "id": "01M541G1D2C0R6FTM9QWJK4TQG-13",
       "workflowId": "release-approval",
-      "executionId": "01KWX1YY1STZJX5XGKMK9KAKK8",
+      "executionId": "01M541G1D2C0R6FTM9QWJK4TQG",
       "eventType": "SURFACE_PATCH",
       "sequence": 13,
-      "timestamp": 1783386568762,
-      "payload": {
-        "surface": "ui",
-        "patches": [
-          {
-            "op": "merge",
-            "path": "assessment",
-            "value": {
-              "service": "checkout-api",
-              "level": "medium",
-              "rationale": "hotfix change on checkout-api → medium risk"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "id": "01KWX1YY1STZJX5XGKMK9KAKK8-14",
-      "workflowId": "release-approval",
-      "executionId": "01KWX1YY1STZJX5XGKMK9KAKK8",
-      "eventType": "SURFACE_PATCH",
-      "sequence": 14,
-      "timestamp": 1783386568762,
-      "payload": {
-        "surface": "ui",
-        "patches": [
-          {
-            "op": "set",
-            "path": "phase",
-            "value": "awaiting-approval"
-          }
-        ]
-      }
-    },
-    {
-      "id": "01KWX1YY1STZJX5XGKMK9KAKK8-15",
-      "workflowId": "release-approval",
-      "executionId": "01KWX1YY1STZJX5XGKMK9KAKK8",
-      "eventType": "SURFACE_PATCH",
-      "sequence": 15,
-      "timestamp": 1783386568762,
+      "timestamp": 1792210896296,
       "payload": {
         "surface": "ui",
         "patches": [
@@ -257,15 +225,18 @@
             "value": "applying"
           }
         ]
+      },
+      "metadata": {
+        "flowEmit": "e4578f54e7fe3c0f"
       }
     },
     {
-      "id": "01KWX1YY1STZJX5XGKMK9KAKK8-16",
+      "id": "01M541G1D2C0R6FTM9QWJK4TQG-14",
       "workflowId": "release-approval",
-      "executionId": "01KWX1YY1STZJX5XGKMK9KAKK8",
+      "executionId": "01M541G1D2C0R6FTM9QWJK4TQG",
       "eventType": "STEP_STARTED",
-      "sequence": 16,
-      "timestamp": 1783386568762,
+      "sequence": 14,
+      "timestamp": 1792210896296,
       "payload": {
         "stepId": "apply",
         "input": {
@@ -274,12 +245,12 @@
       }
     },
     {
-      "id": "01KWX1YY1STZJX5XGKMK9KAKK8-17",
+      "id": "01M541G1D2C0R6FTM9QWJK4TQG-15",
       "workflowId": "release-approval",
-      "executionId": "01KWX1YY1STZJX5XGKMK9KAKK8",
+      "executionId": "01M541G1D2C0R6FTM9QWJK4TQG",
       "eventType": "STEP_COMPLETED",
-      "sequence": 17,
-      "timestamp": 1783386568762,
+      "sequence": 15,
+      "timestamp": 1792210896296,
       "payload": {
         "stepId": "apply",
         "output": {
@@ -288,12 +259,12 @@
       }
     },
     {
-      "id": "01KWX1YY1STZJX5XGKMK9KAKK8-18",
+      "id": "01M541G1D2C0R6FTM9QWJK4TQG-16",
       "workflowId": "release-approval",
-      "executionId": "01KWX1YY1STZJX5XGKMK9KAKK8",
+      "executionId": "01M541G1D2C0R6FTM9QWJK4TQG",
       "eventType": "SURFACE_PATCH",
-      "sequence": 18,
-      "timestamp": 1783386568762,
+      "sequence": 16,
+      "timestamp": 1792210896296,
       "payload": {
         "surface": "ui",
         "patches": [
@@ -303,20 +274,23 @@
             "value": "released"
           }
         ]
+      },
+      "metadata": {
+        "flowEmit": "6bfe7eecf091beb4"
       }
     },
     {
-      "id": "01KWX1YY1STZJX5XGKMK9KAKK8-19",
+      "id": "01M541G1D2C0R6FTM9QWJK4TQG-17",
       "workflowId": "release-approval",
-      "executionId": "01KWX1YY1STZJX5XGKMK9KAKK8",
+      "executionId": "01M541G1D2C0R6FTM9QWJK4TQG",
       "eventType": "EXECUTION_COMPLETED",
-      "sequence": 19,
-      "timestamp": 1783386568762,
+      "sequence": 17,
+      "timestamp": 1792210896296,
       "payload": {
         "output": {
           "released": true,
           "risk": "medium",
-          "approvedBy": "ada@example.com"
+          "approvedBy": "release-manager"
         }
       }
     }
