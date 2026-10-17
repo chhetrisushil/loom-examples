@@ -25,7 +25,7 @@ async function main(): Promise<void> {
 
   console.log(`✅ ${done.status} —`, done.variables._output);
   console.log("   surface:", surface(app, handle.executionId));
-  console.log(`\nInspect it:  loom logs --db .data/events.db ${handle.executionId}`);
+  console.log(`\nInspect it:  pnpm logs ${handle.executionId}   (or: loom logs --db .data/events.db ${handle.executionId})`);
 
   await app.close();
 }

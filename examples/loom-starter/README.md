@@ -28,9 +28,20 @@ pnpm --filter @loom/loom-starter test    # @loom/testing suite (incl. retry proo
 ## Inspect the durable log (after `start`)
 
 ```bash
-loom logs   --db .data/events.db <executionId>       # tail the event timeline
-loom debug  --db .data/events.db <executionId> --at 4 # time-travel to sequence 4
-loom inspect --db .data/events.db <executionId>       # web timeline + slider
+pnpm run ls                  # every execution: status, last activity, what it waits on
+pnpm logs <executionId>      # tail the event timeline
+pnpm run doctor              # pre-flight checks against this app (loom.config.ts)
+```
+
+Use `pnpm run ls` and `pnpm run doctor`: bare `pnpm ls` and `pnpm doctor` are pnpm's own built-in commands, which shadow the scripts. The scripts wrap
+`loom ls|logs --db .data/events.db` and `loom doctor --config ./loom.config.ts`, which loads
+`loom.config.ts` (the composed app from `src/config.ts`) without starting the flow. The raw CLI
+also works:
+
+```bash
+loom logs    --db .data/events.db <executionId>        # tail the event timeline
+loom debug   --db .data/events.db <executionId> --at 4 # time-travel to sequence 4
+loom inspect --db .data/events.db                      # web timeline + slider
 ```
 
 ## CI gates
