@@ -28,9 +28,21 @@ pnpm --filter @loom/loom-starter test    # @loom/testing suite (incl. retry proo
 ## Inspect the durable log (after `start`)
 
 ```bash
-loom logs   --db .data/events.db <executionId>       # tail the event timeline
-loom debug  --db .data/events.db <executionId> --at 4 # time-travel to sequence 4
-loom inspect --db .data/events.db <executionId>       # web timeline + slider
+pnpm runs                    # every execution: status, last activity, what it waits on
+pnpm logs <executionId>      # tail the event timeline
+pnpm health                  # pre-flight checks against this app (loom.config.ts)
+```
+
+The scripts wrap `loom ls|logs --db .data/events.db` and `loom doctor --config ./loom.config.ts`
+(named `runs` / `health` because `pnpm ls` and `pnpm doctor` are pnpm's own commands).
+`loom.config.ts` default-exports the app composed by `src/config.ts`; the CLI loads it without
+starting the flow. It is outside `tsconfig.json`'s `include`, so `pnpm build` does not typecheck
+it. The raw CLI also works:
+
+```bash
+loom logs    --db .data/events.db <executionId>        # tail the event timeline
+loom debug   --db .data/events.db <executionId> --at 4 # time-travel to sequence 4
+loom inspect --db .data/events.db                      # web timeline + slider
 ```
 
 ## CI gates

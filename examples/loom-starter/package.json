@@ -9,6 +9,9 @@
     "start": "tsx src/main.ts",
     "record:golden": "tsx src/record-golden.ts",
     "eval": "loom eval --dir evals",
+    "runs": "loom ls --db .data/events.db",
+    "logs": "loom logs --db .data/events.db",
+    "health": "loom doctor --config ./loom.config.ts",
     "deploy:check": "loom deploy check --logs .data/logs --config dist/src/deploy.config.js",
     "test": "vitest run",
     "clean": "rm -rf dist .data tsconfig.tsbuildinfo"
