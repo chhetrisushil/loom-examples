@@ -25,6 +25,7 @@ import {
 import { boot, review } from "../src/world";
 
 // defineConfig installs process-wide agent-loop defaults (observability.onWarn); leave none behind.
+// `resetAgentLoopDefaults` is @internal and TEST-ONLY (it would clear another app's fail-closed setting).
 afterEach(() => resetAgentLoopDefaults());
 
 describe("1. observability.reasoning and the boot warning (ADR 0133 D7)", () => {
@@ -69,6 +70,14 @@ describe("2. capture: refs and signatures in the value, text only in the sidecar
     // NEGATIVE proof: search the serialized log for every thought.
     expect(logLeaks(run.events)).toEqual([]);
     expect(JSON.stringify(run.events)).toContain(SIGNATURES[0]);
+  });
+
+  it("positive control: logLeaks finds a thought planted into a copy of the serialized log", async () => {
+    const { run } = await runCaptured();
+    expect(logLeaks(run.events)).toEqual([]); // the real log is clean
+    const planted = JSON.parse(JSON.stringify(run.events)) as Array<{ payload: unknown }>;
+    (planted[0] as { payload: unknown }).payload = { leaked: THOUGHTS[0] };
+    expect(logLeaks(planted as never)).toEqual([THOUGHTS[0]]);
   });
 
   it("emits one LLM_REASONING_CAPTURED per model call: refs and digests, never text or signatures", async () => {
@@ -119,7 +128,7 @@ describe("3. audit: readReasoning, erasure, replay", () => {
     expect(parts.map((p) => `${p.kind}/${p.status}`)).toEqual([
       "summary/ok",
       "summary/ok",
-      "redacted/ok",
+      "redacted/redacted", // withheld by the vendor: opaque, no text, and NOT reported as ok
       "summary/ok",
     ]);
     const first = parts[0]?.text;
@@ -137,7 +146,7 @@ describe("3. audit: readReasoning, erasure, replay", () => {
     expect(steps.flatMap((s) => s.attempts.flatMap((a) => a.parts.map((p) => p.status)))).toEqual([
       "erased",
       "erased",
-      "ok", // the redacted block has no text to erase
+      "redacted", // the redacted block has no text to erase and stays redacted
       "erased",
     ]);
     expect(textsOf(steps)).toEqual([]);
