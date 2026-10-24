@@ -1,5 +1,7 @@
 # loom-examples
 
+> **Disclaimer:** The idea behind loom-examples is mine (Sushil Chhetri), but the codebase is vibe coded using Claude ([Claude Code](https://claude.com/claude-code)).
+
 Runnable examples for the [Loom](../loom) framework — one package per
 `examples/<name>`, each demonstrating a usage pattern. Extracted from the main
 `loom` repo to keep the framework/kernel repo lean; the catalogue of what each
