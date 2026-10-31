@@ -51,6 +51,11 @@ serveHandles(exp, requests, { contentRefArgs: table,
   live only in its snapshot) or an external root out of the scan and every blob only it cites is an orphan, and
   is erased. Pass them all (`eventStores`, `snapshotStores`, `roots`), and run with `dryRun: true` first
   (`main.ts` does) to see what would go. The multi-store test pins the footgun.
+- **Compacted logs need their archive in the scan** (loom ADR 0138). Compaction MOVES the removed events into a
+  compaction archive, which is then the only place that cites the blobs they named, so an erasing pass over a
+  compacted log must also pass `archiveStores: [theCompactionArchive]` (the sealing store when encrypted) or it
+  refuses (`ArchiveStoresRequiredError`); `acknowledgeUnarchivedLogs: true` accepts logs whose history is already gone.
+  This example never compacts, so `src/gc.ts` passes neither; a host that compacts must.
 - **The erasing sweep is only safe if every citation is also a TOUCH** (loom ADR 0055 D6 amendment 2). A ref that
   reaches a log or snapshot without a `put` (a fork copies one, a snapshot carries one) is invisible to the
   sweep's conditional delete, so loom refuses to erase unless you satisfy its guards, and this example satisfies
