@@ -108,7 +108,11 @@ describe("a2ui-callfunction example", () => {
       eventType: "A2UIFunctionResult",
       payload: { result: { locale: "en-GB" } },
     });
-    await confirmStarted; // confirm-submit is now `running`, its client call hung
+    await confirmStarted; // confirm-submit is `running`
+    // STEP_STARTED is durable BEFORE an idempotent:false effect dispatches (loom 8e33986e), so it
+    // is no proof the client ran: wait on the condition itself (the call that then hangs).
+    const deadline = Date.now() + 15_000;
+    while (callsA < 1 && Date.now() < deadline) await new Promise((r) => setTimeout(r, 10));
     unsubA?.(); // done observing — drop the subscriber
     expect(callsA).toBe(1);
 

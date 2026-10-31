@@ -245,7 +245,9 @@ export function createHydrator(serverUrl: string): Hydrator {
 
   return {
     async buildPlan() {
-      const tools = await client.listTools();
+      // anyToolName: the dotted `db.*` names are fixed by the telemetry server, and this listing is
+      // pinned into a plan — it never reaches a model.
+      const tools = await client.listTools({ anyToolName: true });
       const byName = new Map(tools.map((t) => [t.definition.id, t]));
       const nodes: HydrationNode[] = [];
       for (const [projectionId, toolName] of Object.entries(PROJECTION_TOOLS)) {

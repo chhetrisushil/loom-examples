@@ -116,7 +116,10 @@ describe("the app is a real MCP App", () => {
     h = await harness();
     expect((await h.asModel.listTools()).map((t) => t.definition.id)).toEqual(["approve"]);
     // The cursor is the View's refresh channel, not a capability the model reasons about.
-    expect((await h.asApp.listTools()).map((t) => t.definition.id)).toContain("loom.surface.since");
+    // anyToolName: the View-facing listing never reaches a model, so the dotted name is fine.
+    expect((await h.asApp.listTools({ anyToolName: true })).map((t) => t.definition.id)).toContain(
+      "loom.surface.since"
+    );
   });
 
   it("hides the app-only cursor from the model entirely", async () => {
