@@ -177,8 +177,10 @@ describe("writeBack memory", () => {
   it("ticket 1001's answer is stored TAINTED (it saw a tool error) and ticket 1002 gets it fenced", async () => {
     const entries = await acts.backend.memory.recall("working", MEMORY_SCOPE);
     const answers = entries.filter((e) => e.role === "assistant");
-    // Ticket 1001's answer is tainted; ticket 1002 saw no tool, so its own answer is not.
-    expect(answers.map((e) => isTainted(e.content))).toEqual([true, false]);
+    // Ticket 1001's answer is tainted (it saw a tool error). Ticket 1002 saw no tool, but it
+    // RECALLED 1001's tainted answer, so its own answer is tainted too: taint follows recall
+    // (loom ADR 0085 amendment, #735), so a poisoned memory cannot launder itself in one hop.
+    expect(answers.map((e) => isTainted(e.content))).toEqual([true, true]);
 
     // What ticket 1002's model was actually shown: the recall sits inside the untrusted fence,
     // in a `user` message, and is not in any instruction position (system or assistant).
