@@ -232,7 +232,8 @@ export class BranchOrchestrator {
   ): Promise<ExecutionState> {
     if (this.deps.dispatcher === undefined) {
       const resumed = await this.deps.runtime.resume(executionId, resumeEvent);
-      // waitForSuspend resolves for a parked branch; waitForCompletion never would.
+      // A parked branch resolves waitForSuspend; a finished one resolves waitForCompletion first
+      // (waitForSuspend then rejects, after the race is decided).
       return await Promise.race([resumed.waitForSuspend(), resumed.waitForCompletion()]);
     }
     const result = await this.deps.dispatcher.dispatch(

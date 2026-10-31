@@ -54,10 +54,14 @@ export function App() {
     setExecutionId(handle.executionId);
     addLog(`Execution started: ${handle.executionId}`);
 
-    handle.waitForSuspend().then(() => {
-      setPhase("suspended");
-      addLog("Workflow suspended — awaiting approval");
-    });
+    // A run that ends without parking rejects waitForSuspend (ExecutionTerminatedError).
+    handle.waitForSuspend().then(
+      () => {
+        setPhase("suspended");
+        addLog("Workflow suspended — awaiting approval");
+      },
+      () => {}
+    );
   }, [intent, intentText, addLog]);
 
   const approve = useCallback(async () => {
