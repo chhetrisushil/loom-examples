@@ -108,7 +108,7 @@ export async function startHost(options: HostOptions): Promise<McpAppHost> {
 
     if (msg.method === "tools/call") {
       const params = (msg.params ?? {}) as { name?: string; arguments?: unknown };
-      if (params.name === "loom.surface.since") polls += 1;
+      if (params.name === "loom_surface_since") polls += 1;
       try {
         // A real host proxies the View's tool call to the server unchanged. The
         // SERVER decides whether an app may call this tool at all.

@@ -53,9 +53,8 @@ async function main(): Promise<void> {
   console.log(
     `   model sees: ${(await asModel.listTools()).map((t) => t.definition.id).join(", ")}`
   );
-  // anyToolName: the app's listing is printed, never sent to a model (it carries `loom.surface.since`).
   console.log(
-    `   app   sees: ${(await asApp.listTools({ anyToolName: true })).map((t) => t.definition.id).join(", ")}\n`
+    `   app   sees: ${(await asApp.listTools()).map((t) => t.definition.id).join(", ")}\n`
   );
 
   // ── 3. The host fetches the app and renders it ─────────────────────────────
@@ -75,7 +74,7 @@ async function main(): Promise<void> {
 
   // First paint: the host hands the View the tool result, exactly as it would
   // after the tool that opened this app completed.
-  const first = await asApp.callToolResult("loom.surface.since", { executionId });
+  const first = await asApp.callToolResult("loom_surface_since", { executionId });
   host.deliverToolResult(first);
   await host.waitForPolls(1);
   console.log("── 4. View rendered (real template, in a DOM) ───────────────────");

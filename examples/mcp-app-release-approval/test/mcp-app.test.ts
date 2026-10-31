@@ -62,7 +62,7 @@ async function harness(opts: { userGrant?: string } = {}): Promise<Harness> {
     template: resource?.text ?? "",
     ...(opts.userGrant !== undefined && { userGrant: opts.userGrant }),
   });
-  host.deliverToolResult(await asApp.callToolResult("loom.surface.since", { executionId }));
+  host.deliverToolResult(await asApp.callToolResult("loom_surface_since", { executionId }));
   await host.waitForPolls(1);
 
   return {
@@ -116,9 +116,8 @@ describe("the app is a real MCP App", () => {
     h = await harness();
     expect((await h.asModel.listTools()).map((t) => t.definition.id)).toEqual(["approve"]);
     // The cursor is the View's refresh channel, not a capability the model reasons about.
-    // anyToolName: the View-facing listing never reaches a model, so the dotted name is fine.
-    expect((await h.asApp.listTools({ anyToolName: true })).map((t) => t.definition.id)).toContain(
-      "loom.surface.since"
+    expect((await h.asApp.listTools()).map((t) => t.definition.id)).toContain(
+      "loom_surface_since"
     );
   });
 
@@ -126,7 +125,7 @@ describe("the app is a real MCP App", () => {
     h = await harness();
     // Reported as unknown rather than forbidden — a refusal would confirm it exists.
     await expect(
-      h.asModel.callTool("loom.surface.since", { executionId: h.executionId })
+      h.asModel.callTool("loom_surface_since", { executionId: h.executionId })
     ).rejects.toThrow(/unknown tool/);
   });
 });
@@ -229,7 +228,7 @@ describe("the journaled/ambient boundary at the surface", () => {
     h = await harness();
     // Same wording as an absent surface — a distinct refusal would confirm the id.
     await expect(
-      h.asApp.callTool("loom.surface.since", { executionId: "someone-elses" })
+      h.asApp.callTool("loom_surface_since", { executionId: "someone-elses" })
     ).rejects.toThrow(/no surface for execution/);
   });
 });

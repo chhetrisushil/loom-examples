@@ -19,7 +19,7 @@ published template** — fetched from `ui://loom/surface-host` and executed in a
 ── 1. Flow suspended at the approval gate ───────────────────────
 ── 2. Audience-scoped tool lists ────────────────────────────────
    model sees: approve
-   app   sees: loom.surface.since, approve
+   app   sees: loom_surface_since, approve
 
 ── 3. Host fetched the app ──────────────────────────────────────
    ui://loom/surface-host  text/html;profile=mcp-app
@@ -73,7 +73,7 @@ entire value of the pin — and it only holds because egress and ingress hash th
 ### There is no server push
 
 The extension has no server→View channel after `ui/notifications/tool-result`. The View
-therefore polls `loom.surface.since`, an **`ambient`** (never journaled) **app-only** (never
+therefore polls `loom_surface_since`, an **`ambient`** (never journaled) **app-only** (never
 shown to the model) cursor tool. Step 7 is that poll: the stale View recovers by itself.
 
 This is polling, and it is worse than SSE. That is the extension's limitation, contained behind
