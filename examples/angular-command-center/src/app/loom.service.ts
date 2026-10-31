@@ -146,9 +146,11 @@ export class LoomService {
 
       this.zone.run(() => this.executionId.set(handle.executionId));
 
-      handle.waitForSuspend().then(() => {
-        this.zone.run(() => this.phase.set("suspended"));
-      });
+      // A run that ends without parking rejects waitForSuspend; waitForCompletion reports it.
+      handle.waitForSuspend().then(
+        () => this.zone.run(() => this.phase.set("suspended")),
+        () => {}
+      );
 
       handle.waitForCompletion().then((state) => {
         this.zone.run(() => {
