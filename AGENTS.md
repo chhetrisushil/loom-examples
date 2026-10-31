@@ -77,6 +77,21 @@ copy — two Reacts, null dispatcher. Fix (see
 specifier to the copy **renderer-react already uses** (resolved from the linked
 package), so the whole test shares one React.
 
+## Gotcha: two things that change when you copy an example onto durable storage
+
+These examples run on in-memory stores, so neither bites here; both do the moment you swap in a
+SQLite/Postgres or other durable custom store:
+
+- **Compaction and the inbox need an archive** (loom ADR 0138/0139). `lifecycle.compact` MOVES the
+  events it removes into an `ArchiveStore` and refuses without one (`CompactionArchiveRequiredError`);
+  with `kernel.features.inbox` on, a non-in-memory custom store without `storage.archiveStore` makes
+  `defineConfig` throw `InboxArchiveRequiredError` unless `kernel.inbox.archive` is `"none"`.
+  `sqliteStorage()` / `postgresStorage()` supply one. An erasing content sweep over compacted logs
+  likewise needs `archiveStores` (or `acknowledgeUnarchivedLogs: true`), see `media-gallery`.
+- **`handle.waitForSuspend()` rejects with `ExecutionTerminatedError` when the run ends without
+  parking** (loom ADR 0135), instead of hanging. A flow that may finish or park should race it with
+  `waitForCompletion()`, as `schema-migration-planner`'s `BranchOrchestrator` does.
+
 ## Convention: every `ctx.suspend` gate declares its resume contract
 
 Any flow with a `ctx.suspend({ on })` gate MUST declare that gate's payload shape in
