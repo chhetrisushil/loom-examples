@@ -6,12 +6,12 @@ import { describe, expect, it } from "vitest";
 // ── The example's OWN browser file is browser-safe ───────────────────────────────
 // `src/client.ts` (this example's "the browser side") imports ONLY from
 // `@loom-ui/hydration/client` — never the root `@loom-ui/hydration` entry, which pulls in loom's
-// sandbox (QuickJS WASM) and MCP plugin to execute providers. This bundles the BUILT
-// `dist/client.js` the way a real bundler would (esbuild, platform browser, resolved under the
+// sandbox (QuickJS WASM) and MCP plugin to execute providers. This bundles the SOURCE
+// `src/client.ts` (no prior `tsc --build` needed) the way a real bundler would (esbuild, platform browser, resolved under the
 // browser/import conditions — same method as `@loom-ui/hydration`'s own `clientEntry.test.ts`) and
 // asserts the bundle carries no `.wasm`, no node builtin, and none of the server-only packages.
 
-const DIST = resolve(__dirname, "../dist/src");
+const SRC = resolve(__dirname, "../src");
 
 const FORBIDDEN_PACKAGES = ["@loom/plugin-sandbox", "@loom/plugin-mcp", "@loom/effect-runtime"];
 
@@ -26,7 +26,7 @@ const FORBIDDEN_DIRS = FORBIDDEN_PACKAGES.flatMap((name) => {
 describe("split-hydration's client.ts is browser-safe", () => {
   it("bundles for the browser with no server-plane input", async () => {
     const out = await build({
-      entryPoints: [resolve(DIST, "client.js")],
+      entryPoints: [resolve(SRC, "client.ts")],
       bundle: true,
       minify: false,
       platform: "browser",
@@ -68,7 +68,7 @@ describe("split-hydration's client.ts is browser-safe", () => {
 
   it("the walk is live: the SERVER file does reach the server plane", async () => {
     const out = await build({
-      entryPoints: [resolve(DIST, "server.js")],
+      entryPoints: [resolve(SRC, "server.ts")],
       bundle: true,
       minify: false,
       platform: "node",

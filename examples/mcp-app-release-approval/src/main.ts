@@ -53,8 +53,9 @@ async function main(): Promise<void> {
   console.log(
     `   model sees: ${(await asModel.listTools()).map((t) => t.definition.id).join(", ")}`
   );
+  // anyToolName: the app's listing is printed, never sent to a model (it carries `loom.surface.since`).
   console.log(
-    `   app   sees: ${(await asApp.listTools()).map((t) => t.definition.id).join(", ")}\n`
+    `   app   sees: ${(await asApp.listTools({ anyToolName: true })).map((t) => t.definition.id).join(", ")}\n`
   );
 
   // ── 3. The host fetches the app and renders it ─────────────────────────────
