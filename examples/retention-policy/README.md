@@ -40,37 +40,43 @@ re-validates what it receives, so a literal that skipped `retentionPolicy()` is 
 
 ## What each step shows
 
+The numbers match the sections `pnpm start` prints.
+
 1. **The value** - frozen, three rules, kept out of `defineConfig`.
-2. **Dry run, then apply** - `lifecycle.evaluate(id, retention, now)` returns a `RetentionVerdict` per
+2. **The timeline** - seven executions across 95 simulated days (see above), with each one's status.
+3. **Retention dry run** - `lifecycle.evaluate(id, retention, now)` returns a `RetentionVerdict` per
    execution (`reclaimable` / `kept` / `pinned` / `not-terminal`, ...: every apply outcome except
-   `reclaimed`, plus its preview `reclaimable`) and changes nothing; `applyRetention` then
-   copies `early` and `ledger` to the archive and only then deletes them from the live store.
-3. **Snapshot pruning** - `pruneSnapshots(id, { policy: retention })` takes `keepLatest` from the
+   `reclaimed`, plus its preview `reclaimable`) and changes nothing. **The opt-in point:** with no
+   policy, the explicit number is the old path and gives the identical answer -
+   `evaluate(id, { terminalTtlMs })` (and, for the sweep, `sweepUnpinnedContent({ olderThanMs })`).
+4. **Snapshot pruning** - `pruneSnapshots(id, { policy: retention })` takes `keepLatest` from the
    policy (an explicit `keepLatest` wins). There is deliberately no age clock on snapshots. The example
    lists a run's snapshots with `SnapshotStore.listSequences` (SPI 1.3.0) and previews the prune with
    `pruneSnapshots(id, { policy, dryRun: true })`: the preview count equals what the real call deletes. A
    store without `listSequences` refuses the preview (`SnapshotListingUnsupportedError`) rather than guess.
-4. **The end clock (ADR 0146)** - `sweepUnpinnedContent({ policy: retention, now, dryRun: true })` at day
-   100: `longrun`'s blob was cited on day 0 and would be 100 days old on the citation clock, but its run
+5. **Retention apply** - `applyRetention` copies `early` and `ledger` to the archive and only then
+   deletes them from the live store.
+6. **The content sweep at day 100 (ADR 0146)** - `sweepUnpinnedContent({ policy: retention, now, dryRun: true })`:
+   `longrun`'s blob was cited on day 0 and would be 100 days old on the citation clock, but its run
    ended on day 60, so it is 40 days old by the end clock. The dry-run report lists it in `heldByEndClock`
-   (`refsAgedByEnd: 1`) and the blob survives; it becomes reclaimable on day **150** (not 149) - the same
-   day retention makes the `longrun` log eligible. A blob's log and its blob are now eligible together.
-   Non-terminal executions (`parked`, the re-opened one) keep the citation clock so a perpetual
-   sentinel's telemetry still ages. Retained and pinned blobs are never TTL-reclaimed.
-   The dry run's report also says what it will do to the re-opened run: `refsOfReopened: 1` and
-   `reclaimedWhileReopened: [its blob]` - that blob is erased on the citation clock while the run's log is
-   kept (the ADR 0146 exception). `refsPinned` is 1 and `refsLoadBearing` is 2: the retained `ledger` blob,
-   plus the `finding` run's evidence, which its `FindingRecorded` event records as a BARE content ref
-   (load-bearing under ADR 0055 D4); that evidence is also pinned, so the two counts overlap.
-5. **Two clocks in a sweep** - `now` is the LOG's clock, the content store stamps touches with ITS clock
+   (`refsAgedByEnd: 1`) and the blob survives. Non-terminal executions (`parked`, the re-opened one) keep
+   the citation clock so a perpetual sentinel's telemetry still ages. Retained and pinned blobs are never
+   TTL-reclaimed. The dry run's report also says what it will do to the re-opened run:
+   `refsOfReopened: 1` and `reclaimedWhileReopened: [its blob]` - that blob is erased on the citation
+   clock while the run's log is kept (the ADR 0146 exception). `refsPinned` is 1 and `refsLoadBearing` is
+   2: the retained `ledger` blob, plus the `finding` run's evidence, which its `FindingRecorded` event
+   records as a BARE content ref (load-bearing under ADR 0055 D4); that evidence is also pinned, so the
+   two counts overlap.
+7. **Day 150** - `longrun`'s blob becomes reclaimable on day **150** (not 149), 90 days past its run's
+   END - the same day retention makes the `longrun` log eligible, so a log and its blob become eligible
+   together.
+8. **Two clocks in a sweep** - `now` is the LOG's clock, the content store stamps touches with ITS clock
    (loom `docs/usage-cli.md`, "Clocks in a sweep"). Negative control: a store whose clock runs far ahead
    of the simulated log clock makes the dry run list `early` and `reopened`, yet the apply reclaims `[]`
    and reports `keptByTouch: 2` (and `touchCutoff`, on the store's clock). With the store sharing the
    `SimClock` the same sweep reclaims both and `keptByTouch` is 0.
-6. **A rejected policy** - `content.unpinnedAfterMs < terminalTtlMs`, an unknown key, `keepLatest: 0`
+9. **A rejected policy** - `content.unpinnedAfterMs < terminalTtlMs`, an unknown key, `keepLatest: 0`
    all throw `RetentionPolicyError` (a `RangeError`) at construction.
-7. **The opt-in point** - with no policy, the explicit numbers are the old path and give identical
-   answers: `evaluate(id, { terminalTtlMs })` and `sweepUnpinnedContent({ olderThanMs })`.
 
 ## The CLI form
 
