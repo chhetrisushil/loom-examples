@@ -9,7 +9,6 @@ import { join } from "node:path";
 import { flow$, step$ } from "@loom/core";
 import { EffectRuntime, ToolEffect } from "@loom/effect-runtime";
 import { claimCheckMiddleware } from "@loom/middleware";
-import { pinByEventKinds } from "@loom/plugin-content";
 import { SqliteContentStore, SqliteEventStore, SqliteSnapshotStore } from "@loom/plugin-sqlite";
 import type { FlowRunner, RegisteredFlow } from "@loom/workflow-runtime";
 import { LogLifecycle, WorkflowRuntime } from "@loom/workflow-runtime";
@@ -22,8 +21,8 @@ export { DAY };
 export const FINDING_RECORDED = "FindingRecorded";
 
 /**
- * The app's pinned event kinds, stated ONCE. They are handed to `LogLifecycle` (`pinnedEventTypes`,
- * and `pinByEventKinds` for the retention predicate); the content sweep then reads them back from
+ * The app's pinned event kinds, stated ONCE. They are handed to `LogLifecycle` (`pinnedEventTypes`
+ * with `pinByEventTypes: true`, which also pins for retention); the content sweep then reads them back from
  * `lifecycle.pinnedEventTypes` (see passes.ts), so the two cannot drift.
  */
 export const PINNED_KINDS: readonly string[] = [FINDING_RECORDED];
@@ -195,13 +194,14 @@ export function newWorld(options: WorldOptions = {}): World {
   runtime.registerFlow(reportFlow.definition, reportFlow.runner);
   runtime.registerFlow(reviewedFlow.definition, reviewedFlow.runner);
 
-  // `pinned` is how a retention pass learns an execution holds the only copy of a conclusion. It is a
-  // predicate, so it is a LogLifecycle option and not part of the (numbers-only) policy value.
-  // `pinnedEventTypes` names the same kinds; `lifecycle.pinnedEventTypes` hands them to the sweep.
+  // Pins are LogLifecycle options, not part of the (numbers-only) policy value. The kinds are
+  // declared ONCE: `pinnedEventTypes` keeps them through compaction, `pinByEventTypes: true` makes
+  // retention pin every run that holds one (no second `pinByEventKinds` list, no extra read), and
+  // `lifecycle.pinnedEventTypes` hands the same list to the sweep.
   const lifecycle = new LogLifecycle(eventStore, snapshotStore, {
     archive,
     pinnedEventTypes: PINNED_KINDS,
-    pinned: pinByEventKinds(eventStore, PINNED_KINDS),
+    pinByEventTypes: true,
   });
 
   return {
