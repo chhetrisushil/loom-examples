@@ -56,6 +56,7 @@ pnpm --filter @loom/db-observability start   # run one end-to-end
 | `db-command-center` (+ `-server`, `-wc`) | intent → planner → A2A agentic app + UI surfaces |
 | `cloud-command-center` | Command-center with the `@loom/compiler` `loomPlugin()` |
 | `db-sentinel` | Perpetual-agent / sentinel pattern, plus a runbook corpus that is EDITED mid-year: guidance retrieved and recorded per wake, a revision that supersedes the old procedure, and a month-3 finding that replays to month-3's advice after the corpus is emptied |
+| `retention-policy` | An app-owned retention policy (`retentionPolicy`, kept out of `defineConfig`) driving the three passes over SQLite stores on a simulated clock: `LogLifecycle.evaluate`/`applyRetention` (dry run, archive-first apply; `pinned` / `not-terminal` / re-opened executions kept), `pruneSnapshots({ policy })`, and `sweepUnpinnedContent({ policy })` where a blob cited on day 0 by a run that ended on day 60 is held by the end clock (`heldByEndClock`) until day 150 while retained blobs are never TTL-reclaimed; a `content.unpinnedAfterMs < terminalTtlMs` policy throws `RetentionPolicyError`; `olderThanMs` / bare `terminalTtlMs` give the same answers with no policy (loom ADR 0145/0146) |
 | `child-orchestration` | Parent/child executions — `spawn` + durable await, built from `ctx.decide` + `ctx.suspend`; waits on the log via `@loom/live-query` rather than polling for a terminal state |
 | `a2a-mesh`, `agent-network` | Agent-to-agent mesh / networking |
 | `a2ui-dashboard`, `angular-command-center` | UI / renderer surface variants |
