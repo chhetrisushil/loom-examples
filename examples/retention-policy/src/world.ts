@@ -21,6 +21,13 @@ export { DAY };
 /** The app's pinned domain event kind: an execution that recorded one is never reclaimed. */
 export const FINDING_RECORDED = "FindingRecorded";
 
+/**
+ * The app's pinned event kinds, stated ONCE. They are handed to `LogLifecycle` (`pinnedEventTypes`,
+ * and `pinByEventKinds` for the retention predicate); the content sweep then reads them back from
+ * `lifecycle.pinnedEventTypes` (see passes.ts), so the two cannot drift.
+ */
+export const PINNED_KINDS: readonly string[] = [FINDING_RECORDED];
+
 /** A tool whose result is disposable telemetry (the default claim-check envelope: RECLAIMABLE). */
 export const TELEMETRY_TOOL = "metrics.read";
 /** A tool whose result is load-bearing data: `retain: true` envelope, never TTL-reclaimed. */
@@ -96,9 +103,12 @@ export const reportFlow = {
 
 /**
  * The same flow after a deploy that added a review stage. `resumeAs` (loom ADR 0104) re-opens an
- * execution that already ENDED on the old code and migrates it here: the old log replays, the resume
- * event answers the first new gate, and the run parks on the second. That is how a terminal
- * execution comes back to life, and why retention must not treat "has a terminal event" as "is over".
+ * execution that already ENDED on the old code and migrates it here: the old log replays (it already
+ * answers the original `Continue` gate), so the run parks at the FIRST gate the old log has no answer
+ * for. That is the one new `Review` gate below. The `Reopen` resume event answers NO gate; it is only
+ * a plain log entry. This is how a terminal execution comes back to life, and why retention must not
+ * treat "has a terminal event" as "is over". Recipe: loom docs/usage.md, "Re-open a finished
+ * execution and leave it parked: `resumeAs`".
  */
 export const reviewedFlow = {
   definition: flow$({
@@ -112,7 +122,6 @@ export const reviewedFlow = {
   }),
   runner: (async (ctx, input) => {
     const out = await runner(ctx, input);
-    await ctx.suspend<z.infer<typeof Continue>>({ on: "Reopen" });
     await ctx.suspend<z.infer<typeof Continue>>({ on: "Review" });
     return out;
   }) as FlowRunner<RunInput, { label: string }>,
@@ -130,21 +139,31 @@ export interface World {
   lifecycle: LogLifecycle;
   /** Start a run on the current simulated day. */
   run(executionId: string, input: Partial<RunInput> & { label: string }): Promise<void>;
-  /** Re-open an ENDED run on the reviewed flow (ADR 0104 `resumeAs`); it parks on the review gate. */
+  /** Re-open an ENDED run on the reviewed flow (ADR 0104 `resumeAs`); it parks on the new `Review` gate. */
   reopen(executionId: string): Promise<void>;
   /** Answer a parked run's gate on the current simulated day; it then finishes. */
   continueRun(executionId: string): Promise<void>;
   close(): Promise<void>;
 }
 
-export function newWorld(): World {
+export interface WorldOptions {
+  /**
+   * The clock the CONTENT STORE stamps touch times with. Default: the simulated log clock (correct).
+   * Pass a different one to reproduce the clock disagreement of loom docs/usage-cli.md, "Clocks in a sweep".
+   */
+  contentClock?: () => number;
+}
+
+export function newWorld(options: WorldOptions = {}): World {
   const dir = mkdtempSync(join(tmpdir(), "loom-retention-policy-"));
   const clock = new SimClock();
   const eventStore = new SqliteEventStore(join(dir, "events.db"));
   const snapshotStore = new SqliteSnapshotStore(join(dir, "snapshots.db"));
   // The content store stamps touch times with the SIMULATED clock: the sweep's race guard compares
   // them with a cutoff on the store's clock, so a wall-clock store would look freshly touched.
-  const contentStore = new SqliteContentStore(join(dir, "content.db"), { now: clock.now });
+  const contentStore = new SqliteContentStore(join(dir, "content.db"), {
+    now: options.contentClock ?? clock.now,
+  });
   const archive = {
     eventStore: new SqliteEventStore(join(dir, "archive-events.db")),
     snapshotStore: new SqliteSnapshotStore(join(dir, "archive-snapshots.db")),
@@ -178,9 +197,11 @@ export function newWorld(): World {
 
   // `pinned` is how a retention pass learns an execution holds the only copy of a conclusion. It is a
   // predicate, so it is a LogLifecycle option and not part of the (numbers-only) policy value.
+  // `pinnedEventTypes` names the same kinds; `lifecycle.pinnedEventTypes` hands them to the sweep.
   const lifecycle = new LogLifecycle(eventStore, snapshotStore, {
     archive,
-    pinned: pinByEventKinds(eventStore, [FINDING_RECORDED]),
+    pinnedEventTypes: PINNED_KINDS,
+    pinned: pinByEventKinds(eventStore, PINNED_KINDS),
   });
 
   return {

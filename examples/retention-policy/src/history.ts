@@ -62,16 +62,10 @@ export async function blobOf(w: World, name: Name): Promise<string> {
   throw new Error(`execution ${id} cited no blob`);
 }
 
-/** Snapshot sequences an execution holds (the store has no list call: probe each log sequence). */
+/** Snapshot sequences an execution holds, ascending: one `listSequences` call (SnapshotStore SPI 1.3.0). */
 export async function snapshotSequences(
-  w: Pick<World, "snapshotStore" | "eventStore">,
+  w: Pick<World, "snapshotStore">,
   name: Name
 ): Promise<number[]> {
-  const id = IDS[name];
-  const tip = (await w.eventStore.read(id)).length;
-  const found: number[] = [];
-  for (let seq = 0; seq <= tip; seq++) {
-    if ((await w.snapshotStore.loadAt(id, seq)) !== null) found.push(seq);
-  }
-  return found;
+  return w.snapshotStore.listSequences(IDS[name]);
 }
