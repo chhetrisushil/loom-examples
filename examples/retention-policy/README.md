@@ -95,7 +95,7 @@ same code on a simulated one.
   { now })`), or the sweep's race guard sees every blob as freshly touched.
 - List the live event store **before** its retention archive in `eventStores`.
 - The pinned kinds are stated once (`PINNED_KINDS` in `src/world.ts`), given to `LogLifecycle`
-  (`pinnedEventTypes`, plus `pinByEventKinds` for the retention predicate), and the sweep reads them back
+  (`pinnedEventTypes` with `pinByEventTypes: true`, which makes retention pin from the same list), and the sweep reads them back
   from `lifecycle.pinnedEventTypes`, so they cannot drift. The policy carries numbers only.
 - `resumeAs` onto a finished run parks it at the FIRST gate the old log has no answer for; the resume
   event answers no gate. `reviewedFlow` adds exactly one new `Review` gate for that
