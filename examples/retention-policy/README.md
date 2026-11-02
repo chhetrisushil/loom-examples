@@ -9,7 +9,7 @@ Offline, SQLite stores in a temp dir, a simulated clock (`SimClock`: whole days;
 
 ```bash
 pnpm --filter @loom/retention-policy start    # the narrated run
-pnpm --filter @loom/retention-policy test     # 20 tests, exact outcomes
+pnpm --filter @loom/retention-policy test     # 26 tests, exact outcomes
 ```
 
 ## The policy (`src/retention.ts`)
@@ -33,7 +33,7 @@ re-validates what it receives, so a literal that skipped `retentionPolicy()` is 
 | `early` | cites a telemetry blob and ends on day 0 | log `reclaimed` (archived), blob erased |
 | `longrun` | cites a blob on day 0, parks, **ends on day 60** | log `kept`; blob **held by the end clock** until day 150 |
 | `finding` | records a `FindingRecorded` event (the app's pinned kind) | log `pinned`, evidence never erased |
-| `reopened` | ends on day 70, **re-opened on day 80** (`resumeAs`), parked again | `not-terminal`; keeps the citation clock |
+| `reopened` | ends on day 70, **re-opened on day 80** (`resumeAs`), parked on the new `Review` gate | `not-terminal`; keeps the citation clock |
 | `ledger` | reads a **retained** (`retain: true`) blob, ends day 2 | log `reclaimed`; blob never TTL-reclaimed |
 | `parked` | starts on day 40, never finishes | `not-terminal` |
 | `recent` | ends on day 95 | `kept` |
@@ -41,11 +41,15 @@ re-validates what it receives, so a literal that skipped `retentionPolicy()` is 
 ## What each step shows
 
 1. **The value** - frozen, three rules, kept out of `defineConfig`.
-2. **Dry run, then apply** - `lifecycle.evaluate(id, retention, now)` names each outcome
-   (`reclaimable` / `kept` / `pinned` / `not-terminal`) and changes nothing; `applyRetention` then
+2. **Dry run, then apply** - `lifecycle.evaluate(id, retention, now)` returns a `RetentionVerdict` per
+   execution (`reclaimable` / `kept` / `pinned` / `not-terminal`, ...: every apply outcome except
+   `reclaimed`, plus its preview `reclaimable`) and changes nothing; `applyRetention` then
    copies `early` and `ledger` to the archive and only then deletes them from the live store.
 3. **Snapshot pruning** - `pruneSnapshots(id, { policy: retention })` takes `keepLatest` from the
-   policy (an explicit `keepLatest` wins). There is deliberately no age clock on snapshots.
+   policy (an explicit `keepLatest` wins). There is deliberately no age clock on snapshots. The example
+   lists a run's snapshots with `SnapshotStore.listSequences` (SPI 1.3.0) and previews the prune with
+   `pruneSnapshots(id, { policy, dryRun: true })`: the preview count equals what the real call deletes. A
+   store without `listSequences` refuses the preview (`SnapshotListingUnsupportedError`) rather than guess.
 4. **The end clock (ADR 0146)** - `sweepUnpinnedContent({ policy: retention, now, dryRun: true })` at day
    100: `longrun`'s blob was cited on day 0 and would be 100 days old on the citation clock, but its run
    ended on day 60, so it is 40 days old by the end clock. The dry-run report lists it in `heldByEndClock`
@@ -53,9 +57,19 @@ re-validates what it receives, so a literal that skipped `retentionPolicy()` is 
    day retention makes the `longrun` log eligible. A blob's log and its blob are now eligible together.
    Non-terminal executions (`parked`, the re-opened one) keep the citation clock so a perpetual
    sentinel's telemetry still ages. Retained and pinned blobs are never TTL-reclaimed.
-5. **A rejected policy** - `content.unpinnedAfterMs < terminalTtlMs`, an unknown key, `keepLatest: 0`
+   The dry run's report also says what it will do to the re-opened run: `refsOfReopened: 1` and
+   `reclaimedWhileReopened: [its blob]` - that blob is erased on the citation clock while the run's log is
+   kept (the ADR 0146 exception). `refsPinned` is 1 and `refsLoadBearing` is 2: the retained `ledger` blob,
+   plus the `finding` run's evidence, which its `FindingRecorded` event records as a BARE content ref
+   (load-bearing under ADR 0055 D4); that evidence is also pinned, so the two counts overlap.
+5. **Two clocks in a sweep** - `now` is the LOG's clock, the content store stamps touches with ITS clock
+   (loom `docs/usage-cli.md`, "Clocks in a sweep"). Negative control: a store whose clock runs far ahead
+   of the simulated log clock makes the dry run list `early` and `reopened`, yet the apply reclaims `[]`
+   and reports `keptByTouch: 2` (and `touchCutoff`, on the store's clock). With the store sharing the
+   `SimClock` the same sweep reclaims both and `keptByTouch` is 0.
+6. **A rejected policy** - `content.unpinnedAfterMs < terminalTtlMs`, an unknown key, `keepLatest: 0`
    all throw `RetentionPolicyError` (a `RangeError`) at construction.
-6. **The opt-in point** - with no policy, the explicit numbers are the old path and give identical
+7. **The opt-in point** - with no policy, the explicit numbers are the old path and give identical
    answers: `evaluate(id, { terminalTtlMs })` and `sweepUnpinnedContent({ olderThanMs })`.
 
 ## The CLI form
@@ -80,6 +94,9 @@ same code on a simulated one.
 - The content store must stamp touch times with the **simulated** clock (`new SqliteContentStore(path,
   { now })`), or the sweep's race guard sees every blob as freshly touched.
 - List the live event store **before** its retention archive in `eventStores`.
-- `LogLifecycle`'s `pinned` predicate and the sweep's `pinnedEventTypes` both name the app's pinned kind;
-  the policy carries numbers only, so the kind is stated in both places.
-- Snapshot stores have no list call; `snapshotSequences` probes `loadAt` per log sequence.
+- The pinned kinds are stated once (`PINNED_KINDS` in `src/world.ts`), given to `LogLifecycle`
+  (`pinnedEventTypes`, plus `pinByEventKinds` for the retention predicate), and the sweep reads them back
+  from `lifecycle.pinnedEventTypes`, so they cannot drift. The policy carries numbers only.
+- `resumeAs` onto a finished run parks it at the FIRST gate the old log has no answer for; the resume
+  event answers no gate. `reviewedFlow` adds exactly one new `Review` gate for that
+  (loom `docs/usage.md`, "Re-open a finished execution and leave it parked: `resumeAs`").

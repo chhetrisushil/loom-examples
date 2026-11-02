@@ -1,12 +1,11 @@
 import { type ContentSweepReport, sweepUnpinnedContent } from "@loom/plugin-content";
 // The three retention passes, each taking the app's policy VALUE. These are thin on purpose: the
 // point of ADR 0145 is that the numbers live in `retention.ts`, and every pass just receives them.
-import type { RetentionOutcome } from "@loom/workflow-runtime";
-import type { RetentionPolicy } from "@loom/workflow-runtime";
+import type { RetentionOutcome, RetentionPolicy, RetentionVerdict } from "@loom/workflow-runtime";
 import { IDS, NAMES, type Name } from "./history";
-import { FINDING_RECORDED, type World } from "./world";
+import type { World } from "./world";
 
-export type Outcomes = Record<Name, RetentionOutcome | "reclaimable">;
+export type Outcomes = Record<Name, RetentionVerdict>;
 
 /** Dry run: what would `applyRetention` do to each execution at `now`? Nothing is touched. */
 export async function evaluateAll(
@@ -32,7 +31,7 @@ export async function applyAll(
 
 /**
  * The content sweep. Live store BEFORE its archive (retention moves a log between them), pinned kinds
- * named, and either the policy OR an explicit `olderThanMs` - exactly one of the two.
+ * read from the lifecycle (`lifecycle.pinnedEventTypes`, so they cannot drift from what retention pins), and either the policy OR an explicit `olderThanMs` - exactly one of the two.
  */
 export function sweep(
   w: World,
@@ -45,7 +44,7 @@ export function sweep(
   return sweepUnpinnedContent({
     eventStores: [w.eventStore, w.archive.eventStore],
     contentStore: w.contentStore,
-    pinnedEventTypes: [FINDING_RECORDED],
+    pinnedEventTypes: w.lifecycle.pinnedEventTypes,
     ...how,
     now,
     dryRun,

@@ -1,10 +1,16 @@
 import { sweepUnpinnedContent } from "@loom/plugin-content";
-import { RetentionPolicyError, retentionPolicy } from "@loom/workflow-runtime";
+import {
+  LogLifecycle,
+  RetentionPolicyError,
+  type RetentionVerdict,
+  SnapshotListingUnsupportedError,
+  retentionPolicy,
+} from "@loom/workflow-runtime";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { IDS, type Name, blobOf, buildHistory, snapshotSequences } from "../src/history";
 import { applyAll, evaluateAll, sweep } from "../src/passes";
 import { DAY, retention } from "../src/retention";
-import { type World, newWorld } from "../src/world";
+import { PINNED_KINDS, type World, newWorld } from "../src/world";
 
 // Every number below is a day on the simulated clock (day 0 = 2026-01-01); nothing waits in real time.
 // The timeline (src/history.ts): early ends d0 | longrun cites d0 and ENDS d60 | finding records a
@@ -57,13 +63,33 @@ describe("2. the history", () => {
     expect(await ended("reopened")).toEqual([70]);
     expect(await ended("recent")).toEqual([95]);
   });
+
+  it("resumeAs parks the re-opened run at the ONE new gate; the resume event answers none", async () => {
+    const log = await w.eventStore.read(IDS.reopened);
+    // the old log (0-6) replays; then migrate, the plain Reopen entry, a null-answer resume, and the
+    // park on the single gate the old log has no answer for (loom docs/usage.md, `resumeAs`).
+    expect(log.slice(7).map((e) => e.eventType)).toEqual([
+      "EXECUTION_MIGRATED",
+      "Reopen",
+      "EXECUTION_RESUMED",
+      "EXECUTION_SUSPENDED",
+    ]);
+    expect(log[log.length - 1]?.payload).toEqual({ condition: { on: "Review" } });
+    expect((await w.runtime.loadState(IDS.reopened))?.status).toBe("suspended");
+  });
+
+  it("the pinned kinds are stated once: the lifecycle hands them to the sweep", () => {
+    expect(w.lifecycle.pinnedEventTypes).toEqual([...PINNED_KINDS]);
+    expect(w.lifecycle.pinnedEventTypes).toEqual(["FindingRecorded"]);
+  });
 });
 
 describe("3. retention dry run, then apply (archive first)", () => {
   it("dry run names each outcome and changes nothing", async () => {
     w.clock.set(100);
     const liveBefore = await w.eventStore.read(IDS.early);
-    expect(await evaluateAll(w, retention, w.clock.now())).toEqual({
+    const verdicts: Record<Name, RetentionVerdict> = await evaluateAll(w, retention, w.clock.now());
+    expect(verdicts).toEqual({
       early: "reclaimable",
       longrun: "kept", // ended d60: 40 days old
       finding: "pinned", // holds a FindingRecorded event
@@ -109,11 +135,21 @@ describe("3. retention dry run, then apply (archive first)", () => {
 });
 
 describe("4. snapshot pruning driven by the policy", () => {
-  it("keeps policy.snapshots.keepLatest (1): the suspend snapshot at #3 goes, the re-open one stays", async () => {
+  it("keeps policy.snapshots.keepLatest (1): the dry run previews the count, the real prune matches", async () => {
     expect(await snapshotSequences(w, "reopened")).toEqual([3, 10]);
-    expect(await w.lifecycle.pruneSnapshots(IDS.reopened, { policy: retention })).toBe(1);
+    const preview = await w.lifecycle.pruneSnapshots(IDS.reopened, {
+      policy: retention,
+      dryRun: true,
+    });
+    expect(preview).toBe(1);
+    expect(await snapshotSequences(w, "reopened")).toEqual([3, 10]); // a preview deletes nothing
+    const pruned = await w.lifecycle.pruneSnapshots(IDS.reopened, { policy: retention });
+    expect(pruned).toBe(preview); // the suspend snapshot at #3 goes, the re-open one stays
     expect(await snapshotSequences(w, "reopened")).toEqual([10]);
-    // idempotent: nothing left to prune
+    // idempotent: nothing left to prune, and the preview says so
+    expect(
+      await w.lifecycle.pruneSnapshots(IDS.reopened, { policy: retention, dryRun: true })
+    ).toBe(0);
     expect(await w.lifecycle.pruneSnapshots(IDS.reopened, { policy: retention })).toBe(0);
   });
 
@@ -121,6 +157,29 @@ describe("4. snapshot pruning driven by the policy", () => {
     expect(
       await w.lifecycle.pruneSnapshots(IDS.reopened, { policy: retention, keepLatest: 2 })
     ).toBe(0);
+    expect(await snapshotSequences(w, "reopened")).toEqual([3, 10]);
+  });
+
+  it("a non-boolean dryRun is a TypeError and deletes nothing", async () => {
+    await expect(
+      w.lifecycle.pruneSnapshots(IDS.reopened, { policy: retention, dryRun: "yes" as never })
+    ).rejects.toThrow(TypeError);
+    expect(await snapshotSequences(w, "reopened")).toEqual([3, 10]);
+  });
+
+  it("over a store without listSequences the preview is refused, not guessed", async () => {
+    const legacy = new Proxy(w.snapshotStore, {
+      get: (target, prop) => {
+        if (prop === "listSequences") return undefined;
+        const v = Reflect.get(target, prop, target);
+        return typeof v === "function" ? v.bind(target) : v;
+      },
+      has: (target, prop) => prop !== "listSequences" && Reflect.has(target, prop),
+    });
+    const lifecycle = new LogLifecycle(w.eventStore, legacy, { archive: w.archive });
+    await expect(
+      lifecycle.pruneSnapshots(IDS.reopened, { policy: retention, dryRun: true })
+    ).rejects.toThrow(SnapshotListingUnsupportedError);
     expect(await snapshotSequences(w, "reopened")).toEqual([3, 10]);
   });
 });
@@ -135,6 +194,14 @@ describe("5. the content sweep and the end clock (ADR 0146)", () => {
     expect(report.heldByEndClock).toEqual([blobs.longrun]);
     expect(report.refsAgedByEnd).toBe(1);
     expect(report.refsPinned).toBe(1); // the finding's evidence
+    // load-bearing = 2: the retained ledger blob, plus the finding's evidence, which the `finding`
+    // event records as a BARE content ref (ADR 0055 D4). That one is ALSO pinned: the counts overlap.
+    expect(report.refsLoadBearing).toBe(2);
+    // ADR 0146 exception: `reopened` was re-opened after it ended, so its blob ages on the CITATION
+    // clock and is reclaimed while its execution's log is still live (parked on the Review gate).
+    expect(report.refsOfReopened).toBe(1);
+    expect(report.reclaimedWhileReopened).toEqual([blobs.reopened]);
+    expect(report.keptByTouch).toBe(0); // always 0 on a dry run
     // a dry run erases nothing
     for (const n of Object.keys(IDS) as Name[]) expect(await resolves(n)).toBe(true);
   });
@@ -143,6 +210,9 @@ describe("5. the content sweep and the end clock (ADR 0146)", () => {
     w.clock.set(100);
     const applied = await sweep(w, w.clock.now(), { policy: retention }, false);
     expect(sorted(applied.reclaimed)).toEqual(refsOf("early", "reopened"));
+    expect(applied.keptByTouch).toBe(0); // the store shares the simulated clock
+    expect(applied.reclaimedWhileReopened).toBeUndefined(); // dry run only
+    expect(applied.refsOfReopened).toBe(1);
     expect(await resolves("early")).toBe(false);
     expect(await resolves("reopened")).toBe(false);
     for (const n of ["longrun", "finding", "ledger", "parked", "recent"] as const) {
@@ -183,6 +253,41 @@ describe("5. the content sweep and the end clock (ADR 0146)", () => {
     expect((await sweep(w, 150 * DAY, { policy: retention }, true)).reclaimed).toContain(
       blobs.longrun
     );
+  });
+});
+
+describe("5b. two clocks in a sweep (loom docs/usage-cli.md, 'Clocks in a sweep')", () => {
+  it("negative control: a store clock far ahead of the log clock keeps everything; the dry run cannot tell", async () => {
+    const skewed = newWorld({ contentClock: () => 10_000 * DAY });
+    try {
+      await buildHistory(skewed);
+      skewed.clock.set(100);
+      const now = skewed.clock.now();
+      const early = await blobOf(skewed, "early");
+      const reopened = await blobOf(skewed, "reopened");
+      const dry = await sweep(skewed, now, { policy: retention }, true);
+      expect(sorted(dry.reclaimed)).toEqual(sorted([early, reopened])); // looks fine
+      expect(dry.keptByTouch).toBe(0);
+      const applied = await sweep(skewed, now, { policy: retention }, false);
+      expect(applied.reclaimed).toEqual([]);
+      expect(applied.keptByTouch).toBe(2);
+      // the cutoff is on the STORE's clock: 10000d - 90d, while the blobs were stamped at 10000d
+      expect(applied.touchCutoff).toBe(9_910 * DAY);
+      expect(
+        (await skewed.contentStore.get({ __loomContent: early })) !== null &&
+          (await skewed.contentStore.get({ __loomContent: reopened })) !== null
+      ).toBe(true);
+    } finally {
+      await skewed.close();
+    }
+  });
+
+  it("the fix: the store shares the SimClock, so the same sweep reclaims and keptByTouch is 0", async () => {
+    w.clock.set(100);
+    const applied = await sweep(w, w.clock.now(), { policy: retention }, false);
+    expect(sorted(applied.reclaimed)).toEqual(refsOf("early", "reopened"));
+    expect(applied.keptByTouch).toBe(0);
+    expect(applied.touchCutoff).toBe(10 * DAY); // 100d - 90d
   });
 });
 

@@ -4,7 +4,7 @@ import { applyAll, evaluateAll, sweep } from "./passes";
 // Narrated demo: `pnpm start`. Offline, SQLite in a temp dir, a simulated clock - no real waits.
 import { DAY } from "./retention";
 import { retention } from "./retention";
-import { newWorld } from "./world";
+import { PINNED_KINDS, type World, newWorld } from "./world";
 
 const short = (ref: string): string => `${ref.slice(0, 15)}...`;
 
@@ -20,9 +20,7 @@ async function main(): Promise<void> {
       const state = await w.runtime.loadState(IDS[name]);
       console.log(`  ${name.padEnd(9)} ${state?.status}`);
     }
-    const blobs = Object.fromEntries(
-      await Promise.all(NAMES.map(async (n) => [n, await blobOf(w, n)] as const))
-    ) as Record<Name, string>;
+    const blobs = await blobsOf(w);
 
     w.clock.set(100);
     const now = w.clock.now();
@@ -37,10 +35,15 @@ async function main(): Promise<void> {
     console.log(
       "\n== 4. Snapshot pruning, driven by the policy (keepLatest from retention.snapshots) =="
     );
-    const before = await snapshotSequences(w, "reopened");
+    const before = await snapshotSequences(w, "reopened"); // listSequences: one index scan
+    const preview = await w.lifecycle.pruneSnapshots(IDS.reopened, {
+      policy: retention,
+      dryRun: true,
+    });
+    console.log(`  reopened snapshots ${JSON.stringify(before)}; dry run would prune ${preview}`);
     const pruned = await w.lifecycle.pruneSnapshots(IDS.reopened, { policy: retention });
     console.log(
-      `  reopened snapshots ${JSON.stringify(before)} -> pruned ${pruned} ->`,
+      `  real prune removed ${pruned} (preview == actual: ${preview === pruned}) ->`,
       JSON.stringify(await snapshotSequences(w, "reopened"))
     );
 
@@ -55,6 +58,13 @@ async function main(): Promise<void> {
     console.log(
       `\n== 6. Content sweep at day ${w.clock.day} (policy.content.unpinnedAfterMs = 90d) ==`
     );
+    console.log(
+      "  pinned kinds, one source:",
+      JSON.stringify(w.lifecycle.pinnedEventTypes),
+      "(LogLifecycle option -> lifecycle.pinnedEventTypes -> the sweep; same as PINNED_KINDS:",
+      JSON.stringify(w.lifecycle.pinnedEventTypes) === JSON.stringify(PINNED_KINDS),
+      ")"
+    );
     const dry = await sweep(w, now, { policy: retention }, true);
     console.log(
       "  dry run would reclaim:",
@@ -67,6 +77,15 @@ async function main(): Promise<void> {
     );
     console.log(
       `  refsPinned ${dry.refsPinned}, refsLoadBearing ${dry.refsLoadBearing}, refsAgedByEnd ${dry.refsAgedByEnd}`
+    );
+    console.log(
+      "  (refsLoadBearing 2 = the retained ledger blob + the finding's evidence, which the `finding`",
+      "event records as a BARE ref (ADR 0055 D4); that one is also pinned, so the counts overlap)"
+    );
+    console.log(
+      `  refsOfReopened ${dry.refsOfReopened}, reclaimedWhileReopened:`,
+      (dry.reclaimedWhileReopened ?? []).map((r) => nameOf(blobs, r)),
+      "(re-opened after it ended: ages on the citation clock, so its blob goes while its log is kept)"
     );
     const applied = await sweep(w, now, { policy: retention }, false);
     console.log(
@@ -93,7 +112,30 @@ async function main(): Promise<void> {
       (await w.contentStore.get({ __loomContent: blobs.ledger })) !== null
     );
 
-    console.log("\n== 8. A policy that breaks the rule is refused at construction ==");
+    console.log("\n== 8. Two clocks in a sweep (loom docs/usage-cli.md, 'Clocks in a sweep') ==");
+    const skewed = newWorld({ contentClock: () => 10_000 * DAY }); // the store's clock runs far ahead
+    try {
+      await buildHistory(skewed);
+      skewed.clock.set(100);
+      const skewedBlobs = await blobsOf(skewed);
+      const skewedDry = await sweep(skewed, skewed.clock.now(), { policy: retention }, true);
+      const skewedApply = await sweep(skewed, skewed.clock.now(), { policy: retention }, false);
+      console.log(
+        "  store clock != log clock: dry run lists",
+        skewedDry.reclaimed.map((r) => nameOf(skewedBlobs, r)),
+        `but apply reclaimed ${JSON.stringify(skewedApply.reclaimed)}, keptByTouch ${skewedApply.keptByTouch}`
+      );
+      console.log(
+        `  touchCutoff ${skewedApply.touchCutoff! / DAY}d on the store's clock; its blobs were stamped 10000d`
+      );
+    } finally {
+      await skewed.close();
+    }
+    console.log(
+      `  shared SimClock (this world, section 6): apply reclaimed ${applied.reclaimed.length}, keptByTouch ${applied.keptByTouch}`
+    );
+
+    console.log("\n== 9. A policy that breaks the rule is refused at construction ==");
     try {
       retentionPolicy({ terminalTtlMs: 90 * DAY, content: { unpinnedAfterMs: 30 * DAY } });
     } catch (e) {
@@ -104,6 +146,12 @@ async function main(): Promise<void> {
   } finally {
     await w.close();
   }
+}
+
+async function blobsOf(world: World): Promise<Record<Name, string>> {
+  return Object.fromEntries(
+    await Promise.all(NAMES.map(async (n) => [n, await blobOf(world, n)] as const))
+  ) as Record<Name, string>;
 }
 
 function nameOf(blobs: Record<Name, string>, ref: string): string {
