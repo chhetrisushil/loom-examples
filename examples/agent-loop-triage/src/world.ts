@@ -88,8 +88,12 @@ export interface BootOptions {
   cache?: ReasoningCache;
   /** Simulate a fork / simulation: the default `writeBack.unless` returns true (skip the write). */
   fork?: boolean;
-  /** Pre-ringed memory write-back is the default; `none` leaves `writeBack` unset. */
-  writeBack?: AgentLoopConfig["writeBack"];
+  /**
+   * Pre-ringed memory write-back is the default. The config-error act also passes `true` / `{}`,
+   * which `AgentLoopWriteBack` refuses at compile time; it stands in for an untyped caller, which
+   * gets `AgentLoopConfigError` at run time instead.
+   */
+  writeBack?: AgentLoopConfig["writeBack"] | true | Record<string, never>;
 }
 
 export interface Process {
@@ -191,7 +195,11 @@ export function boot(o: BootOptions): Process {
     // ADR 0121 D4: through the ring (`toolId`) so the write is authorized and journaled, and
     // `unless` so a forked / simulated execution does not write. (`allowDirect: true` is the
     // explicit opt-out for a single-tenant host that wants neither.)
-    writeBack: o.writeBack ?? { toolId: MEMORY_TOOL, unless: () => o.fork === true },
+    // The cast is the untyped caller: `true` / `{}` reach the runtime check the type would refuse.
+    writeBack: (o.writeBack ?? {
+      toolId: MEMORY_TOOL,
+      unless: () => o.fork === true,
+    }) as NonNullable<AgentLoopConfig["writeBack"]>,
     ...o.config,
   };
   const runner: FlowRunner<unknown, unknown> = async (ctx) => {

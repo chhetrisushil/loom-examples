@@ -1,3 +1,4 @@
+import type { AgentLoopConfig } from "@loom/agent";
 import { isTainted } from "@loom/classify";
 import { InMemoryAsyncEventStore } from "@loom/event-runtime";
 import type { LlmRequest } from "@loom/llm";
@@ -241,11 +242,12 @@ describe("config errors", () => {
   });
 
   it("NEGATIVE: each documented spelling is accepted (allowDirect / unless / toolId)", async () => {
-    for (const writeBack of [
+    const spellings: NonNullable<AgentLoopConfig["writeBack"]>[] = [
       { allowDirect: true },
       { unless: () => false },
       { toolId: "memwrite" },
-    ]) {
+    ];
+    for (const writeBack of spellings) {
       const p = boot({ backend: new Backend(), prompt: TICKET_B, writeBack });
       const state = await runTicket(p, "cfg-ok");
       expect(state.status).toBe("completed");
