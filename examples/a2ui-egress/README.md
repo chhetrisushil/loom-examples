@@ -1,7 +1,7 @@
-# a2ui-egress — project a Loom surface onto the Google A2UI wire protocol (`@loom/plugin-a2ui`)
+# a2ui-egress — project a Loom surface onto the Google A2UI wire protocol (`@loomwork/plugin-a2ui`)
 
 A Loom flow drives an **agent surface** with durable delta patches (`surface(ctx).set` /
-`merge` / `append` / `increment`). `@loom/plugin-a2ui`'s **`A2UISurfaceBridge`**
+`merge` / `append` / `increment`). `@loomwork/plugin-a2ui`'s **`A2UISurfaceBridge`**
 projects that same event stream onto the Google **A2UI (Agent-to-UI) wire protocol
 v1.0** — `createSurface` / `updateDataModel` / `deleteSurface` — so any A2UI-compliant
 client could render a Loom-driven UI. This headless example prints the wire messages
@@ -69,7 +69,7 @@ if (action) await runtime.resume(executionId, { eventType: "ExpenseApproved", pa
   returning it only when it targets this surface (else `null`) — the app maps it onto a
   Loom `resume`. Egress + inbound actions only; bidirectional RPC is out of scope by design.
 - **Zero kernel involvement.** The bridge folds the raw event log itself, so it works
-  against any Loom app that emits surface patches — `@loom/plugin-a2ui` is a composition-time
+  against any Loom app that emits surface patches — `@loomwork/plugin-a2ui` is a composition-time
   adapter, not a runtime plugin. `surfaces: ["ui"]` in `defineConfig` is only there to
   show Loom's native folded surface as a contrast at the end of the run.
 - **Deterministic + offline.** No `Date.now` / `Math.random` — runs and tests are stable.

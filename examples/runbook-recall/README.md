@@ -23,7 +23,7 @@ did not: `search` ranks within ONE key, so a searchable corpus has to be one key
 a *document*, the thing people actually edit, is a subset of it that the store could not
 name. Re-ingesting an edited runbook left BOTH revisions in the index. Nothing here could
 show that, because it ingests once and asks once.
-[`@loom/knowledge`](../../../loom/docs/adr/0091-corpus-lifecycle-and-the-knowledge-package.md)
+[`@loomwork/knowledge`](../../../loom/docs/adr/0091-corpus-lifecycle-and-the-knowledge-package.md)
 now owns that mapping, and `db-sentinel` — a sentinel whose wiki is edited mid-year — is
 where it is exercised properly.
 
@@ -31,8 +31,8 @@ What is still application code: which chunker to use (`packParagraphs(260)` here
 runbook is, and what the operator's instructions say.
 
 ```bash
-pnpm --filter @loom/runbook-recall start   # narrated, offline
-pnpm --filter @loom/runbook-recall test
+pnpm --filter @loomwork/runbook-recall start   # narrated, offline
+pnpm --filter @loomwork/runbook-recall test
 ```
 
 ## The three things worth stealing

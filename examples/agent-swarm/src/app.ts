@@ -1,9 +1,9 @@
-import { type LoomApp, defineConfig } from "@loom/app";
-import type { CapabilityCatalog } from "@loom/capability";
-import { LocalDispatcher } from "@loom/dispatcher";
-import type { ExecutionDispatcher } from "@loom/dispatcher";
-import { sqliteStorage } from "@loom/plugin-sqlite";
-import { LocalWorkerRuntime } from "@loom/worker-runtime-local";
+import { type LoomApp, defineConfig } from "@loomwork/app";
+import type { CapabilityCatalog } from "@loomwork/capability";
+import { LocalDispatcher } from "@loomwork/dispatcher";
+import type { ExecutionDispatcher } from "@loomwork/dispatcher";
+import { sqliteStorage } from "@loomwork/plugin-sqlite";
+import { LocalWorkerRuntime } from "@loomwork/worker-runtime-local";
 import { CAPABILITY_AGENT, FLEET, FLEET_GUARDRAIL } from "./agents/definitions";
 import { buildCatalog } from "./capabilities/catalog";
 import { SwarmConductor } from "./orchestrator/SwarmConductor";

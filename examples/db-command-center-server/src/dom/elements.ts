@@ -1,4 +1,4 @@
-import type { Widget } from "@loom/blueprint-runtime";
+import type { Widget } from "@loomwork/blueprint-runtime";
 import type { AgentTask, PendingApproval, PlanEntry, RiskLevel } from "../domain";
 
 // ── BYOR + BYOC on the platform: one Custom Element per widget kind ────────────

@@ -1,6 +1,6 @@
-import { defineConfig } from "@loom/app";
-import { LoomProvider } from "@loom/plugin-renderer-react";
-import { InMemoryProjectionRuntime } from "@loom/projection-runtime";
+import { defineConfig } from "@loomwork/app";
+import { LoomProvider } from "@loomwork/plugin-renderer-react";
+import { InMemoryProjectionRuntime } from "@loomwork/projection-runtime";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
 import { CAPABILITY_AGENT, FLEET } from "./agents/definitions";

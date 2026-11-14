@@ -18,7 +18,7 @@ what you will see.
 
 | Stage | API | The point |
 |---|---|---|
-| 1. serve traffic | `decideWithPolicy` (`@loom/learning`) | one line makes a decision learnable |
+| 1. serve traffic | `decideWithPolicy` (`@loomwork/learning`) | one line makes a decision learnable |
 | 2. inspect the log | `trajectories` | `(context, action, propensity, reward)` — the same summary `loom learn report` prints |
 | 3. train | `LinUcbPolicy.fit` (3P) | offline, out of band, produces a **new version** |
 | 4. evaluate | `evaluatePolicy` | SNIPS estimate **on real logs, before shipping** |
@@ -59,8 +59,8 @@ Loom deliberately ships **no** reinforcement learning:
 | | Where it lives |
 |---|---|
 | the durable `(context, action, propensity, reward)` record | kernel — `ctx.decide` ([ADR 0079](https://github.com/chhetrisushil/loom/blob/main/docs/adr/0079-decision-context-and-policy.md)) |
-| trajectories, off-policy evaluation, promotion gate | `@loom/learning` ([ADR 0080](https://github.com/chhetrisushil/loom/blob/main/docs/adr/0080-learning-substrate.md)) |
-| **the learning algorithm** | `loom-plugin-linucb` — **third-party** |
+| trajectories, off-policy evaluation, promotion gate | `@loomwork/learning` ([ADR 0080](https://github.com/chhetrisushil/loom/blob/main/docs/adr/0080-learning-substrate.md)) |
+| **the learning algorithm** | `@loomwork/plugin-linucb` — **third-party** |
 
 `src/policy.ts` is the only file that imports the learner. Swapping LinUCB for anything else
 that implements the one-method `Policy` SPI touches that file and nothing else.

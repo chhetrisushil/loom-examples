@@ -1,4 +1,4 @@
-import type { LlmRequest } from "@loom/llm";
+import type { LlmRequest } from "@loomwork/llm";
 import { describe, expect, it } from "vitest";
 import { DemoLlmProvider } from "../src/runtime/DemoLlmProvider";
 

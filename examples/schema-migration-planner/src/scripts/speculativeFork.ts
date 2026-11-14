@@ -1,7 +1,7 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { EffectRuntime } from "@loom/effect-runtime";
+import { EffectRuntime } from "@loomwork/effect-runtime";
 /**
  * Schema Migration Planner — git-style branching for agent executions (branch-only).
  *
@@ -17,11 +17,11 @@ import { EffectRuntime } from "@loom/effect-runtime";
  * There is deliberately no merge: divergent ExecutionStates have no principled
  * join, so we pick a winning branch rather than reconcile.
  *
- * Run it:  pnpm --filter @loom/schema-migration-planner demo:fork
+ * Run it:  pnpm --filter @loomwork/schema-migration-planner demo:fork
  */
-import { SqliteBranchRegistry, SqliteEventStore, SqliteSnapshotStore } from "@loom/plugin-sqlite";
+import { SqliteBranchRegistry, SqliteEventStore, SqliteSnapshotStore } from "@loomwork/plugin-sqlite";
 
-import { WorkflowRuntime } from "@loom/workflow-runtime";
+import { WorkflowRuntime } from "@loomwork/workflow-runtime";
 import { MigrationExecutionFlow } from "../capabilities/flows";
 import { STRATEGIES, type StrategyId, type StrategyOutcome } from "../warroom/strategies";
 

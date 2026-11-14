@@ -61,7 +61,7 @@ so the decision is in the durable log before any audit runs.
 ### Gap-closer #2 — parallel fan-out with a join
 
 The planner emits a **linear** list, but the three specialist audits are independent.
-The conductor runs them with `executeGraph` (`@loom/graph-executor`): each is its own
+The conductor runs them with `executeGraph` (`@loomwork/graph-executor`): each is its own
 execution (one writer per log), fanned out in parallel and **joined at the returned
 barrier** (`graph.completed`, `graph.byId.<id>.output`).
 
@@ -72,8 +72,8 @@ barrier** (`graph.completed`, `graph.byId.<id>.output`).
 ## Run it
 
 ```bash
-pnpm --filter @loom/agent-swarm start   # headless: a medium-risk run (pauses for sign-off) + a low-risk run (auto)
-pnpm --filter @loom/agent-swarm test    # durable-plan, parallel-join, and HITL assertions
+pnpm --filter @loomwork/agent-swarm start   # headless: a medium-risk run (pauses for sign-off) + a low-risk run (auto)
+pnpm --filter @loomwork/agent-swarm test    # durable-plan, parallel-join, and HITL assertions
 ```
 
 Both goals are deterministic: **checkout-service → medium risk → waits for a human**;

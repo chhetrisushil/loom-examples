@@ -1,4 +1,4 @@
-import { MetricCard, blueprint$, grid, stack } from "@loom/blueprint-runtime";
+import { MetricCard, blueprint$, grid, stack } from "@loomwork/blueprint-runtime";
 import { AgentFleet, Gauge, LatencyChart, Sparkline } from "../widgets/customWidgets";
 
 // ── Observability blueprint ───────────────────────────────────────────────────

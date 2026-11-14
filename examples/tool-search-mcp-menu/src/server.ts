@@ -1,6 +1,6 @@
 import type * as http from "node:http";
-import { McpClient, createMcpServer } from "@loom/plugin-mcp";
-import type { MappedMcpTool, McpServer } from "@loom/plugin-mcp";
+import { McpClient, createMcpServer } from "@loomwork/plugin-mcp";
+import type { MappedMcpTool, McpServer } from "@loomwork/plugin-mcp";
 import { type ServerLog, servedTools } from "./catalog";
 
 const AUTH = { authorization: "Bearer demo-mcp-token" } as const;

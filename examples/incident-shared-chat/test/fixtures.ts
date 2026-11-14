@@ -1,4 +1,4 @@
-import type { PrincipalChain } from "@loom/effect-runtime";
+import type { PrincipalChain } from "@loomwork/effect-runtime";
 import { Responder, until } from "../src/client";
 import { type RoomOptions, TOKENS, ada, ben, cleo, mallory, openRoom } from "../src/room";
 import type { Room } from "../src/room";

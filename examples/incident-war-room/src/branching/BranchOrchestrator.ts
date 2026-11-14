@@ -1,7 +1,7 @@
-import type { SurfaceEmitter } from "@loom/agent-surface";
-import type { BranchRegistry } from "@loom/event-runtime";
-import { parallelLimit } from "@loom/scheduler";
-import type { WorkflowRuntime } from "@loom/workflow-runtime";
+import type { SurfaceEmitter } from "@loomwork/agent-surface";
+import type { BranchRegistry } from "@loomwork/event-runtime";
+import { parallelLimit } from "@loomwork/scheduler";
+import type { WorkflowRuntime } from "@loomwork/workflow-runtime";
 import { RemediateLagFlow } from "../capabilities/flows";
 import type { BranchSurface, BranchView } from "../warroom/branchView";
 import { emptyBranchSurface } from "../warroom/branchView";
@@ -23,7 +23,7 @@ import {
 //                   (ctx.suspend), point `main` at it, and propose the candidate
 //                   branches. The parent is now a durable fork point.
 //   2. explore()  — fork one child per candidate strategy from the gate, then
-//                   resume each *in simulate mode* CONCURRENTLY (@loom/scheduler
+//                   resume each *in simulate mode* CONCURRENTLY (@loomwork/scheduler
 //                   parallelLimit — deterministic, input-ordered results). Each
 //                   branch previews its projected outcome without mutating infra.
 //                   The parent log is never touched (copy-on-write).

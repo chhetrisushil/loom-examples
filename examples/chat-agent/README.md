@@ -2,11 +2,11 @@
 
 The R17 conversation layer (ADR 0122), owner-only and single user: a chat is **one chained execution**
 that is answered turn by turn, interrupted, rotated and resumed after a restart. Offline: the model is
-scripted, the SSE server is the real `@loom/plugin-conversation-sse` over HTTP on port 0.
+scripted, the SSE server is the real `@loomwork/plugin-conversation-sse` over HTTP on port 0.
 
 ```
-pnpm --filter @loom/chat-agent start
-pnpm --filter @loom/chat-agent test
+pnpm --filter @loomwork/chat-agent start
+pnpm --filter @loomwork/chat-agent test
 ```
 
 | Act | What it shows | Where |
@@ -21,9 +21,9 @@ Things worth copying:
 
 - The runtime policy is **owner-scoped** (`executionAccessPolicy({ rules: { query/send/cancel/resume: "owner" } })`);
   `createConversations` refuses anything looser.
-- Message content is `string | parts` (R5): read it with `textOf` from `@loom/llm`, never `as string`.
+- Message content is `string | parts` (R5): read it with `textOf` from `@loomwork/llm`, never `as string`.
 - The summarizer receives the user's words **tainted** (`{ __loomTainted, value }`): `unwrapTainted` from
-  `@loom/classify` first, then `textOf`. `textOf` on the raw content throws.
+  `@loomwork/classify` first, then `textOf`. `textOf` on the raw content throws.
 - A "restart" here is a second `startChat({ stores })`: only the event and snapshot stores are durable, so
   that is all the new process gets. The new server has a new port; ids are `<generation>.<sequence>`.
 - Live deltas are transient and per process. Only the durable `message` events are resumable.

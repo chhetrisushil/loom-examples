@@ -1,4 +1,4 @@
-import type { TransientInvoker } from "@loom-ui/hydration";
+import type { TransientInvoker } from "@loomwork/ui-hydration";
 
 export interface TopOrder {
   readonly orderId: string;

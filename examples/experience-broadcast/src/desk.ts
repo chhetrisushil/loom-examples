@@ -11,9 +11,9 @@ import {
   genesis,
   orderKeyBetween,
   replay,
-} from "@loom-ui/core";
-import type { Audience } from "@loom-ui/core";
-import { seal } from "@loom-ui/core/log";
+} from "@loomwork/ui-core";
+import type { Audience } from "@loomwork/ui-core";
+import { seal } from "@loomwork/ui-core/log";
 import {
   HYDRATION_PROJECTION_ID,
   HYDRATION_PROJECTION_VERSION,
@@ -25,8 +25,8 @@ import {
   type TransientInvoker,
   handleInventory,
   serveHandles,
-} from "@loom-ui/hydration";
-import { MCP_INVOKE_TOOL_ID } from "@loom/plugin-mcp";
+} from "@loomwork/ui-hydration";
+import { MCP_INVOKE_TOOL_ID } from "@loomwork/plugin-mcp";
 import { catalog } from "./catalog";
 
 // ── One Experience, two audiences ─────────────────────────────────────────────

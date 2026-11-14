@@ -1,6 +1,6 @@
-import { resetAgentLoopDefaults } from "@loom/agent";
-import { isTainted, unwrapTainted } from "@loom/classify";
-import { InMemoryContentStore } from "@loom/plugin-content";
+import { resetAgentLoopDefaults } from "@loomwork/agent";
+import { isTainted, unwrapTainted } from "@loomwork/classify";
+import { InMemoryContentStore } from "@loomwork/plugin-content";
 import { bootLive, listen, until } from "./live";
 import { blockOrderIn, reasoningPartsIn } from "./model";
 import {

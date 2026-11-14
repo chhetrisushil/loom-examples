@@ -1,5 +1,5 @@
-import { type LoomApp, defineConfig } from "@loom/app";
-import type { RegisteredFlow } from "@loom/workflow-runtime";
+import { type LoomApp, defineConfig } from "@loomwork/app";
+import type { RegisteredFlow } from "@loomwork/workflow-runtime";
 
 // ── Composition root ──────────────────────────────────────────────────────────
 //

@@ -1,6 +1,6 @@
 // incident-shared-chat — loom R17 SHARED MODE on an incident war room (ADR 0122 D10).
 //
-//   pnpm --filter @loom/incident-shared-chat start
+//   pnpm --filter @loomwork/incident-shared-chat start
 //
 // Offline: a scripted model, the real SSE transport on an ephemeral port, in-memory stores.
 import { capturedEnvelope, inject } from "./attack";

@@ -1,4 +1,4 @@
-import { executeProvider } from "@loom-ui/hydration";
+import { executeProvider } from "@loomwork/ui-hydration";
 import { describe, expect, it } from "vitest";
 import { createBoard } from "../src/app";
 import { orderLinesSpec } from "../src/board";

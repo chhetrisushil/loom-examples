@@ -1,6 +1,6 @@
-import type { TransientInvoker } from "@loom-ui/hydration";
-import { TypedFailure } from "@loom/core";
-import { MCP_INVOKE_TOOL_ID } from "@loom/plugin-mcp";
+import type { TransientInvoker } from "@loomwork/ui-hydration";
+import { TypedFailure } from "@loomwork/core";
+import { MCP_INVOKE_TOOL_ID } from "@loomwork/plugin-mcp";
 
 // A simulated MCP tool server behind loom's `mcp.invoke`: hydration calls it with
 // `{ toolName, args, expectedSchemaHash }`. A pin that is not the tool's CURRENT input-schema hash

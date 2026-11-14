@@ -4,7 +4,7 @@
 // `defineConfig`: configuration says how the app is composed, not what an operator may destroy and
 // when. The cron job, the CLI (`loom retention run --policy ./src/retention.ts`) and the app's own
 // code all read this same value, so the numbers are stated once and checked once.
-import { retentionPolicy } from "@loom/workflow-runtime";
+import { retentionPolicy } from "@loomwork/workflow-runtime";
 
 export const DAY = 24 * 60 * 60 * 1000;
 

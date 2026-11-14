@@ -1,4 +1,4 @@
-import type { LlmProvider, LlmReasoning, LlmRequest, LlmResponse, LlmToolCall } from "@loom/llm";
+import type { LlmProvider, LlmReasoning, LlmRequest, LlmResponse, LlmToolCall } from "@loomwork/llm";
 
 /** The provider label every part carries: parts are only ever sent back to the provider that made them. */
 export const PROVIDER = "anthropic";

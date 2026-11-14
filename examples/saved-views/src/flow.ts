@@ -1,15 +1,15 @@
-import { checkBlueprintPins, validateBlueprint } from "@loom/blueprint-runtime";
+import { checkBlueprintPins, validateBlueprint } from "@loomwork/blueprint-runtime";
 import type {
   Blueprint,
   BlueprintValidation,
   PinReport,
   VersionPins,
-} from "@loom/blueprint-runtime";
-import { flow$ } from "@loom/core";
-import type { ClaimCheckEnvelope } from "@loom/middleware";
-import { decodeValue, encodeValue } from "@loom/plugin-content";
-import type { ContentRef, ContentStore } from "@loom/plugin-content";
-import type { FlowRunner, RegisteredFlow } from "@loom/workflow-runtime";
+} from "@loomwork/blueprint-runtime";
+import { flow$ } from "@loomwork/core";
+import type { ClaimCheckEnvelope } from "@loomwork/middleware";
+import { decodeValue, encodeValue } from "@loomwork/plugin-content";
+import type { ContentRef, ContentStore } from "@loomwork/plugin-content";
+import type { FlowRunner, RegisteredFlow } from "@loomwork/workflow-runtime";
 import { z } from "zod";
 import { CATALOG_ID, catalogue } from "./catalogue";
 

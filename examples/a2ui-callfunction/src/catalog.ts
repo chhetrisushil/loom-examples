@@ -3,8 +3,8 @@ import {
   defaultCatalog,
   defineCatalog,
   defineFunction,
-} from "@loom/plugin-a2ui";
-import type { A2UICatalog } from "@loom/plugin-a2ui";
+} from "@loomwork/plugin-a2ui";
+import type { A2UICatalog } from "@loomwork/plugin-a2ui";
 
 // ── The A2UI catalog, extended with client-callable `functions` ────────────────
 //

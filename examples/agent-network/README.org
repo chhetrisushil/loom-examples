@@ -39,7 +39,7 @@ pnpm build
 
 #+begin_src bash
 # From the repo root
-pnpm --filter @loom/agent-network start
+pnpm --filter @loomwork/agent-network start
 
 # Or from this directory
 pnpm start
@@ -73,5 +73,5 @@ src/
 
 - *Fully offline & deterministic.* The scripted LLM provider and in-process MCP server mean there are no network calls and reproducible output. Swap the provider in section 1 to run against a live model.
 - *AgentCards are derived, not hand-authored.* ~version~, ~capabilities~, and ~skills~ live on the ~agent$()~ definition; ~toAgentCard(agent)~ produces the ~AgentCard~ — a single source of truth. See the framework API reference for ~toAgentCard~.
-- *Two senses of "skills."* The ~agent$~ card ~skills~ (A2A metadata, advertised on the AgentCard) are distinct from the runtime ~skill$~ Skills (instruction bundles the agent loads on demand). Run under ~tsx~ the ~instructions$~ body stays inline; with ~@loom/compiler~ it becomes a lazy chunk.
+- *Two senses of "skills."* The ~agent$~ card ~skills~ (A2A metadata, advertised on the AgentCard) are distinct from the runtime ~skill$~ Skills (instruction bundles the agent loads on demand). Run under ~tsx~ the ~instructions$~ body stays inline; with ~@loomwork/compiler~ it becomes a lazy chunk.
 - *Ephemeral A2A port.* The A2A server binds to port 0 (an OS-assigned port); the client reads ~server.url~, so nothing is hard-coded.

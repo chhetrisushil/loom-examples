@@ -1,6 +1,6 @@
-import { SkillRegistry } from "@loom/agent";
-import type { SkillDefinition, ToolDefinition } from "@loom/core";
-import { instructions$, skill$, tool$ } from "@loom/core";
+import { SkillRegistry } from "@loomwork/agent";
+import type { SkillDefinition, ToolDefinition } from "@loomwork/core";
+import { instructions$, skill$, tool$ } from "@loomwork/core";
 import { z } from "zod";
 
 const io = z.object({}).passthrough();

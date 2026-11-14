@@ -1,8 +1,8 @@
-import { BroadcastingProjectionRuntime, defineConfig } from "@loom/app";
-import type { EventEnvelope } from "@loom/core";
-import type { BranchRegistry } from "@loom/event-runtime";
-import { sqliteStorage } from "@loom/plugin-sqlite";
-import type { WorkflowRuntime } from "@loom/workflow-runtime";
+import { BroadcastingProjectionRuntime, defineConfig } from "@loomwork/app";
+import type { EventEnvelope } from "@loomwork/core";
+import type { BranchRegistry } from "@loomwork/event-runtime";
+import { sqliteStorage } from "@loomwork/plugin-sqlite";
+import type { WorkflowRuntime } from "@loomwork/workflow-runtime";
 import { CAPABILITY_AGENT, FLEET } from "../agents/definitions";
 import { registerDiagnosticsEffects } from "../agents/diagnosticsRunner";
 import { buildCatalog } from "../capabilities/catalog";

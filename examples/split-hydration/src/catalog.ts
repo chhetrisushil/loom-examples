@@ -1,4 +1,4 @@
-import { type KindContract, type SemanticCatalog, defineSemanticCatalog } from "@loom-ui/core";
+import { type KindContract, type SemanticCatalog, defineSemanticCatalog } from "@loomwork/ui-core";
 
 // A weather station's vocabulary. Each type resolves to one of loom-ui's framework kinds on the
 // web, declaring the kind's loom contract (ADR 0088 D2: props AND binding). The kind is also what

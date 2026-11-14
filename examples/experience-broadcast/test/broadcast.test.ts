@@ -1,8 +1,8 @@
-import type { Audience, Viewer } from "@loom-ui/core";
-import { litRegistry, renderBlueprintDom } from "@loom-ui/renderer-lit/dom";
-import "@loom-ui/renderer-lit/register";
-import { renderExperience } from "@loom-ui/renderer-terminal";
-import { InMemoryProjectionRuntime } from "@loom/projection-runtime";
+import type { Audience, Viewer } from "@loomwork/ui-core";
+import { litRegistry, renderBlueprintDom } from "@loomwork/ui-renderer-lit/dom";
+import "@loomwork/ui-renderer-lit/register";
+import { renderExperience } from "@loomwork/ui-renderer-terminal";
+import { InMemoryProjectionRuntime } from "@loomwork/projection-runtime";
 import { describe, expect, it, vi } from "vitest";
 import { openSurface } from "../src/client";
 import { DeskServer, SECRETS, TITLES } from "../src/desk";
@@ -84,8 +84,8 @@ describe("experience-broadcast: one support-desk Experience, two audiences", () 
     // @ts-expect-error `audience` is required: the scope must say who the surface is for
     const bad: Parameters<typeof openSurface>[2] = {};
     expect(bad).toBeDefined();
-    const { SplitHydrationController } = await import("@loom-ui/hydration/client");
-    const { HydrationStore } = await import("@loom-ui/hydration/client");
+    const { SplitHydrationController } = await import("@loomwork/ui-hydration/client");
+    const { HydrationStore } = await import("@loomwork/ui-hydration/client");
     const loader = { load: vi.fn(), loadMany: vi.fn() };
     const store = new HydrationStore(new InMemoryProjectionRuntime(), {
       experienceId: terminal.inventory.experienceId,

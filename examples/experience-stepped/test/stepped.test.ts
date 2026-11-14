@@ -1,7 +1,7 @@
-import { REFERENCE_CONTAINER_ROLES, containerRoleFindings } from "@loom-ui/core";
-import { referenceContainers } from "@loom-ui/renderer-lit/containers";
-import type { DomContainerRenderer } from "@loom-ui/renderer-lit/dom";
-import { RendererRegistry } from "@loom/blueprint-runtime";
+import { REFERENCE_CONTAINER_ROLES, containerRoleFindings } from "@loomwork/ui-core";
+import { referenceContainers } from "@loomwork/ui-renderer-lit/containers";
+import type { DomContainerRenderer } from "@loomwork/ui-renderer-lit/dom";
+import { RendererRegistry } from "@loomwork/blueprint-runtime";
 import { describe, expect, it } from "vitest";
 import {
   STEPS,

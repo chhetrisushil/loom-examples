@@ -1,5 +1,5 @@
-import { blueprintNodeIds, preservesNodes } from "@loom/blueprint-runtime";
-import type { Blueprint, IdentityReport } from "@loom/blueprint-runtime";
+import { blueprintNodeIds, preservesNodes } from "@loomwork/blueprint-runtime";
+import type { Blueprint, IdentityReport } from "@loomwork/blueprint-runtime";
 import type { Topic } from "./catalogue";
 import { TOPIC_MODELS } from "./topics";
 

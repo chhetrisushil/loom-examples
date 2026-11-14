@@ -1,18 +1,18 @@
-import { agentLoop$, createAgentModelEffect, mediaResult } from "@loom/agent";
-import { agent$, tool$ } from "@loom/core";
-import type { FlowDefinition } from "@loom/core";
-import { EffectRuntime, ToolEffect } from "@loom/effect-runtime";
-import { type EventStore, InMemoryAsyncEventStore } from "@loom/event-runtime";
-import { type LlmCapabilities, type LlmProvider, mediaTypeAccepted } from "@loom/llm";
+import { agentLoop$, createAgentModelEffect, mediaResult } from "@loomwork/agent";
+import { agent$, tool$ } from "@loomwork/core";
+import type { FlowDefinition } from "@loomwork/core";
+import { EffectRuntime, ToolEffect } from "@loomwork/effect-runtime";
+import { type EventStore, InMemoryAsyncEventStore } from "@loomwork/event-runtime";
+import { type LlmCapabilities, type LlmProvider, mediaTypeAccepted } from "@loomwork/llm";
 import {
   ContentResolvingEventStore,
   ContentTouchingSnapshotStore,
   type TouchErrorHook,
   type TouchReport,
-} from "@loom/plugin-content";
-import { InMemoryAsyncSnapshotStore, type SnapshotStore } from "@loom/snapshot-runtime";
-import { WorkflowRuntime } from "@loom/workflow-runtime";
-import type { FlowRunner } from "@loom/workflow-runtime";
+} from "@loomwork/plugin-content";
+import { InMemoryAsyncSnapshotStore, type SnapshotStore } from "@loomwork/snapshot-runtime";
+import { WorkflowRuntime } from "@loomwork/workflow-runtime";
+import type { FlowRunner } from "@loomwork/workflow-runtime";
 import { z } from "zod";
 import { type Rgb, tinyPng } from "./png";
 import type { MediaVault, StoredMedia } from "./vault";

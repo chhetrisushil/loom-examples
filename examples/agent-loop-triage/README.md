@@ -5,8 +5,8 @@ Offline and headless: a scripted model that reads the transcript with `textOf`, 
 It does not use the deprecated `AgentRunner` / `agentStep$`.
 
 ```
-pnpm --filter @loom/agent-loop-triage start   # narrated trace
-pnpm --filter @loom/agent-loop-triage test    # the tests ARE the proof
+pnpm --filter @loomwork/agent-loop-triage start   # narrated trace
+pnpm --filter @loomwork/agent-loop-triage test    # the tests ARE the proof
 ```
 
 | What it shows | Where |

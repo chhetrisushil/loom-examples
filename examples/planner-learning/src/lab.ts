@@ -6,8 +6,8 @@ import {
   type Viewer as UiViewer,
   genesis,
   snapshotSeen,
-} from "@loom-ui/core";
-import { SIGNAL_VERSION } from "@loom-ui/core/signals";
+} from "@loomwork/ui-core";
+import { SIGNAL_VERSION } from "@loomwork/ui-core/signals";
 import {
   DecisionLinks,
   type DecisionRef,
@@ -20,7 +20,7 @@ import {
   seenLogExposure,
   settleRewards,
   unitAlias,
-} from "@loom-ui/learning";
+} from "@loomwork/ui-learning";
 import {
   InMemoryLineageStore,
   InMemorySeenKeyStore,
@@ -28,26 +28,26 @@ import {
   SeenLog,
   eventStoreLineageStore,
   seenStoreOptions,
-} from "@loom-ui/lineage";
-import { type PlanVariantReport, ReferencePlanner, plannerProvenance } from "@loom-ui/planner";
-import { flow$ } from "@loom/core";
-import { EffectRuntime } from "@loom/effect-runtime";
-import { InMemoryAsyncEventStore } from "@loom/event-runtime";
+} from "@loomwork/ui-lineage";
+import { type PlanVariantReport, ReferencePlanner, plannerProvenance } from "@loomwork/ui-planner";
+import { flow$ } from "@loomwork/core";
+import { EffectRuntime } from "@loomwork/effect-runtime";
+import { InMemoryAsyncEventStore } from "@loomwork/event-runtime";
 import {
   InMemoryPolicyKv,
   PolicyRegistry,
   type PromotionThresholds,
   type Trajectory,
   trajectories,
-} from "@loom/learning";
-import { InMemoryContentStore } from "@loom/plugin-content";
-import { InMemoryAsyncSnapshotStore } from "@loom/snapshot-runtime";
+} from "@loomwork/learning";
+import { InMemoryContentStore } from "@loomwork/plugin-content";
+import { InMemoryAsyncSnapshotStore } from "@loomwork/snapshot-runtime";
 import {
   type FlowRunner,
   type RegisteredFlow,
   WorkflowRuntime,
   executionAccessPolicy,
-} from "@loom/workflow-runtime";
+} from "@loomwork/workflow-runtime";
 import { z } from "zod";
 import { POLICY_ID, PolicyBook, SegmentStore, versionHash } from "./policies";
 import {

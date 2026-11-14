@@ -1,4 +1,4 @@
-import type { KnowledgeDoc } from "@loom/knowledge";
+import type { KnowledgeDoc } from "@loomwork/knowledge";
 
 // ── The corpus ───────────────────────────────────────────────────────────────
 //

@@ -1,10 +1,10 @@
-import { badge, bind, button, column, list, text } from "@loom/plugin-a2ui";
-import type { ComponentInstance } from "@loom/plugin-a2ui";
+import { badge, bind, button, column, list, text } from "@loomwork/plugin-a2ui";
+import type { ComponentInstance } from "@loomwork/plugin-a2ui";
 
 // ── The view: data, not code ─────────────────────────────────────────────────
 //
 // MCP Apps ships HTML, which is exactly the property A2UI deliberately lacks.
-// `@loom/plugin-mcp-app` neutralises it by never generating markup per flow: ONE
+// `@loomwork/plugin-mcp-app` neutralises it by never generating markup per flow: ONE
 // static template renders whatever declarative tree arrives as `structuredContent`.
 //
 // So this file — an ordinary A2UI component tree, the same vocabulary the

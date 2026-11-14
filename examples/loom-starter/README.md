@@ -10,7 +10,7 @@ with every current best-practice primitive:
 | **Folder convention + `loom gen`** (static `loom.gen.ts`) | [`app/flows/release-approval/flow.ts`](app/flows/release-approval/flow.ts) → `app/loom.gen.ts` |
 | **Effect middleware** (retry w/ backoff) | `effectMiddleware: [retryMiddleware(...)]` in `src/config.ts` |
 | **Durable suspend / resume** | `ctx.suspend(...)` in the flow, `runtime.resume(...)` in `src/main.ts` |
-| **`@loom/testing`** (createTestApp, waitForPhase) | [`test/release-approval.test.ts`](test/release-approval.test.ts) |
+| **`@loomwork/testing`** (createTestApp, waitForPhase) | [`test/release-approval.test.ts`](test/release-approval.test.ts) |
 | **Log-as-fixture evals** | [`evals/happy-path.json`](evals/happy-path.json) + `loom eval` |
 | **Deploy simulation** | [`src/deploy.config.ts`](src/deploy.config.ts) + `loom deploy check` |
 | **Pluggable compute seam** | [`src/compute.ts`](src/compute.ts) |
@@ -19,10 +19,10 @@ with every current best-practice primitive:
 
 ```bash
 pnpm install
-pnpm --filter @loom/loom-starter gen     # regenerate app/loom.gen.ts from app/flows/**
-pnpm --filter @loom/loom-starter build
-pnpm --filter @loom/loom-starter start   # start → pause at gate → resume → release
-pnpm --filter @loom/loom-starter test    # @loom/testing suite (incl. retry proof)
+pnpm --filter @loomwork/loom-starter gen     # regenerate app/loom.gen.ts from app/flows/**
+pnpm --filter @loomwork/loom-starter build
+pnpm --filter @loomwork/loom-starter start   # start → pause at gate → resume → release
+pnpm --filter @loomwork/loom-starter test    # @loomwork/testing suite (incl. retry proof)
 ```
 
 ## Inspect the durable log (after `start`)
@@ -48,9 +48,9 @@ loom inspect --db .data/events.db                      # web timeline + slider
 ## CI gates
 
 ```bash
-pnpm --filter @loom/loom-starter record:golden   # (re)capture evals/happy-path.json
-pnpm --filter @loom/loom-starter eval            # replay golden vs expectations
-pnpm --filter @loom/loom-starter deploy:check    # replay history vs THIS build's flows
+pnpm --filter @loomwork/loom-starter record:golden   # (re)capture evals/happy-path.json
+pnpm --filter @loomwork/loom-starter eval            # replay golden vs expectations
+pnpm --filter @loomwork/loom-starter deploy:check    # replay history vs THIS build's flows
 ```
 
 ## The folder convention
@@ -66,7 +66,7 @@ src/
   main.ts            ← start / suspend / resume driver
   deploy.config.ts   ← getFlow resolver for `loom deploy check`
   compute.ts         ← the local→remote→Cloud Run dispatcher seam
-test/                ← @loom/testing
+test/                ← @loomwork/testing
 evals/               ← golden fixtures for `loom eval`
 ```
 

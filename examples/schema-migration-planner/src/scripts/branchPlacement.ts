@@ -1,10 +1,10 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { SqliteTimerStore } from "@loom/plugin-sqlite";
-import { createWorkerServer } from "@loom/plugin-worker-server";
-import { LocalWorkerRuntime } from "@loom/worker-runtime-local";
-import { TimerService } from "@loom/workflow-runtime";
+import { SqliteTimerStore } from "@loomwork/plugin-sqlite";
+import { createWorkerServer } from "@loomwork/plugin-worker-server";
+import { LocalWorkerRuntime } from "@loomwork/worker-runtime-local";
+import { TimerService } from "@loomwork/workflow-runtime";
 import { buildBranchWorkerRuntime } from "../compute/worker";
 import { createApp } from "../server/app";
 import { STRATEGIES } from "../warroom/strategies";

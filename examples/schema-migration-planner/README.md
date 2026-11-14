@@ -16,7 +16,7 @@ per-branch simulation progress** — three shadow-migrations backfilling concurr
 example (instant simulations) didn't exercise.
 
 ```
-pnpm --filter @loom/schema-migration-planner dev     # client :5173  +  server :8787
+pnpm --filter @loomwork/schema-migration-planner dev     # client :5173  +  server :8787
 # then open http://localhost:5173
 ```
 
@@ -31,7 +31,7 @@ Fully offline (deterministic `DemoLlmProvider`). `dev` runs both processes; or r
 2. **Gate** — the mutating migration flow suspends at a durable `ctx.suspend`. `main` points at it. The UI
    jumps to the **Migration Board** tab.
 3. **Explore** — the server forks one child per strategy (*online-ddl*, *shadow-copy*, *dual-write*) and
-   drives each **in `simulate` mode**, concurrently (`@loom/scheduler` `parallelLimit`). Each runs against a
+   drives each **in `simulate` mode**, concurrently (`@loomwork/scheduler` `parallelLimit`). Each runs against a
    **shadow schema**, **streaming live backfill progress**. The parent log is never touched (copy-on-write).
    With a branch worker configured, each one is **dispatched to its own compute** rather than run inside the
    web server — see *Branch compute* below.
@@ -60,8 +60,8 @@ A simulated migration clones a table and backfills 40M rows. Running three of th
 is the demo's convenient lie; this example can stop telling it.
 
 ```sh
-pnpm --filter @loom/schema-migration-planner dev:worker          # a branch worker on :7071
-BRANCH_WORKER_URL=http://localhost:7071 pnpm --filter @loom/schema-migration-planner dev
+pnpm --filter @loomwork/schema-migration-planner dev:worker          # a branch worker on :7071
+BRANCH_WORKER_URL=http://localhost:7071 pnpm --filter @loomwork/schema-migration-planner dev
 ```
 
 The worker is **not a different program**: the same flow registered on a `WorkflowRuntime` over the **same**
@@ -120,13 +120,13 @@ schema-inspector / risk-assessor / migration-executor agents + mock tools, the c
 
 ## Verify
 
-- `pnpm --filter @loom/schema-migration-planner demo:fork` — narrated headless fork → simulate → compare →
+- `pnpm --filter @loomwork/schema-migration-planner demo:fork` — narrated headless fork → simulate → compare →
   promote (source: `src/scripts/speculativeFork.ts`).
-- `pnpm --filter @loom/schema-migration-planner test` — headless e2e over SQLite: the gate forks into N
+- `pnpm --filter @loomwork/schema-migration-planner test` — headless e2e over SQLite: the gate forks into N
   strategy branches, each yields a **distinct** projected outcome with **progress reaching 100%**, the parent
   stays suspended, `promote` moves `main` off the parent onto the real apply, lineage records every fork, and
   the simple goal auto-applies without branching.
-- `pnpm --filter @loom/schema-migration-planner demo:placement` — narrated headless: branches dispatched to a
+- `pnpm --filter @loomwork/schema-migration-planner demo:placement` — narrated headless: branches dispatched to a
   real worker, parked for verification with the coordinator idle, then the wake landing in the wrong process
   (source: `src/scripts/branchPlacement.ts`).
 - `test/compute.test.ts` — asserts every branch was advanced by the **worker's** runtime and never by the

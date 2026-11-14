@@ -1,5 +1,5 @@
 {
-  "name": "@loom/split-hydration",
+  "name": "@loomwork/split-hydration",
   "version": "0.0.1",
   "description": "loom-ui split hydration for anyone: a weather-station board whose browser never sees a provider. The server compiles the Blueprint and ships a handle inventory (a keyed revision, never a tool or a script); a client SplitHydrationController schedules loads through a JSON HandleLoader; two widgets sharing one upstream reading go out together and are served with ONE upstream call; the server answers with serveHandle/serveHandles — relative-time tokens on an injected clock, overridable station/time-range params, Named reshapers, contract-checked output (an empty alert log is healthy), and report-and-proceed for a read-only viewer.",
   "private": true,
@@ -10,11 +10,11 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@loom-ui/core": "*",
-    "@loom-ui/hydration": "*",
-    "@loom/core": "*",
-    "@loom/plugin-mcp": "*",
-    "@loom/projection-runtime": "*"
+    "@loomwork/ui-core": "*",
+    "@loomwork/ui-hydration": "*",
+    "@loomwork/core": "*",
+    "@loomwork/plugin-mcp": "*",
+    "@loomwork/projection-runtime": "*"
   },
   "devDependencies": {
     "@types/node": "catalog:",

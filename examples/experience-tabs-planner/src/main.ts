@@ -2,7 +2,7 @@ import { installDom } from "./dom";
 
 installDom();
 // Imported AFTER the DOM exists: the renderer touches `document` / `customElements` at load.
-const { findNode } = await import("@loom-ui/core");
+const { findNode } = await import("@loomwork/ui-core");
 const { AGENT, LEAD, Triage } = await import("./app");
 const { entries, reply, scriptedModel } = await import("./model");
 

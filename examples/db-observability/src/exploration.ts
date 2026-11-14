@@ -1,4 +1,4 @@
-import type { Policy, PolicyChoice, PolicyContext } from "@loom/learning";
+import type { Policy, PolicyChoice, PolicyContext } from "@loomwork/learning";
 import { FLAG_CATALOGUE, flagDefinition } from "./flags";
 import type { OperatorProfile } from "./profile";
 

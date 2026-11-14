@@ -2,7 +2,7 @@ import type {
   DomContainerHandle,
   DomContainerProps,
   DomContainerRenderer,
-} from "@loom-ui/renderer-lit/dom";
+} from "@loomwork/ui-renderer-lit/dom";
 
 // This app's own container renderer, registered under the reference role "stepper" on
 // `DomRenderOptions.containers` (Blueprint IR 2.2.0 `Layout.role`, loom ADR 0099). The adapter

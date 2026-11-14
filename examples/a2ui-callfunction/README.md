@@ -1,7 +1,7 @@
 # a2ui-callfunction — A2UI bidirectional RPC over two grains
 
 Drives a **client-side function** from a Loom flow using the A2UI `callFunction`
-surface (`@loom/plugin-a2ui`), two ways — and shows why **no client-side effect
+surface (`@loomwork/plugin-a2ui`), two ways — and shows why **no client-side effect
 runtime is needed** to stay replay-deterministic.
 
 The client runs the function elsewhere, but only its *recorded result* re-enters
@@ -26,8 +26,8 @@ run?" resolution.
 ## Run it
 
 ```
-pnpm --filter @loom/a2ui-callfunction start   # headless narrative of both grains
-pnpm --filter @loom/a2ui-callfunction test    # assertions incl. the crash → in-doubt proof
+pnpm --filter @loomwork/a2ui-callfunction start   # headless narrative of both grains
+pnpm --filter @loomwork/a2ui-callfunction test    # assertions incl. the crash → in-doubt proof
 ```
 
 ## What the test proves

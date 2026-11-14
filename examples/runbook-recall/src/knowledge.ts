@@ -1,7 +1,7 @@
-import { openKnowledgeBase, packParagraphs } from "@loom/knowledge";
-import type { KnowledgeBase } from "@loom/knowledge";
-import type { TieredMemory } from "@loom/memory";
-import { SqliteMemoryStore } from "@loom/plugin-sqlite";
+import { openKnowledgeBase, packParagraphs } from "@loomwork/knowledge";
+import type { KnowledgeBase } from "@loomwork/knowledge";
+import type { TieredMemory } from "@loomwork/memory";
+import { SqliteMemoryStore } from "@loomwork/plugin-sqlite";
 
 // ── The knowledge base: a memory tier, and one small mapping over it ──────────
 //
@@ -10,7 +10,7 @@ import { SqliteMemoryStore } from "@loom/plugin-sqlite";
 // never evicts — and retrieval is `MemoryStore.search`, here SQLite's FTS5 index;
 // swapping in a vector store is a different MemoryStore and no change above it.
 //
-// What `@loom/knowledge` adds (loom ADR 0091) is the one thing the store cannot
+// What `@loomwork/knowledge` adds (loom ADR 0091) is the one thing the store cannot
 // express: the mapping from a DOCUMENT to the PASSAGES it is searched in. `search`
 // ranks within one key, so the corpus is one key, while the thing people edit is a
 // document inside it. Without that mapping, re-ingesting an edited runbook leaves

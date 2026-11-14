@@ -5,8 +5,8 @@ An expense-approval agent reads a receipt (untrusted text with a planted "approv
 Offline and headless: a scripted, Anthropic-shaped provider (`capabilities.reasoning: true`; a `summary` with text and a signature, and a `redacted` block), in-memory stores, no keys.
 
 ```
-pnpm --filter @loom/reasoning-audit start   # narrated trace
-pnpm --filter @loom/reasoning-audit test    # the tests ARE the proof
+pnpm --filter @loomwork/reasoning-audit start   # narrated trace
+pnpm --filter @loomwork/reasoning-audit test    # the tests ARE the proof
 ```
 
 | What it shows | Where |
@@ -25,6 +25,6 @@ Honest framing (from the ADR):
 - Reasoning **corroborates**; it is not an explanation. Stated reasoning does not reliably describe what caused an output. The primary evidence is what loom already records durably: the inputs with their taint, the tool calls, authorizations and denials, the step values. Here the log shows the receipt's injected note and the single `approve_payment` for 48.50; the reasoning is the corroboration.
 - Each record says what it holds: `kind` is `text`, `summary` or `redacted`, and a summary is never upgraded to text. A `redacted` part has a signature and no text.
 - `defineConfig`'s `observability.onWarn` and `requireContinuation` set process-wide agent-loop defaults (the refusal is monotonic, fail-closed). The example passes the loop's own `onWarn` / `requireReasoningContinuation` so each act is self-contained, and the tests call `resetAgentLoopDefaults()` (`@internal`, test-only: it would clear another app's fail-closed setting) after each test.
-- Not shown: the SSE transport (`@loom/plugin-conversation-sse` `reasoning` option) and the shared-mode audience rule (asker and owner only); the hub is exercised in process.
+- Not shown: the SSE transport (`@loomwork/plugin-conversation-sse` `reasoning` option) and the shared-mode audience rule (asker and owner only); the hub is exercised in process.
 
 Layout: `model.ts` (scripted model), `world.ts` (`boot()` = one `defineConfig`), `scenario.ts` (audit, erase, replay, forged ref), `live.ts` (streaming conversation), `main.ts` (narration).

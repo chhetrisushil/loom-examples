@@ -16,11 +16,11 @@ unsealed** partial plus the conflicts; the app seals the merge commit with both 
 The key conflict is resolved by an ordinary op (`setLabel` giving the second meaning its own key);
 `keyConflicts(ours, theirs, merged)` is the same check on its own.
 
-There is **no consumer-specific code** here, only `@loom-ui/core`'s own operations.
+There is **no consumer-specific code** here, only `@loomwork/ui-core`'s own operations.
 
 ```bash
-pnpm --filter @loom/experience-merge test
-pnpm --filter @loom/experience-merge build
+pnpm --filter @loomwork/experience-merge test
+pnpm --filter @loomwork/experience-merge build
 ```
 
 Requires the sibling `../loom-ui` built at a commit that exports `mergeExperiences` (loom-ui PR #79).

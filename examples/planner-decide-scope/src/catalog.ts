@@ -1,5 +1,5 @@
-import { type SemanticCatalog, defineSemanticCatalog } from "@loom-ui/core";
-import type { CapabilityRef } from "@loom-ui/planner";
+import { type SemanticCatalog, defineSemanticCatalog } from "@loomwork/ui-core";
+import type { CapabilityRef } from "@loomwork/ui-planner";
 
 /** What the planner may NAME: a small support-triage vocabulary, nothing app-specific to loom-ui. */
 export const triageCatalog: SemanticCatalog = defineSemanticCatalog({

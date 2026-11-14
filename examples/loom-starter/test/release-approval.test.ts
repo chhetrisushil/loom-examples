@@ -1,7 +1,7 @@
-import { flow$, handler$, step$ } from "@loom/core";
-import { retryMiddleware } from "@loom/middleware";
-import { createTestApp, waitForPhase } from "@loom/testing";
-import type { FlowRunner, RegisteredFlow } from "@loom/workflow-runtime";
+import { flow$, handler$, step$ } from "@loomwork/core";
+import { retryMiddleware } from "@loomwork/middleware";
+import { createTestApp, waitForPhase } from "@loomwork/testing";
+import type { FlowRunner, RegisteredFlow } from "@loomwork/workflow-runtime";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { releaseApprovalFlow } from "../app/flows/release-approval/flow";

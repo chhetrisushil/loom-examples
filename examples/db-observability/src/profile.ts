@@ -1,8 +1,8 @@
-import type { EventEnvelope, FlowDefinition } from "@loom/core";
-import { decideWithPolicy } from "@loom/learning";
-import type { Policy } from "@loom/learning";
-import type { ReadModelDefinition, ReadModelRow } from "@loom/plugin-read-model";
-import type { FlowRunner } from "@loom/workflow-runtime";
+import type { EventEnvelope, FlowDefinition } from "@loomwork/core";
+import { decideWithPolicy } from "@loomwork/learning";
+import type { Policy } from "@loomwork/learning";
+import type { ReadModelDefinition, ReadModelRow } from "@loomwork/plugin-read-model";
+import type { FlowRunner } from "@loomwork/workflow-runtime";
 import { z } from "zod";
 import {
   type ExplorationContext,

@@ -17,7 +17,7 @@ Because A2A is the contract, the same Loom code works against **Google ADK**
 ## Run the demo
 
 ```bash
-pnpm --filter @loom/plugin-a2a-mesh start
+pnpm --filter @loomwork/plugin-a2a-mesh start
 ```
 
 It runs fully offline against a mock external agent (`src/mockExternalAgent.ts`,
@@ -37,7 +37,7 @@ standing in for ADK/LangGraph) and shows both directions:
 **Call an external agent from Loom** (outbound):
 
 ```ts
-import { A2APeerClient } from "@loom/plugin-a2a";
+import { A2APeerClient } from "@loomwork/plugin-a2a";
 
 const peer = new A2APeerClient({ url: "http://localhost:9999" }); // remote A2A agent
 const tool = await peer.registerInto(effectRuntime, registry);    // now a Loom tool
@@ -55,12 +55,12 @@ const peer = new A2APeerClient({ url: "http://localhost:9999", trustDescriptions
 With `trustDescriptions: true` the card's description reaches the model verbatim, as
 instructions and unguarded (loom warns once, `LOOM_AGENT_TRUSTED_TOOL_TEXT`). Do this only for
 a peer you control; otherwise describe the tool in your system prompt. Pinned by
-`test/a2a-mesh.test.ts` (`pnpm --filter @loom/plugin-a2a-mesh test`).
+`test/a2a-mesh.test.ts` (`pnpm --filter @loomwork/plugin-a2a-mesh test`).
 
 **Expose a Loom agent to the outside world** (inbound):
 
 ```ts
-import { createA2AServer, toAgentCard } from "@loom/plugin-a2a";
+import { createA2AServer, toAgentCard } from "@loomwork/plugin-a2a";
 
 const server = createA2AServer(workflowRuntime, myFlow, toAgentCard(myAgent), {
   port: 8080,
@@ -105,4 +105,4 @@ If you only want ADK/LangChain for their **LLM** (not the agent loop), skip A2A
 and implement Loom's `LlmProvider` (`packages/llm/src/types.ts`) instead, then
 register it with `createAgentModelEffect(provider)` and run `agentLoop$` over it. Cheaper when you just need model access.
 
-The demo runs the local agent with `runAgentOnce` (`@loom/app`), which builds the throwaway in-memory app and one-off flow `agentLoop$` needs. That is for scripts and tests; production puts `agentLoop$` in a registered flow.
+The demo runs the local agent with `runAgentOnce` (`@loomwork/app`), which builds the throwaway in-memory app and one-off flow `agentLoop$` needs. That is for scripts and tests; production puts `agentLoop$` in a registered flow.

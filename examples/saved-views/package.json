@@ -1,5 +1,5 @@
 {
-  "name": "@loom/saved-views",
+  "name": "@loomwork/saved-views",
   "version": "0.0.1",
   "description": "A composed surface as a logged artifact: compose once from a closed catalogue, validate before recording, store the tree by sha256 ref, emit BLUEPRINT_COMPOSED, pin it against content GC — then re-open it after the fold behind a binding has changed and get a drift finding instead of a silently different number (loom ADR 0088/0095). Headless.",
   "private": true,
@@ -10,13 +10,13 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@loom/app": "*",
-    "@loom/blueprint-runtime": "*",
-    "@loom/core": "*",
-    "@loom/middleware": "*",
-    "@loom/plugin-content": "*",
-    "@loom/projection-runtime": "*",
-    "@loom/workflow-runtime": "*",
+    "@loomwork/app": "*",
+    "@loomwork/blueprint-runtime": "*",
+    "@loomwork/core": "*",
+    "@loomwork/middleware": "*",
+    "@loomwork/plugin-content": "*",
+    "@loomwork/projection-runtime": "*",
+    "@loomwork/workflow-runtime": "*",
     "zod": "catalog:"
   },
   "devDependencies": {

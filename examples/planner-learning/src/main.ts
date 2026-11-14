@@ -1,4 +1,4 @@
-import type { PlanVariantReport } from "@loom-ui/planner";
+import type { PlanVariantReport } from "@loomwork/ui-planner";
 import { type Batch, Lab } from "./lab";
 import { armOf, fmt, trial } from "./lifecycle";
 import { POLICY_ID } from "./policies";

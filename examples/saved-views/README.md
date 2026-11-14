@@ -11,8 +11,8 @@ have caught the defect [ADR 0095](https://github.com/chhetrisushil/loom/blob/mai
 closes.
 
 ```
-pnpm --filter @loom/saved-views start   # the narrated walkthrough
-pnpm --filter @loom/saved-views test    # the same properties, as assertions
+pnpm --filter @loomwork/saved-views start   # the narrated walkthrough
+pnpm --filter @loomwork/saved-views test    # the same properties, as assertions
 ```
 
 ## The shape

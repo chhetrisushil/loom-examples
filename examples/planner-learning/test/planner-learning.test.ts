@@ -1,8 +1,8 @@
-import { snapshotSeen } from "@loom-ui/core";
-import { SIGNAL_VERSION } from "@loom-ui/core/signals";
-import { InMemoryVoteLog, SignalIngestor, VoteLedger, seenLogExposure } from "@loom-ui/learning";
-import type { PlanVariantReport } from "@loom-ui/planner";
-import { PromotionRefusedError, rolloutBucket } from "@loom/learning";
+import { snapshotSeen } from "@loomwork/ui-core";
+import { SIGNAL_VERSION } from "@loomwork/ui-core/signals";
+import { InMemoryVoteLog, SignalIngestor, VoteLedger, seenLogExposure } from "@loomwork/ui-learning";
+import type { PlanVariantReport } from "@loomwork/ui-planner";
+import { PromotionRefusedError, rolloutBucket } from "@loomwork/learning";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { BUCKET_SECRET, type Batch, KEY, Lab, type Surface } from "../src/lab";
 import {

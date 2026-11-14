@@ -2,7 +2,7 @@
 
 loom-ui's **container-renderer seam** (`DomRenderOptions.containers`, Blueprint IR 2.2.0
 `Layout.role`, loom ADR 0099), in an app that has nothing to do with any other: a **bike-share
-rider onboarding**. Where `@loom-ui/renderer-lit`'s `registry` lets an app register a renderer
+rider onboarding**. Where `@loomwork/ui-renderer-lit`'s `registry` lets an app register a renderer
 for a widget **kind**, `containers` lets it register one for a container **role** — this app
 registers its own renderer (`src/steppedContainer.ts`) under the **reference** role `"stepper"` (loom-ui U15) and gets
 progress-dot / Back-Next chrome around a plain vertical list of steps, with no change to the
@@ -21,8 +21,8 @@ step carries all three (design Q3). Which step is current is chrome state: it li
 renderer's own closure and survives exactly as long as the container does.
 
 ```bash
-pnpm --filter @loom/experience-stepped test
-pnpm --filter @loom/experience-stepped build
+pnpm --filter @loomwork/experience-stepped test
+pnpm --filter @loomwork/experience-stepped build
 ```
 
 ## What the tests exercise

@@ -1,5 +1,5 @@
-import { createWorkerServer } from "@loom/plugin-worker-server";
-import { LocalWorkerRuntime } from "@loom/worker-runtime-local";
+import { createWorkerServer } from "@loomwork/plugin-worker-server";
+import { LocalWorkerRuntime } from "@loomwork/worker-runtime-local";
 import { buildBranchWorkerRuntime } from "./worker";
 
 // `pnpm dev:worker` — the compute a branch simulation runs on. Point the coordinator at it

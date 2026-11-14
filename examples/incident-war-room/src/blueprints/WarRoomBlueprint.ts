@@ -1,4 +1,4 @@
-import { blueprint$, grid, stack } from "@loom/blueprint-runtime";
+import { blueprint$, grid, stack } from "@loomwork/blueprint-runtime";
 import { BranchControls, BranchDiff, BranchGraph } from "../widgets/customWidgets";
 
 // ── War Room blueprint ────────────────────────────────────────────────────────

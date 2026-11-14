@@ -1,7 +1,7 @@
-import type { EventEnvelope } from "@loom/core";
-import { isClaimCheck } from "@loom/middleware";
-import { InMemoryContentStore, sweepUnpinnedContent } from "@loom/plugin-content";
-import type { ContentStore } from "@loom/plugin-content";
+import type { EventEnvelope } from "@loomwork/core";
+import { isClaimCheck } from "@loomwork/middleware";
+import { InMemoryContentStore, sweepUnpinnedContent } from "@loomwork/plugin-content";
+import type { ContentStore } from "@loomwork/plugin-content";
 import { beforeEach, describe, expect, it } from "vitest";
 import { type SavedViewsApp, buildApp } from "../src/app";
 import { CATALOG_ID } from "../src/catalogue";
@@ -186,7 +186,7 @@ describe("pinning — promotion is what survives the sweep", () => {
     expect(draft.ref).not.toBe(saved.ref);
 
     // The draft's ref must be cited as a REAL claim-check envelope (ADR 0054's shape,
-    // `@loom/middleware`'s `isClaimCheck`), not a vendored look-alike — that's the one form
+    // `@loomwork/middleware`'s `isClaimCheck`), not a vendored look-alike — that's the one form
     // ADR 0055 D4 still lets the sweep reclaim.
     const draftLog = await app.app.stores.eventStore.read(draft.executionId);
     const drafted = draftLog.find((e) => e.eventType === VIEW_DRAFTED);

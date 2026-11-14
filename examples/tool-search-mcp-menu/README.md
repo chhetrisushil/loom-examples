@@ -2,12 +2,12 @@
 
 An agent facing a **64-tool MCP catalogue that must not go in the prompt** ([loom ADR 0125](https://github.com/chhetrisushil/loom/blob/main/docs/adr/0125-tool-search.md)).
 `agentLoop$({ toolSearch, skillActivation })` offers the model `search_tools` instead of the catalogue;
-found tools join the menu, append-only. Offline and headless: a real `@loom/plugin-mcp` server over
+found tools join the menu, append-only. Offline and headless: a real `@loomwork/plugin-mcp` server over
 HTTP, a scripted model that reads the results it is given.
 
 ```
-pnpm --filter @loom/tool-search-mcp-menu start   # narrated trace
-pnpm --filter @loom/tool-search-mcp-menu test    # the tests ARE the proof
+pnpm --filter @loomwork/tool-search-mcp-menu start   # narrated trace
+pnpm --filter @loomwork/tool-search-mcp-menu test    # the tests ARE the proof
 ```
 
 | What it shows | Where |
@@ -25,7 +25,7 @@ A custom ranker has no built-in stoplist: it owns its query processing. `Overlap
 match), which is why, on THIS query, both rankers return the same page; they are different algorithms
 and agree only here. Two differences to know if you copy it: a query made only of stopwords still
 searches with the built-in ranker (it keeps the unfiltered terms) but returns nothing from
-`OverlapRanker`; and `@loom/agent`'s `tokenizeToolText` is the tokenizer the built-in ranker uses.
+`OverlapRanker`; and `@loomwork/agent`'s `tokenizeToolText` is the tokenizer the built-in ranker uses.
 
 Layout: `catalog.ts` (the 64 tools + host vocabulary), `server.ts` (MCP over HTTP), `skills.ts`,
 `ranker.ts`, `model.ts` (scripted provider), `world.ts` (runtime wiring, crash/resume helpers),

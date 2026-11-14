@@ -6,12 +6,12 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { flow$, step$ } from "@loom/core";
-import { EffectRuntime, ToolEffect } from "@loom/effect-runtime";
-import { claimCheckMiddleware } from "@loom/middleware";
-import { SqliteContentStore, SqliteEventStore, SqliteSnapshotStore } from "@loom/plugin-sqlite";
-import type { FlowRunner, RegisteredFlow } from "@loom/workflow-runtime";
-import { LogLifecycle, WorkflowRuntime } from "@loom/workflow-runtime";
+import { flow$, step$ } from "@loomwork/core";
+import { EffectRuntime, ToolEffect } from "@loomwork/effect-runtime";
+import { claimCheckMiddleware } from "@loomwork/middleware";
+import { SqliteContentStore, SqliteEventStore, SqliteSnapshotStore } from "@loomwork/plugin-sqlite";
+import type { FlowRunner, RegisteredFlow } from "@loomwork/workflow-runtime";
+import { LogLifecycle, WorkflowRuntime } from "@loomwork/workflow-runtime";
 import { z } from "zod";
 import { DAY } from "./retention";
 

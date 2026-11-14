@@ -1,4 +1,4 @@
-import { blueprintNodeIds, preservesNodes } from "@loom/blueprint-runtime";
+import { blueprintNodeIds, preservesNodes } from "@loomwork/blueprint-runtime";
 import { describe, expect, it } from "vitest";
 import { FLAG_CATALOGUE_VERSION } from "../src/flags";
 import { createPreferenceService } from "../src/preferenceService";

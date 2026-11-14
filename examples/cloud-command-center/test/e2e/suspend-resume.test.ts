@@ -1,12 +1,12 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { LoomApp } from "@loom/app";
-import { ToolEffect } from "@loom/effect-runtime";
-import { sqliteStorage } from "@loom/plugin-sqlite";
-import { InMemoryProjectionRuntime } from "@loom/projection-runtime";
-import { createTestApp } from "@loom/testing";
-import type { RegisteredFlow, WorkflowRuntime } from "@loom/workflow-runtime";
+import type { LoomApp } from "@loomwork/app";
+import { ToolEffect } from "@loomwork/effect-runtime";
+import { sqliteStorage } from "@loomwork/plugin-sqlite";
+import { InMemoryProjectionRuntime } from "@loomwork/projection-runtime";
+import { createTestApp } from "@loomwork/testing";
+import type { RegisteredFlow, WorkflowRuntime } from "@loomwork/workflow-runtime";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { InvestigateIncidentFlow } from "../../src/flows/InvestigateIncident";
 import { IncidentProjection } from "../../src/projections/IncidentProjection";

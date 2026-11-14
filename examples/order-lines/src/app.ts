@@ -1,10 +1,10 @@
-import type { Experience } from "@loom-ui/core";
-import { HydrationController, HydrationStore } from "@loom-ui/hydration";
-import { type DomRenderHandle, litRegistry, renderBlueprintDom } from "@loom-ui/renderer-lit/dom";
-import "@loom-ui/renderer-lit/register";
-import { renderExperience, terminalRegistry } from "@loom-ui/renderer-terminal";
-import type { Blueprint } from "@loom/blueprint-runtime";
-import { InMemoryProjectionRuntime } from "@loom/projection-runtime";
+import type { Experience } from "@loomwork/ui-core";
+import { HydrationController, HydrationStore } from "@loomwork/ui-hydration";
+import { type DomRenderHandle, litRegistry, renderBlueprintDom } from "@loomwork/ui-renderer-lit/dom";
+import "@loomwork/ui-renderer-lit/register";
+import { renderExperience, terminalRegistry } from "@loomwork/ui-renderer-terminal";
+import type { Blueprint } from "@loomwork/blueprint-runtime";
+import { InMemoryProjectionRuntime } from "@loomwork/projection-runtime";
 import { HANDLE, buildBoard, compileFor } from "./board";
 import { OrdersTools, type TopOrder } from "./tools";
 

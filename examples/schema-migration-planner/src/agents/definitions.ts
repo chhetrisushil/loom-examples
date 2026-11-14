@@ -1,7 +1,7 @@
-import { agent$ } from "@loom/core";
-import type { AgentDefinition } from "@loom/core";
-import type { AgentCard } from "@loom/plugin-a2a";
-import { toAgentCard } from "@loom/plugin-a2a";
+import { agent$ } from "@loomwork/core";
+import type { AgentDefinition } from "@loomwork/core";
+import type { AgentCard } from "@loomwork/plugin-a2a";
+import { toAgentCard } from "@loomwork/plugin-a2a";
 import { EstimateMigrationTool, InspectTableTool, RunMigrationTool } from "./tools";
 
 // ── The domain-specialist fleet ───────────────────────────────────────────────
@@ -12,7 +12,7 @@ import { EstimateMigrationTool, InspectTableTool, RunMigrationTool } from "./too
 // derived from the agent$ definition via toAgentCard (below) — version,
 // capabilities, and the skill catalog live right here on the agent. In this
 // browser app the agents run behind an in-process A2A transport
-// (@loom/app's InProcessA2ABus); the derived card is byte-for-byte what an A2AServer
+// (@loomwork/app's InProcessA2ABus); the derived card is byte-for-byte what an A2AServer
 // would serve at /.well-known/agent.json.
 
 export const SchemaInspectorAgent: AgentDefinition = agent$({

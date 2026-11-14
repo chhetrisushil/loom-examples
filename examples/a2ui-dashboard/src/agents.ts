@@ -1,5 +1,5 @@
-import { agent$, tool$ } from "@loom/core";
-import type { AgentDefinition } from "@loom/core";
+import { agent$, tool$ } from "@loomwork/core";
+import type { AgentDefinition } from "@loomwork/core";
 import { z } from "zod";
 
 // ── The monitoring fleet ──────────────────────────────────────────────────────

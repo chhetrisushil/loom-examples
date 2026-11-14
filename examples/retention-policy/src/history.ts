@@ -1,6 +1,6 @@
 // The history the demo and the tests both replay: seven executions finishing on different simulated
 // days. Every claim in the README is about THIS timeline.
-import type { ContentRef } from "@loom/plugin-content";
+import type { ContentRef } from "@loomwork/plugin-content";
 import { LEDGER_TOOL, type World } from "./world";
 
 /** The executions, named for what they teach. */

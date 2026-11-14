@@ -1,5 +1,5 @@
-import { SOURCE_SKILL_ACTIVATION, SOURCE_TOOL_SEARCH } from "@loom/agent";
-import type { EventEnvelope } from "@loom/core";
+import { SOURCE_SKILL_ACTIVATION, SOURCE_TOOL_SEARCH } from "@loomwork/agent";
+import type { EventEnvelope } from "@loomwork/core";
 import { CATALOG_SIZE } from "./catalog";
 import { resultsOf } from "./model";
 import { RankerProbe } from "./ranker";

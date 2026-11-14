@@ -1,7 +1,7 @@
 {
-  "name": "@loom/loom-starter",
+  "name": "@loomwork/loom-starter",
   "version": "0.0.1",
-  "description": "The canonical new-architecture Loom example: defineConfig + folder convention (loom gen) + effect middleware (retry) + @loom/testing + log-as-fixture evals + deploy-simulation + a pluggable compute seam. A compact release-approval workflow that assesses risk, pauses for human approval, and resumes.",
+  "description": "The canonical new-architecture Loom example: defineConfig + folder convention (loom gen) + effect middleware (retry) + @loomwork/testing + log-as-fixture evals + deploy-simulation + a pluggable compute seam. A compact release-approval workflow that assesses risk, pauses for human approval, and resumes.",
   "private": true,
   "scripts": {
     "gen": "loom gen --dir app",
@@ -17,23 +17,23 @@
     "clean": "rm -rf dist .data tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@loom/agent-surface": "*",
-    "@loom/app": "*",
-    "@loom/core": "*",
-    "@loom/dispatcher": "*",
-    "@loom/effect-runtime": "*",
-    "@loom/event-runtime": "*",
-    "@loom/middleware": "*",
-    "@loom/projection-runtime": "*",
-    "@loom/snapshot-runtime": "*",
-    "@loom/worker-runtime-local": "*",
-    "@loom/workflow-runtime": "*",
+    "@loomwork/agent-surface": "*",
+    "@loomwork/app": "*",
+    "@loomwork/core": "*",
+    "@loomwork/dispatcher": "*",
+    "@loomwork/effect-runtime": "*",
+    "@loomwork/event-runtime": "*",
+    "@loomwork/middleware": "*",
+    "@loomwork/projection-runtime": "*",
+    "@loomwork/snapshot-runtime": "*",
+    "@loomwork/worker-runtime-local": "*",
+    "@loomwork/workflow-runtime": "*",
     "zod": "catalog:",
-    "@loom/plugin-sqlite": "*"
+    "@loomwork/plugin-sqlite": "*"
   },
   "devDependencies": {
-    "@loom/cli": "*",
-    "@loom/testing": "*",
+    "@loomwork/cli": "*",
+    "@loomwork/testing": "*",
     "@types/node": "catalog:",
     "tsx": "catalog:",
     "typescript": "^5.6.3",

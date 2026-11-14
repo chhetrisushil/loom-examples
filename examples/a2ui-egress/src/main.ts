@@ -1,6 +1,6 @@
-import type { SurfaceState } from "@loom/agent-surface";
-import type { EventEnvelope } from "@loom/core";
-import { A2UISurfaceBridge, A2UI_VERSION } from "@loom/plugin-a2ui";
+import type { SurfaceState } from "@loomwork/agent-surface";
+import type { EventEnvelope } from "@loomwork/core";
+import { A2UISurfaceBridge, A2UI_VERSION } from "@loomwork/plugin-a2ui";
 import { buildApp } from "./app";
 import type { ExpenseInput } from "./flow";
 import { RegisteredExpenseFlow } from "./flow";
@@ -8,7 +8,7 @@ import { formatMessage } from "./render";
 import { EXPENSE_VIEW } from "./view";
 
 // A headless driver that projects a Loom agent surface onto the Google A2UI wire
-// protocol via `@loom/plugin-a2ui`. It runs one expense-approval execution,
+// protocol via `@loomwork/plugin-a2ui`. It runs one expense-approval execution,
 // prints every A2UI message the egress bridge emits, drives the human-approval
 // gate by feeding an *inbound* A2UI `action` back through the bridge, then
 // contrasts A2UI's absolute data model with Loom's native delta patches.

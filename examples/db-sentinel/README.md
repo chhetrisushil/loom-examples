@@ -36,7 +36,7 @@ the properties are cadence-independent), everything a pure function of virtual t
 7. Replay of any wake folds in well under a second and never touches the content store.
 8. A v3 deploy **without** a migration path stalls loudly (`no-migration-path` in the
    recorded failure); registering the migration resumes cleanly on the next wake.
-9. `TimerService` fires the cron deterministically and idempotently under `@loom/dst`'s
+9. `TimerService` fires the cron deterministically and idempotently under `@loomwork/dst`'s
    virtual clock.
 10. Evidence is readable outside the determinism boundary via `resolveClaimCheck`
     (CC-4); erased telemetry reads `null`, replay unaffected.
@@ -45,7 +45,7 @@ the properties are cadence-independent), everything a pure function of virtual t
 
 The findings above say *what happened*. Attaching *what to do about it* means reading a
 runbook corpus — and over a simulated year that corpus is edited on the operators' clock,
-not the agent's. That makes db-sentinel the second consumer of `@loom/knowledge`
+not the agent's. That makes db-sentinel the second consumer of `@loomwork/knowledge`
 (loom ADR 0091), and deliberately unlike the first: `runbook-recall` ingests once and asks
 once, where an append-only corpus and an upsertable one behave identically.
 
@@ -99,5 +99,5 @@ test/             the acceptance suite
 Offline and deterministic end to end: no database, no network, no wall clock.
 
 > This example is the **de-composed** version of the pattern — every seam visible. For the
-> one-declaration form, see `sentinelPreset()` in `@loom/plugin-sentinel` (or scaffold a
+> one-declaration form, see `sentinelPreset()` in `@loomwork/plugin-sentinel` (or scaffold a
 > starter with `loom new sentinel <name>`).

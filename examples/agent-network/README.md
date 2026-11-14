@@ -5,7 +5,7 @@ A single server-side showcase of Loom's agentic surface, wired together and runn
 `GeminiProvider` and nothing downstream changes). One file, `src/main.ts`, walks through eight things:
 
 1. **Configurable LLM** — one swappable `LlmProvider` dependency.
-2. **Bring-your-own agent** — `agent$()` + the `agentLoop$` ReAct loop (one durable frame per model and tool call) over your tools. It runs from a script, so `runAgentOnce` (`@loom/app`) builds the throwaway in-memory app and one-off flow for each run (scripts and tests only; production puts `agentLoop$` in a registered flow). `selectedSkillsOf` (`@loom/agent`) reads which skills the loop selected from the recorded events.
+2. **Bring-your-own agent** — `agent$()` + the `agentLoop$` ReAct loop (one durable frame per model and tool call) over your tools. It runs from a script, so `runAgentOnce` (`@loomwork/app`) builds the throwaway in-memory app and one-off flow for each run (scripts and tests only; production puts `agentLoop$` in a registered flow). `selectedSkillsOf` (`@loomwork/agent`) reads which skills the loop selected from the recorded events.
 3. **MCP servers/tools** — `McpClient` discovers tools and registers them as effects.
 4. **A2A out of the box** — expose a flow as an A2A agent (`createA2AServer` + `toAgentCard`, with an `authenticate` that names the caller), then call it as a client (`createA2AClientEffect`, sending the credential in `headers`).
 5. **Capabilities + Intent** — a `CapabilityCatalog`, routed to by **intent** (not URLs).
@@ -16,12 +16,12 @@ A single server-side showcase of Loom's agentic surface, wired together and runn
 ## Run it
 
 ```sh
-pnpm --filter @loom/agent-network start   # prints each stage to the terminal
-pnpm --filter @loom/agent-network test
+pnpm --filter @loomwork/agent-network start   # prints each stage to the terminal
+pnpm --filter @loomwork/agent-network test
 ```
 
 Everything is deterministic and offline — no API key, no network. To go live, replace
-`ScriptedLlmProvider` (`src/ScriptedLlmProvider.ts`) with a hosted `@loom/llm` provider; the ReAct
+`ScriptedLlmProvider` (`src/ScriptedLlmProvider.ts`) with a hosted `@loomwork/llm` provider; the ReAct
 loop, MCP wiring, A2A endpoints, capabilities, planner, and memory are unchanged.
 
 ## Where to look

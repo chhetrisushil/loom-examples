@@ -1,5 +1,5 @@
-import { isTainted, unwrapTainted } from "@loom/classify";
-import type { LlmProvider, LlmRequest, LlmResponse, LlmToolCall } from "@loom/llm";
+import { isTainted, unwrapTainted } from "@loomwork/classify";
+import type { LlmProvider, LlmRequest, LlmResponse, LlmToolCall } from "@loomwork/llm";
 
 /** Text of a tool_result body (a remote result arrives TAINTED, fenced as data). */
 const textOf = (c: unknown): string => {

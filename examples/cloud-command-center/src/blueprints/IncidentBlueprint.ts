@@ -7,7 +7,7 @@ import {
   blueprint$,
   grid,
   stack,
-} from "@loom/blueprint-runtime";
+} from "@loomwork/blueprint-runtime";
 
 export const IncidentBlueprint = blueprint$({
   id: "incident-investigation",

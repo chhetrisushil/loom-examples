@@ -1,5 +1,5 @@
 {
-  "name": "@loom/learning-router",
+  "name": "@loomwork/learning-router",
   "version": "0.0.1",
   "description": "The continuous-learning loop end to end: a support-triage flow routes each ticket through a LinUCB policy via decideWithPolicy (recording context + propensity), then the offline half mines the log into trajectories, trains a candidate, evaluates it against real traffic with SNIPS, and puts it through the promotion gate. Headless.",
   "private": true,
@@ -10,12 +10,12 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@loom/analytics": "*",
-    "@loom/app": "*",
-    "@loom/core": "*",
-    "@loom/learning": "*",
-    "@loom/workflow-runtime": "*",
-    "loom-plugin-linucb": "*",
+    "@loomwork/analytics": "*",
+    "@loomwork/app": "*",
+    "@loomwork/core": "*",
+    "@loomwork/learning": "*",
+    "@loomwork/workflow-runtime": "*",
+    "@loomwork/plugin-linucb": "*",
     "zod": "catalog:"
   },
   "devDependencies": {

@@ -9,8 +9,8 @@ It is also a showcase of Loom's **BYOR** (bring-your-own-renderer),
 **BYOC** (bring-your-own-component), and render-side **fiber** capabilities.
 
 ```
-pnpm --filter @loom/db-command-center dev      # http://localhost:5173
-pnpm --filter @loom/db-command-center build:ui # production bundle
+pnpm --filter @loomwork/db-command-center dev      # http://localhost:5173
+pnpm --filter @loomwork/db-command-center build:ui # production bundle
 ```
 
 No API key required — a deterministic offline `DemoLlmProvider` plays every model
@@ -61,7 +61,7 @@ deferred render path against the eager whole-tree path.
   then creates one agent task per step and dispatches it over the A2A bus.
 - **A2A transport (BYO).** `InProcessA2ABus` implements the A2A protocol shapes
   (`AgentCard`, `A2ATask`, `A2ATaskResult`, status transitions) in-process for
-  the browser — the same contract `@loom/plugin-a2a`'s HTTP `createA2AServer` serves.
+  the browser — the same contract `@loomwork/plugin-a2a`'s HTTP `createA2AServer` serves.
 - **Durable, resumable agents.** Each capability is a real Loom flow. The
   mutating `apply-remediation` / `scale-read-replicas` flows reach a durable
   `ctx.suspend` checkpoint; the risk policy or a human resumes them.

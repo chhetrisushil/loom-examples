@@ -8,10 +8,10 @@ import {
   containerRoleFindings,
   findNode,
   walk,
-} from "@loom-ui/core";
-import { placeholderAlias } from "@loom-ui/core";
-import { checkPlannerConformance } from "@loom-ui/planner";
-import { ReferencePlanner } from "@loom-ui/planner";
+} from "@loomwork/ui-core";
+import { placeholderAlias } from "@loomwork/ui-core";
+import { checkPlannerConformance } from "@loomwork/ui-planner";
+import { ReferencePlanner } from "@loomwork/ui-planner";
 import { afterEach, describe, expect, it } from "vitest";
 import { AGENT, DEMO_PLACEHOLDER_KEY, LEAD, Triage, intent, meta } from "../src/app";
 import { catalog } from "../src/catalog";

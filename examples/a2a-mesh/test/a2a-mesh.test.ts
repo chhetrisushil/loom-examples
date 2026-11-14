@@ -1,5 +1,5 @@
-import { toolSpecFor } from "@loom/agent";
-import { A2APeerClient } from "@loom/plugin-a2a";
+import { toolSpecFor } from "@loomwork/agent";
+import { A2APeerClient } from "@loomwork/plugin-a2a";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { type MockExternalAgent, startMockExternalAgent } from "../src/mockExternalAgent";
 

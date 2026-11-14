@@ -1,4 +1,4 @@
-import type { HandleInventory } from "@loom-ui/hydration";
+import type { HandleInventory } from "@loomwork/ui-hydration";
 import { describe, expect, it } from "vitest";
 import { openBoard } from "../src/client";
 import { StationServer } from "../src/server";

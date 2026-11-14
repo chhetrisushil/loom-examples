@@ -1,6 +1,6 @@
-import type { EventStore } from "@loom/event-runtime";
-import { type ContentSweepReport, sweepUnpinnedContent } from "@loom/plugin-content";
-import type { SnapshotStore } from "@loom/snapshot-runtime";
+import type { EventStore } from "@loomwork/event-runtime";
+import { type ContentSweepReport, sweepUnpinnedContent } from "@loomwork/plugin-content";
+import type { SnapshotStore } from "@loomwork/snapshot-runtime";
 import type { MediaVault } from "./vault";
 
 export const DAY_MS = 24 * 60 * 60 * 1000;

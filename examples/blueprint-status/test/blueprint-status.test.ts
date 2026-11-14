@@ -6,7 +6,7 @@ import {
   builtinCatalog,
   isWidget,
   validateBlueprint,
-} from "@loom/blueprint-runtime";
+} from "@loomwork/blueprint-runtime";
 import { describe, expect, it } from "vitest";
 import { createBoard } from "../src/app";
 import { HEALTH_PROJECTION_ID, healthEvent, scenario } from "../src/health";

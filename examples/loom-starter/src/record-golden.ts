@@ -1,5 +1,5 @@
 import { mkdirSync, writeFileSync } from "node:fs";
-import { captureGolden } from "@loom/testing";
+import { captureGolden } from "@loomwork/testing";
 import { releaseApprovalFlow } from "../app/flows/release-approval/flow";
 import { buildApp } from "./config";
 

@@ -1,9 +1,9 @@
 # experience-recompose
 
-loom-ui slice 6a reference: **an agent revision lands while the user types.** Headless (happy-dom), offline (a scripted planner and a fake tool), Lit widgets from `@loom-ui/renderer-lit` plus two app-registered kinds.
+loom-ui slice 6a reference: **an agent revision lands while the user types.** Headless (happy-dom), offline (a scripted planner and a fake tool), Lit widgets from `@loomwork/ui-renderer-lit` plus two app-registered kinds.
 
 ```bash
-pnpm --filter @loom/experience-recompose test
+pnpm --filter @loomwork/experience-recompose test
 ```
 
 ## What it proves
@@ -33,7 +33,7 @@ controller.load(nextExperience);                    // hydration recomposes: han
 handle.update(compile(nextExperience, opts).blueprint);
 ```
 
-"Dropped" here means removed from the store once its (by-then-settled) result is no longer needed — this example never revises before a P1 load resolves, so nothing here proves an *in-flight* load gets aborted. That path (`AbortController.abort()` on `recompose`) is `@loom-ui/hydration`'s own, covered by its controller tests, not this one's.
+"Dropped" here means removed from the store once its (by-then-settled) result is no longer needed — this example never revises before a P1 load resolves, so nothing here proves an *in-flight* load gets aborted. That path (`AbortController.abort()` on `recompose`) is `@loomwork/ui-hydration`'s own, covered by its controller tests, not this one's.
 
 `src/app.ts` does exactly this with a real `HydrationController`. Its `TransientInvoker` (the one method hydration needs from loom's runtime) is a fake, `LatencyInvoker`, which answers every `latency.summary` call with a fixed output: p99 `412`, phase `steady`, 30 recent samples. The controller's batch timer is injected, so `settle()` fires due batches deterministically instead of waiting on wall-clock time.
 

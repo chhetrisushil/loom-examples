@@ -1,8 +1,8 @@
-import { LocalDispatcher, PlacementDispatcher } from "@loom/dispatcher";
-import type { ExecutionDispatcher } from "@loom/dispatcher";
-import { RemoteWorkerRuntime } from "@loom/plugin-worker-remote";
-import { LocalWorkerRuntime } from "@loom/worker-runtime-local";
-import type { WorkflowRuntime } from "@loom/workflow-runtime";
+import { LocalDispatcher, PlacementDispatcher } from "@loomwork/dispatcher";
+import type { ExecutionDispatcher } from "@loomwork/dispatcher";
+import { RemoteWorkerRuntime } from "@loomwork/plugin-worker-remote";
+import { LocalWorkerRuntime } from "@loomwork/worker-runtime-local";
+import type { WorkflowRuntime } from "@loomwork/workflow-runtime";
 
 /** The placement lane a branch asks for. Advisory: an unknown target falls back to `local`. */
 export const BRANCH_TARGET = "branch";

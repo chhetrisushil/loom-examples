@@ -1,10 +1,10 @@
 import { join } from "node:path";
-import { BroadcastingProjectionRuntime, InProcessA2ABus, defineConfig } from "@loom/app";
-import type { EventEnvelope } from "@loom/core";
-import type { ExecutionDispatcher } from "@loom/dispatcher";
-import type { BranchRegistry } from "@loom/event-runtime";
-import { SqliteTimerStore, sqliteStorage } from "@loom/plugin-sqlite";
-import type { RegisteredFlow, WorkflowRuntime } from "@loom/workflow-runtime";
+import { BroadcastingProjectionRuntime, InProcessA2ABus, defineConfig } from "@loomwork/app";
+import type { EventEnvelope } from "@loomwork/core";
+import type { ExecutionDispatcher } from "@loomwork/dispatcher";
+import type { BranchRegistry } from "@loomwork/event-runtime";
+import { SqliteTimerStore, sqliteStorage } from "@loomwork/plugin-sqlite";
+import type { RegisteredFlow, WorkflowRuntime } from "@loomwork/workflow-runtime";
 import { AGENT_CARDS, CAPABILITY_AGENT, FLEET } from "../agents/definitions";
 import { registerSchemaInspectorEffects } from "../agents/diagnosticsRunner";
 import { buildCatalog } from "../capabilities/catalog";

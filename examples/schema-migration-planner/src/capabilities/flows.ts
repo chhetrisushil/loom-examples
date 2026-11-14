@@ -1,5 +1,5 @@
-import { flow$, handler$, step$ } from "@loom/core";
-import type { FlowRunner, RegisteredFlow } from "@loom/workflow-runtime";
+import { flow$, handler$, step$ } from "@loomwork/core";
+import type { FlowRunner, RegisteredFlow } from "@loomwork/workflow-runtime";
 import { z } from "zod";
 import { runSchemaInspectorAgent } from "../agents/diagnosticsRunner";
 import { inspectTable, runMigration, sleep } from "../agents/tools";

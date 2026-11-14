@@ -7,7 +7,7 @@ the React [`cloud-command-center`](../cloud-command-center); only the view layer
 ## What it shows
 
 - **`defineConfig` as the composition root** (`src/app/loom.service.ts`) — an Angular service assembles
-  the runtime once. `@loom/app` lazy-loads the SQLite stores behind an opaque require, so a browser
+  the runtime once. `@loomwork/app` lazy-loads the SQLite stores behind an opaque require, so a browser
   build stays clean on the in-memory path.
 - **The investigate-incident flow** (`src/app/incident.flow.ts`) — gather metrics + logs, triage, and a
   human-approved remediation with durable `ctx.suspend` / resume.

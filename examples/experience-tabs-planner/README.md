@@ -11,9 +11,9 @@ list the planner contract takes; a group is an entry with `container`, its membe
 terminal renderer.
 
 ```bash
-pnpm --filter @loom/experience-tabs-planner start   # the narrated walkthrough
-pnpm --filter @loom/experience-tabs-planner test
-pnpm --filter @loom/experience-tabs-planner build   # tsc
+pnpm --filter @loomwork/experience-tabs-planner start   # the narrated walkthrough
+pnpm --filter @loomwork/experience-tabs-planner test
+pnpm --filter @loomwork/experience-tabs-planner build   # tsc
 ```
 
 ## The walkthrough (each step is asserted in `test/triage.test.ts`)
@@ -63,4 +63,4 @@ pnpm --filter @loom/experience-tabs-planner build   # tsc
 - The scripted model's replies are built by `entries({ role, sla, notes, refunds })` in
   `src/model.ts`; a revise reply restates the whole planner-owned region and the planner diffs it.
 - Requires the sibling `../loom-ui` built at a commit with U15 (loom-ui #54: `containers` on
-  `ComposeInput`/`ReviseInput`, `@loom-ui/renderer-lit/containers`) and `../loom` built.
+  `ComposeInput`/`ReviseInput`, `@loomwork/ui-renderer-lit/containers`) and `../loom` built.

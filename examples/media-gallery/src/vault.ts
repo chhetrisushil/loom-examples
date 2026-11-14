@@ -1,7 +1,7 @@
 import { createHmac } from "node:crypto";
-import type { MediaRef, MediaRequest, MediaResolution } from "@loom-ui/core";
-import type { ContentResolver } from "@loom/llm";
-import { type ContentStore, InMemoryContentStore } from "@loom/plugin-content";
+import type { MediaRef, MediaRequest, MediaResolution } from "@loomwork/ui-core";
+import type { ContentResolver } from "@loomwork/llm";
+import { type ContentStore, InMemoryContentStore } from "@loomwork/plugin-content";
 
 // The ContentStore is content-addressed and has NO tenancy: whoever can name an address can read its
 // bytes (loom ADR 0120 D4). So the authorization lives HERE, in the host, behind two seams:

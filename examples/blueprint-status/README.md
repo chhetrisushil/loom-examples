@@ -6,8 +6,8 @@ board whose Blueprint says everything a renderer needs, so loom's terminal rende
 spans and provenance from the Blueprint alone (ADR 0097).
 
 ```bash
-pnpm --filter @loom/blueprint-status start   # prints the board after every provider event
-pnpm --filter @loom/blueprint-status test
+pnpm --filter @loomwork/blueprint-status start   # prints the board after every provider event
+pnpm --filter @loomwork/blueprint-status test
 ```
 
 ## What it proves

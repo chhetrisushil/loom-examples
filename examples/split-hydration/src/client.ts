@@ -5,8 +5,8 @@ import {
   type HandleLoader,
   HydrationStore,
   SplitHydrationController,
-} from "@loom-ui/hydration/client";
-import { InMemoryProjectionRuntime } from "@loom/projection-runtime";
+} from "@loomwork/ui-hydration/client";
+import { InMemoryProjectionRuntime } from "@loomwork/projection-runtime";
 
 // The browser side. It knows handles, priorities and param NAMES — nothing else. The transport is
 // the app's; here it is two functions from a JSON body to a JSON body (in an app: two `fetch`

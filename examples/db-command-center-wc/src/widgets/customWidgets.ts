@@ -1,5 +1,5 @@
-import { customWidget$ } from "@loom/blueprint-runtime";
-import type { DataBinding, Widget } from "@loom/blueprint-runtime";
+import { customWidget$ } from "@loomwork/blueprint-runtime";
+import type { DataBinding, Widget } from "@loomwork/blueprint-runtime";
 
 // ── BYOC: custom widget kinds ─────────────────────────────────────────────────
 //

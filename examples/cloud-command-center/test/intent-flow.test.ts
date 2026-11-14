@@ -1,7 +1,7 @@
-import { IntentRuntime } from "@loom/intent";
-import { InMemoryProjectionRuntime } from "@loom/projection-runtime";
-import { createTestApp } from "@loom/testing";
-import type { RegisteredFlow } from "@loom/workflow-runtime";
+import { IntentRuntime } from "@loomwork/intent";
+import { InMemoryProjectionRuntime } from "@loomwork/projection-runtime";
+import { createTestApp } from "@loomwork/testing";
+import type { RegisteredFlow } from "@loomwork/workflow-runtime";
 import { describe, expect, it } from "vitest";
 import { incidentCatalog } from "../src/capabilities";
 import { InvestigateIncidentFlow } from "../src/flows/InvestigateIncident";

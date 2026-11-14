@@ -1,6 +1,6 @@
-import type { Passage } from "@loom/knowledge";
-import { groundedRequest } from "@loom/knowledge";
-import type { LlmRequestInput } from "@loom/llm";
+import type { Passage } from "@loomwork/knowledge";
+import { groundedRequest } from "@loomwork/knowledge";
+import type { LlmRequestInput } from "@loomwork/llm";
 
 export interface AnswerCall {
   question: string;

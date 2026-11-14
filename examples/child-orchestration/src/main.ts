@@ -2,7 +2,7 @@ import { type ReleaseIn, type ReleaseOut, releaseFlow } from "./flows";
 import { type ReleaseRuntime, awaitTerminal, buildRuntime } from "./runtime";
 
 // Wait on the LOG, not a clock: the supervisor drives children + resumes off the event
-// loop, so a live query over the same store says when the release is done (@loom/live-query).
+// loop, so a live query over the same store says when the release is done (@loomwork/live-query).
 async function runRelease(
   bundle: ReleaseRuntime,
   executionId: string,

@@ -1,7 +1,7 @@
-import type { ChatFeed } from "@loom-ui/core";
-import { signInboxEnvelope } from "@loom/conversation";
-import type { LlmRequest } from "@loom/llm";
-import { textOf } from "@loom/llm";
+import type { ChatFeed } from "@loomwork/ui-core";
+import { signInboxEnvelope } from "@loomwork/conversation";
+import type { LlmRequest } from "@loomwork/llm";
+import { textOf } from "@loomwork/llm";
 import { afterEach, describe, expect, it } from "vitest";
 import { capturedEnvelope, inject } from "../src/attack";
 import { Responder, feedFromEvents, render, until, within } from "../src/client";
@@ -174,7 +174,7 @@ describe("each turn runs AS THE ASKER", () => {
 
 describe("the runtime policy is asserted at construction", () => {
   it("a runtime that lets a tenant peer query or send is refused before any conversation exists", async () => {
-    const { executionAccessPolicy } = await import("@loom/workflow-runtime");
+    const { executionAccessPolicy } = await import("@loomwork/workflow-runtime");
     const { openRoom } = await import("../src/room");
     await expect(openRoom({ policy: executionAccessPolicy() })).rejects.toThrow(/owner/);
   });

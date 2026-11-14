@@ -1,10 +1,10 @@
-import { limitInvoker } from "@loom-ui/hydration";
+import { limitInvoker } from "@loomwork/ui-hydration";
 import {
   type DecideScope,
   type PlannerModel,
   ReferencePlanner,
   scopeInvoker,
-} from "@loom-ui/planner";
+} from "@loomwork/ui-planner";
 import { LLM_TOOL_ID } from "./llm";
 
 /**
@@ -32,7 +32,7 @@ export const modelFor = (scope: DecideScope): PlannerModel => {
 };
 
 /**
- * `reach` is the planner's DECLARED REACH for `@loom/verify` (loom L32 / loom-ui G23): the planner
+ * `reach` is the planner's DECLARED REACH for `@loomwork/verify` (loom L32 / loom-ui G23): the planner
  * cannot know which tool its `model` factory calls, so the app that wrote the factory says so. It
  * names the tool the factory reaches through `scope.invokeTransient`. Pass `reach: false` to build
  * the undeclared planner the negative tests use.

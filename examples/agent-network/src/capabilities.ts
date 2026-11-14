@@ -1,4 +1,4 @@
-import { surface } from "@loom/agent-surface";
+import { surface } from "@loomwork/agent-surface";
 import {
   MetricCard,
   StatusBadge,
@@ -6,10 +6,10 @@ import {
   blueprint$,
   grid,
   stack,
-} from "@loom/blueprint-runtime";
-import { capability$ } from "@loom/capability";
-import { flow$, handler$, step$ } from "@loom/core";
-import type { FlowRunner, RegisteredFlow } from "@loom/workflow-runtime";
+} from "@loomwork/blueprint-runtime";
+import { capability$ } from "@loomwork/capability";
+import { flow$, handler$, step$ } from "@loomwork/core";
+import type { FlowRunner, RegisteredFlow } from "@loomwork/workflow-runtime";
 import { z } from "zod";
 
 // Two tiny capabilities that drive an A2UI "ui" surface as they run, so the same

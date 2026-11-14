@@ -3,7 +3,7 @@
 loom-ui operations and planner accounting on a small greenhouse board: air temperature, humidity and a watering log, read through one climate tool. Headless and offline (a scripted model).
 
 ```bash
-pnpm --filter @loom/experience-board-edit test
+pnpm --filter @loomwork/experience-board-edit test
 ```
 
 ## What it proves

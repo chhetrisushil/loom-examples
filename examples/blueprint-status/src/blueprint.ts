@@ -9,7 +9,7 @@ import {
   blueprint$,
   cell,
   grid,
-} from "@loom/blueprint-runtime";
+} from "@loomwork/blueprint-runtime";
 import { HEALTH_PROJECTION_ID } from "./health";
 
 // ── The Blueprint says everything the renderer needs (IR 2 — ADR 0097) ───────────────

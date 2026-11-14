@@ -1,7 +1,7 @@
-import type { EventEnvelope } from "@loom/core";
-import { A2UISurfaceBridge } from "@loom/plugin-a2ui";
-import type { A2UICallFunctionTransport, FunctionResponsePayload } from "@loom/plugin-a2ui";
-import { EFFECT_INDOUBT_RESOLVED } from "@loom/workflow-runtime";
+import type { EventEnvelope } from "@loomwork/core";
+import { A2UISurfaceBridge } from "@loomwork/plugin-a2ui";
+import type { A2UICallFunctionTransport, FunctionResponsePayload } from "@loomwork/plugin-a2ui";
+import { EFFECT_INDOUBT_RESOLVED } from "@loomwork/workflow-runtime";
 import { describe, expect, it } from "vitest";
 import { buildApp } from "../src/app";
 import { CHECKOUT_CATALOG } from "../src/catalog";

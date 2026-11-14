@@ -1,5 +1,5 @@
 {
-  "name": "@loom/agent-loop-triage",
+  "name": "@loomwork/agent-loop-triage",
   "version": "0.0.1",
   "description": "A support-ticket triage agent on the canonical agentLoop$ (ADR 0121): the model is routed through the capability ring, one turn's lookups run in parallel and a flaky one comes back as an isError tool result (a terminal quota error still stops the run), a refund parks on a human approval and resumes in a fresh runtime over the same store without re-running a tool, a consumed failure is never re-run, writeBack (ring / unless / allowDirect) lets the next ticket recall the first, and bare writeBack: true or a response cache without cacheScope is a config error. Offline, scripted model.",
   "private": true,
@@ -10,17 +10,17 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@loom/agent": "*",
-    "@loom/classify": "*",
-    "@loom/core": "*",
-    "@loom/effect-runtime": "*",
-    "@loom/event-runtime": "*",
-    "@loom/llm": "*",
-    "@loom/memory": "*",
-    "@loom/middleware": "*",
-    "@loom/reasoning": "*",
-    "@loom/snapshot-runtime": "*",
-    "@loom/workflow-runtime": "*",
+    "@loomwork/agent": "*",
+    "@loomwork/classify": "*",
+    "@loomwork/core": "*",
+    "@loomwork/effect-runtime": "*",
+    "@loomwork/event-runtime": "*",
+    "@loomwork/llm": "*",
+    "@loomwork/memory": "*",
+    "@loomwork/middleware": "*",
+    "@loomwork/reasoning": "*",
+    "@loomwork/snapshot-runtime": "*",
+    "@loomwork/workflow-runtime": "*",
     "zod": "catalog:"
   },
   "devDependencies": {

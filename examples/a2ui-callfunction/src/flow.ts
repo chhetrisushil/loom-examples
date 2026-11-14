@@ -1,8 +1,8 @@
-import { surface } from "@loom/agent-surface";
-import { flow$, handler$, step$ } from "@loom/core";
-import type { ExecutableTask } from "@loom/core";
-import { A2UI_CALL_FUNCTION_TOOL_ID } from "@loom/plugin-a2ui";
-import type { FlowRunner, RegisteredFlow } from "@loom/workflow-runtime";
+import { surface } from "@loomwork/agent-surface";
+import { flow$, handler$, step$ } from "@loomwork/core";
+import type { ExecutableTask } from "@loomwork/core";
+import { A2UI_CALL_FUNCTION_TOOL_ID } from "@loomwork/plugin-a2ui";
+import type { FlowRunner, RegisteredFlow } from "@loomwork/workflow-runtime";
 import { z } from "zod";
 
 // ── A checkout flow that calls two client-side functions ──────────────────────

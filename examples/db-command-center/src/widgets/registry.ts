@@ -1,5 +1,5 @@
-import { RendererRegistry, defaultRegistry } from "@loom/plugin-renderer-react";
-import type { WidgetRenderer } from "@loom/plugin-renderer-react";
+import { RendererRegistry, defaultRegistry } from "@loomwork/plugin-renderer-react";
+import type { WidgetRenderer } from "@loomwork/plugin-renderer-react";
 import {
   AgentFleetRenderer,
   AgentTaskListRenderer,

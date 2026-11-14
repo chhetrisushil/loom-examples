@@ -1,6 +1,6 @@
-import { openKnowledgeBase } from "@loom/knowledge";
-import type { KnowledgeBase, KnowledgeDoc } from "@loom/knowledge";
-import { InMemoryMemoryStore } from "@loom/memory";
+import { openKnowledgeBase } from "@loomwork/knowledge";
+import type { KnowledgeBase, KnowledgeDoc } from "@loomwork/knowledge";
+import { InMemoryMemoryStore } from "@loomwork/memory";
 
 // ── The runbook corpus: the half of a sentinel's knowledge that CHANGES ───────
 //

@@ -1,5 +1,5 @@
-import { type SemanticCatalog, defineSemanticCatalog } from "@loom-ui/core";
-import type { CapabilityRef } from "@loom-ui/planner";
+import { type SemanticCatalog, defineSemanticCatalog } from "@loomwork/ui-core";
+import type { CapabilityRef } from "@loomwork/ui-planner";
 
 // ── The simulated world ─────────────────────────────────────────────────────────────────────
 // Everything here is DETERMINISTIC: a learning demo that leans on Math.random or a live model

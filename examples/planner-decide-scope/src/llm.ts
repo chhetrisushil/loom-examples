@@ -1,5 +1,5 @@
-import { REVISE_SYSTEM } from "@loom-ui/planner";
-import { ToolEffect } from "@loom/effect-runtime";
+import { REVISE_SYSTEM } from "@loomwork/ui-planner";
+import { ToolEffect } from "@loomwork/effect-runtime";
 
 /** The effect id the planner's model reaches. Grants, middleware and verify all key on it. */
 export const LLM_TOOL_ID = "llm.complete";

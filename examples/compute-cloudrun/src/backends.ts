@@ -1,14 +1,14 @@
-import { LocalDispatcher } from "@loom/dispatcher";
-import type { ExecutionDispatcher } from "@loom/dispatcher";
+import { LocalDispatcher } from "@loomwork/dispatcher";
+import type { ExecutionDispatcher } from "@loomwork/dispatcher";
 import {
   CloudRunWorkerRuntime,
   StaticCloudRunPlatform,
   defaultSizingPolicy,
-} from "@loom/plugin-cloudrun";
-import type { CloudRunConfig } from "@loom/plugin-cloudrun";
-import { RemoteWorkerRuntime } from "@loom/plugin-worker-remote";
-import { LocalWorkerRuntime } from "@loom/worker-runtime-local";
-import type { WorkflowRuntime } from "@loom/workflow-runtime";
+} from "@loomwork/plugin-cloudrun";
+import type { CloudRunConfig } from "@loomwork/plugin-cloudrun";
+import { RemoteWorkerRuntime } from "@loomwork/plugin-worker-remote";
+import { LocalWorkerRuntime } from "@loomwork/worker-runtime-local";
+import type { WorkflowRuntime } from "@loomwork/workflow-runtime";
 
 // Three interchangeable compute backends for the SAME flow. Each returns an
 // ExecutionDispatcher; the caller dispatches identical ExecutionPackages and gets

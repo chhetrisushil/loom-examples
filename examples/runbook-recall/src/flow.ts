@@ -1,8 +1,8 @@
-import { flow$ } from "@loom/core";
-import type { TaskDefinition } from "@loom/core";
-import { assertGrounded } from "@loom/knowledge";
-import type { KnowledgeBase, Passage } from "@loom/knowledge";
-import type { FlowRunner, RegisteredFlow } from "@loom/workflow-runtime";
+import { flow$ } from "@loomwork/core";
+import type { TaskDefinition } from "@loomwork/core";
+import { assertGrounded } from "@loomwork/knowledge";
+import type { KnowledgeBase, Passage } from "@loomwork/knowledge";
+import type { FlowRunner, RegisteredFlow } from "@loomwork/workflow-runtime";
 import { z } from "zod";
 
 const answerInput = z.object({ question: z.string() });

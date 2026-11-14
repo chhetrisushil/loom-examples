@@ -1,5 +1,5 @@
 {
-  "name": "@loom/compute-cloudrun",
+  "name": "@loomwork/compute-cloudrun",
   "version": "0.0.1",
   "description": "Compute pluggability: the SAME durable flow runs unchanged on three interchangeable backends — in-process, a remote HTTP worker (worker-server + RemoteWorkerRuntime), and Cloud Run (CloudRunWorkerRuntime + StaticCloudRunPlatform) — by swapping only the dispatcher's WorkerRuntime. Runs fully offline (no GCP).",
   "private": true,
@@ -10,17 +10,17 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@loom/core": "*",
-    "@loom/dispatcher": "*",
-    "@loom/effect-runtime": "*",
-    "@loom/event-runtime": "*",
-    "@loom/plugin-cloudrun": "*",
-    "@loom/snapshot-runtime": "*",
-    "@loom/worker-runtime": "*",
-    "@loom/worker-runtime-local": "*",
-    "@loom/plugin-worker-remote": "*",
-    "@loom/plugin-worker-server": "*",
-    "@loom/workflow-runtime": "*",
+    "@loomwork/core": "*",
+    "@loomwork/dispatcher": "*",
+    "@loomwork/effect-runtime": "*",
+    "@loomwork/event-runtime": "*",
+    "@loomwork/plugin-cloudrun": "*",
+    "@loomwork/snapshot-runtime": "*",
+    "@loomwork/worker-runtime": "*",
+    "@loomwork/worker-runtime-local": "*",
+    "@loomwork/plugin-worker-remote": "*",
+    "@loomwork/plugin-worker-server": "*",
+    "@loomwork/workflow-runtime": "*",
     "zod": "catalog:"
   },
   "devDependencies": {

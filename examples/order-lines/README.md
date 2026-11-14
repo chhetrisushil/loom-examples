@@ -20,4 +20,4 @@ order's lines" is a genuinely DEPENDENT widget, not a widget over a directly-emp
   `data-state="error"` markup a bad path produces instead; reloading an empty upstream asks the
   same question and gets the same answer, never a cached one.
 
-Run: `pnpm --filter @loom/order-lines test`
+Run: `pnpm --filter @loomwork/order-lines test`

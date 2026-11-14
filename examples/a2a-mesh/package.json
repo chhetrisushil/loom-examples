@@ -1,5 +1,5 @@
 {
-  "name": "@loom/plugin-a2a-mesh",
+  "name": "@loomwork/plugin-a2a-mesh",
   "version": "0.0.1",
   "description": "Bidirectional A2A mesh: using external agent frameworks (ADK/LangGraph/CrewAI) with Loom",
   "private": true,
@@ -10,16 +10,16 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@loom/plugin-a2a": "*",
-    "@loom/agent": "*",
-    "@loom/app": "*",
-    "@loom/core": "*",
-    "@loom/effect-runtime": "*",
-    "@loom/event-runtime": "*",
-    "@loom/llm": "*",
-    "@loom/registry": "*",
-    "@loom/snapshot-runtime": "*",
-    "@loom/workflow-runtime": "*",
+    "@loomwork/plugin-a2a": "*",
+    "@loomwork/agent": "*",
+    "@loomwork/app": "*",
+    "@loomwork/core": "*",
+    "@loomwork/effect-runtime": "*",
+    "@loomwork/event-runtime": "*",
+    "@loomwork/llm": "*",
+    "@loomwork/registry": "*",
+    "@loomwork/snapshot-runtime": "*",
+    "@loomwork/workflow-runtime": "*",
     "zod": "catalog:"
   },
   "devDependencies": {

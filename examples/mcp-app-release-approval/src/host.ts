@@ -1,4 +1,4 @@
-import { McpClient } from "@loom/plugin-mcp";
+import { McpClient } from "@loomwork/plugin-mcp";
 import { JSDOM } from "jsdom";
 import { APP_CHANNEL_HEADER, DEMO_AUTH_HEADERS } from "./server";
 

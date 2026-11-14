@@ -1,4 +1,4 @@
-import type { SurfaceState } from "@loom/agent-surface";
+import type { SurfaceState } from "@loomwork/agent-surface";
 
 // A tiny HEADLESS renderer: turns a folded A2UI surface into a terminal panel. A
 // real client (React BlueprintRenderer, Web Components, …) binds the same surface

@@ -1,7 +1,7 @@
-import { defineConfig } from "@loom/app";
-import { LoomProvider } from "@loom/plugin-renderer-react";
-import { InMemoryProjectionRuntime } from "@loom/projection-runtime";
-import type { RegisteredFlow } from "@loom/workflow-runtime";
+import { defineConfig } from "@loomwork/app";
+import { LoomProvider } from "@loomwork/plugin-renderer-react";
+import { InMemoryProjectionRuntime } from "@loomwork/projection-runtime";
+import type { RegisteredFlow } from "@loomwork/workflow-runtime";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
 import { InvestigateIncidentFlow } from "./flows/InvestigateIncident";

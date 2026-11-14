@@ -1,8 +1,8 @@
-import { type LoomApp, defineConfig } from "@loom/app";
-import type { Blueprint, VersionPins } from "@loom/blueprint-runtime";
-import type { AnyProjectionDefinition } from "@loom/core";
-import type { ContentStore } from "@loom/plugin-content";
-import type { RegisteredFlow } from "@loom/workflow-runtime";
+import { type LoomApp, defineConfig } from "@loomwork/app";
+import type { Blueprint, VersionPins } from "@loomwork/blueprint-runtime";
+import type { AnyProjectionDefinition } from "@loomwork/core";
+import type { ContentStore } from "@loomwork/plugin-content";
+import type { RegisteredFlow } from "@loomwork/workflow-runtime";
 import { registerPromoteFlow } from "./flow";
 
 // ── Composition root ─────────────────────────────────────────────────────────

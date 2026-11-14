@@ -1,5 +1,5 @@
-import type { LlmProvider, LlmRequest, LlmResponse } from "@loom/llm";
-import { textOf } from "@loom/llm";
+import type { LlmProvider, LlmRequest, LlmResponse } from "@loomwork/llm";
+import { textOf } from "@loomwork/llm";
 import type { Topic } from "./catalogue";
 import { TOPIC_MODELS } from "./topics";
 

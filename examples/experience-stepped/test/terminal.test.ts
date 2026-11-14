@@ -1,4 +1,4 @@
-import { renderExperience, terminalRegistry } from "@loom-ui/renderer-terminal";
+import { renderExperience, terminalRegistry } from "@loomwork/ui-renderer-terminal";
 import { describe, expect, it } from "vitest";
 import { STEPS, createApp } from "../src/app";
 

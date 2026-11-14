@@ -1,4 +1,4 @@
-import { type LlmProvider, type LlmRequest, type LlmStreamChunk, textOf } from "@loom/llm";
+import { type LlmProvider, type LlmRequest, type LlmStreamChunk, textOf } from "@loomwork/llm";
 
 /** What the user typed, out of the untrusted-input fence the conversation layer wraps it in. */
 export function userTextOf(request: LlmRequest): string {

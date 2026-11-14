@@ -5,15 +5,15 @@ import { describe, expect, it } from "vitest";
 
 // ── The example's OWN browser file is browser-safe ───────────────────────────────
 // `src/client.ts` (this example's "the browser side") imports ONLY from
-// `@loom-ui/hydration/client` — never the root `@loom-ui/hydration` entry, which pulls in loom's
+// `@loomwork/ui-hydration/client` — never the root `@loomwork/ui-hydration` entry, which pulls in loom's
 // sandbox (QuickJS WASM) and MCP plugin to execute providers. This bundles the SOURCE
 // `src/client.ts` (no prior `tsc --build` needed) the way a real bundler would (esbuild, platform browser, resolved under the
-// browser/import conditions — same method as `@loom-ui/hydration`'s own `clientEntry.test.ts`) and
+// browser/import conditions — same method as `@loomwork/ui-hydration`'s own `clientEntry.test.ts`) and
 // asserts the bundle carries no `.wasm`, no node builtin, and none of the server-only packages.
 
 const SRC = resolve(__dirname, "../src");
 
-const FORBIDDEN_PACKAGES = ["@loom/plugin-sandbox", "@loom/plugin-mcp", "@loom/effect-runtime"];
+const FORBIDDEN_PACKAGES = ["@loomwork/plugin-sandbox", "@loomwork/plugin-mcp", "@loomwork/effect-runtime"];
 
 const FORBIDDEN_DIRS = FORBIDDEN_PACKAGES.flatMap((name) => {
   try {
@@ -56,14 +56,14 @@ describe("split-hydration's client.ts is browser-safe", () => {
     expect(wasmInputs).toEqual([]);
   });
 
-  it("imports @loom-ui/hydration ONLY through its browser-safe /client subpath", async () => {
+  it("imports @loomwork/ui-hydration ONLY through its browser-safe /client subpath", async () => {
     // A static source check, independent of the bundling walk above: the specifier itself must
-    // never be the bare "@loom-ui/hydration" root entry, which is server-side.
+    // never be the bare "@loomwork/ui-hydration" root entry, which is server-side.
     const { readFileSync } = await import("node:fs");
     const src = readFileSync(resolve(__dirname, "../src/client.ts"), "utf8");
     const specifiers = [...src.matchAll(/from\s+["']([^"']+)["']/g)].map((m) => m[1]);
-    expect(specifiers).toContain("@loom-ui/hydration/client");
-    expect(specifiers).not.toContain("@loom-ui/hydration");
+    expect(specifiers).toContain("@loomwork/ui-hydration/client");
+    expect(specifiers).not.toContain("@loomwork/ui-hydration");
   });
 
   it("the walk is live: the SERVER file does reach the server plane", async () => {

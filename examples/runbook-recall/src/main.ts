@@ -1,8 +1,8 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { unwrapTainted } from "@loom/classify";
-import { UntrustedContentError, textOf } from "@loom/llm";
+import { unwrapTainted } from "@loomwork/classify";
+import { UntrustedContentError, textOf } from "@loomwork/llm";
 import { ScriptedLlmProvider, citingAnswer } from "./ScriptedLlmProvider";
 import { buildApp } from "./app";
 import { RUNBOOKS } from "./corpus";
@@ -18,11 +18,11 @@ import { buildNaiveRequest } from "./prompt";
  *   retriever     → MemoryStore.search, via SQLite's FTS5 index
  *   reproducible  → ctx.decide, so WHICH passages were used is a recorded fact
  *   safe          → ADR 0085 taint, refused in every instruction position
- *   documents     → @loom/knowledge, which maps a DOCUMENT onto the passages it is
+ *   documents     → @loomwork/knowledge, which maps a DOCUMENT onto the passages it is
  *                   searched in — so a revised runbook supersedes its old text
  *                   instead of being indexed twice (loom ADR 0091)
  *
- * Run with:  pnpm --filter @loom/runbook-recall start
+ * Run with:  pnpm --filter @loomwork/runbook-recall start
  */
 
 function section(title: string): void {

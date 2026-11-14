@@ -1,7 +1,7 @@
-import { TypedFailure } from "@loom/core";
-import type { FlowDefinition } from "@loom/core";
-import { CHILD_FAILED, awaitAll, awaitChild, awaitChildren } from "@loom/orchestration";
-import type { FlowRunner, RegisteredFlow } from "@loom/workflow-runtime";
+import { TypedFailure } from "@loomwork/core";
+import type { FlowDefinition } from "@loomwork/core";
+import { CHILD_FAILED, awaitAll, awaitChild, awaitChildren } from "@loomwork/orchestration";
+import type { FlowRunner, RegisteredFlow } from "@loomwork/workflow-runtime";
 import { z } from "zod";
 
 // ─────────────────────────────────────────────────────────────────────────────

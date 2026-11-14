@@ -1,4 +1,4 @@
-import type { EventEnvelope } from "@loom/core";
+import type { EventEnvelope } from "@loomwork/core";
 
 // ── Phase 0 — the baseline, and why it comes first ───────────────────────────
 //
@@ -6,7 +6,7 @@ import type { EventEnvelope } from "@loom/core";
 // phase produces one with adaptation OFF. It is not overhead; it is what makes every
 // later claim testable rather than assertable.
 //
-// Everything here is a read-only lens over the log — the same posture `@loom/analytics`
+// Everything here is a read-only lens over the log — the same posture `@loomwork/analytics`
 // takes. Nothing is stored, nothing is derived at write time, and a report can be
 // recomputed for any window from history that already exists.
 //

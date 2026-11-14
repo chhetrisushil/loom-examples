@@ -8,7 +8,7 @@ import {
   OpenAiProvider,
   assertRequestSupported,
   textOf,
-} from "@loom/llm";
+} from "@loomwork/llm";
 import { readPng } from "./png";
 
 // A scripted, deterministic "vision" model: offline, no key. It plans from the user's prompt, asks for
@@ -19,7 +19,7 @@ import { readPng } from "./png";
 
 /**
  * What a shipped provider would DECLARE for `model` (and `baseUrl`): the allowlist table in
- * `@loom/llm`, read straight off a real provider instance. Nothing is sent; `complete` is never called.
+ * `@loomwork/llm`, read straight off a real provider instance. Nothing is sent; `complete` is never called.
  */
 export function declaredCapabilities(model: string, baseUrl?: string): LlmCapabilities {
   return new OpenAiProvider({

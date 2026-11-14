@@ -1,8 +1,8 @@
-import { readPlannerReach } from "@loom-ui/planner";
-import { analyzeRunnerReach } from "@loom/compiler";
-import { CapabilityDeniedError } from "@loom/effect-runtime";
-import { assertReachMatches } from "@loom/verify";
-import { ExecutionCancelledError } from "@loom/workflow-runtime";
+import { readPlannerReach } from "@loomwork/ui-planner";
+import { analyzeRunnerReach } from "@loomwork/compiler";
+import { CapabilityDeniedError } from "@loomwork/effect-runtime";
+import { assertReachMatches } from "@loomwork/verify";
+import { ExecutionCancelledError } from "@loomwork/workflow-runtime";
 import { describe, expect, it } from "vitest";
 import {
   CONFORMANCE_FLOW,

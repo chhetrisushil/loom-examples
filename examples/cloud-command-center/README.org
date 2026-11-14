@@ -14,7 +14,7 @@ A reference application for the Loom framework. It demonstrates a complete durab
 | Blueprint-driven UI      | ~src/blueprints/IncidentBlueprint.ts~               |
 | ~LoomProvider~ context   | ~src/main.tsx~                                      |
 | ~useLoom()~ hook         | ~src/App.tsx~                                       |
-| @loom/compiler Vite plugin | ~vite.config.ts~                                  |
+| @loomwork/compiler Vite plugin | ~vite.config.ts~                                  |
 
 * Prerequisites
 
@@ -37,7 +37,7 @@ pnpm build
 
 #+begin_src bash
 # From the repo root
-pnpm --filter @loom/cloud-command-center dev
+pnpm --filter @loomwork/cloud-command-center dev
 
 # Or from this directory
 pnpm dev
@@ -111,12 +111,12 @@ workflowRuntime.registerFlow(
 );
 #+end_src
 
-At build time, ~@loom/compiler~ (wired in ~vite.config.ts~) extracts each ~handler$(fn)~ into a separate lazy chunk. Unused steps never load their implementation.
+At build time, ~@loomwork/compiler~ (wired in ~vite.config.ts~) extracts each ~handler$(fn)~ into a separate lazy chunk. Unused steps never load their implementation.
 
 * Building for Production
 
 #+begin_src bash
-pnpm --filter @loom/cloud-command-center build:ui
+pnpm --filter @loomwork/cloud-command-center build:ui
 #+end_src
 
 The output in ~dist/~ includes:
@@ -127,7 +127,7 @@ The output in ~dist/~ includes:
 * Running Tests
 
 #+begin_src bash
-pnpm --filter @loom/cloud-command-center test
+pnpm --filter @loomwork/cloud-command-center test
 #+end_src
 
 * Configuration
@@ -135,7 +135,7 @@ pnpm --filter @loom/cloud-command-center test
 The Vite config (~vite.config.ts~) applies two settings required for workspace package interop:
 
 #+begin_src typescript
-import { loomPlugin } from "@loom/compiler";
+import { loomPlugin } from "@loomwork/compiler";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
@@ -144,9 +144,9 @@ export default defineConfig({
   resolve: { conditions: ["require", "default"] },
   optimizeDeps: {
     include: [
-      "@loom/blueprint-runtime",
-      "@loom/core",
-      // ... all @loom/* runtime packages
+      "@loomwork/blueprint-runtime",
+      "@loomwork/core",
+      // ... all @loomwork/* runtime packages
     ],
   },
 });

@@ -1,7 +1,7 @@
 // A responder's client: plain `fetch` for the HTTP routes, a small SSE reader for the stream, and
 // loom-ui's ChatFeed to fold both into the transcript that responder is shown.
-import { ChatFeed, chatTranscriptLines } from "@loom-ui/core";
-import type { PrincipalChain } from "@loom/effect-runtime";
+import { ChatFeed, chatTranscriptLines } from "@loomwork/ui-core";
+import type { PrincipalChain } from "@loomwork/effect-runtime";
 import { identityOf } from "./room";
 
 export interface SseEvent {

@@ -1,4 +1,4 @@
-import { isContainer, replay } from "@loom-ui/core";
+import { isContainer, replay } from "@loomwork/ui-core";
 import { describe, expect, it } from "vitest";
 import {
   GreenhouseSensor,

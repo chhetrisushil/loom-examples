@@ -1,4 +1,4 @@
-import { type LlmProvider, type LlmRequest, type LlmResponse, textOf } from "@loom/llm";
+import { type LlmProvider, type LlmRequest, type LlmResponse, textOf } from "@loomwork/llm";
 
 /**
  * A deterministic provider, so the example is offline and its executions replay

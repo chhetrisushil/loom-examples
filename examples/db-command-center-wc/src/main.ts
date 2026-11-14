@@ -1,6 +1,6 @@
-import { defineConfig } from "@loom/app";
-import type { WidgetAction } from "@loom/blueprint-runtime";
-import { InMemoryProjectionRuntime } from "@loom/projection-runtime";
+import { defineConfig } from "@loomwork/app";
+import type { WidgetAction } from "@loomwork/blueprint-runtime";
+import { InMemoryProjectionRuntime } from "@loomwork/projection-runtime";
 import { CAPABILITY_AGENT, FLEET } from "./agents/definitions";
 import { registerDiagnosticsEffects } from "./agents/diagnosticsRunner";
 import { MissionControlBlueprint } from "./blueprints/MissionControlBlueprint";

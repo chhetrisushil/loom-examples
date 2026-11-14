@@ -1,4 +1,4 @@
-import { type KindContract, type SemanticCatalog, defineSemanticCatalog } from "@loom-ui/core";
+import { type KindContract, type SemanticCatalog, defineSemanticCatalog } from "@loomwork/ui-core";
 
 // The support desk's vocabulary, mapped onto loom-ui's generic framework kinds. `Note` is also the
 // kind a withheld widget compiles to (loom's redacted widget), so the catalogue always declares it.

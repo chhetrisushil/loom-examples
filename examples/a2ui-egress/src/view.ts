@@ -1,5 +1,5 @@
-import { badge, bind, button, column, list, text } from "@loom/plugin-a2ui";
-import type { ComponentInstance } from "@loom/plugin-a2ui";
+import { badge, bind, button, column, list, text } from "@loomwork/plugin-a2ui";
+import type { ComponentInstance } from "@loomwork/plugin-a2ui";
 
 // ── The A2UI view (the "component tree") ──────────────────────────────────────
 //

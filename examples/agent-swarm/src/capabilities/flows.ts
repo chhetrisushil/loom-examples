@@ -1,6 +1,6 @@
-import { progressHub } from "@loom/app";
-import { flow$, handler$, step$ } from "@loom/core";
-import type { FlowRunner, RegisteredFlow } from "@loom/workflow-runtime";
+import { progressHub } from "@loomwork/app";
+import { flow$, handler$, step$ } from "@loomwork/core";
+import type { FlowRunner, RegisteredFlow } from "@loomwork/workflow-runtime";
 import { z } from "zod";
 import { auditDeps, checkPerf, deriveScope, scanSecurity, sleep } from "../agents/tools";
 import type {

@@ -1,12 +1,12 @@
-import { agentLoop$, registerReasoningRoutes } from "@loom/agent";
-import { defineConfig } from "@loom/app";
-import { agent$, tool$ } from "@loom/core";
-import type { EventEnvelope, FlowDefinition } from "@loom/core";
-import { ToolEffect } from "@loom/effect-runtime";
-import type { EventStore } from "@loom/event-runtime";
-import type { InMemoryContentStore } from "@loom/plugin-content";
-import { ReasoningRuntime } from "@loom/reasoning";
-import type { FlowRunner } from "@loom/workflow-runtime";
+import { agentLoop$, registerReasoningRoutes } from "@loomwork/agent";
+import { defineConfig } from "@loomwork/app";
+import { agent$, tool$ } from "@loomwork/core";
+import type { EventEnvelope, FlowDefinition } from "@loomwork/core";
+import { ToolEffect } from "@loomwork/effect-runtime";
+import type { EventStore } from "@loomwork/event-runtime";
+import type { InMemoryContentStore } from "@loomwork/plugin-content";
+import { ReasoningRuntime } from "@loomwork/reasoning";
+import type { FlowRunner } from "@loomwork/workflow-runtime";
 import { z } from "zod";
 import { INJECTION, type Model, PROMPT, ROUTE, expenseModel } from "./model";
 

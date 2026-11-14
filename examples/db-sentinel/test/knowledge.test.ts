@@ -1,6 +1,6 @@
-import { isTainted, unwrapTainted } from "@loom/classify";
-import { virtualClock } from "@loom/dst";
-import type { KnowledgeBase } from "@loom/knowledge";
+import { isTainted, unwrapTainted } from "@loomwork/classify";
+import { virtualClock } from "@loomwork/dst";
+import type { KnowledgeBase } from "@loomwork/knowledge";
 import { describe, expect, it } from "vitest";
 import { FINDING_RECORDED, type Finding } from "../src/domain";
 import { deploySentinel, fireOccurrence, newWorld } from "../src/harness";
@@ -10,7 +10,7 @@ import { DAY, HOUR, SIM_START, isAnomalyTime } from "../src/substrate";
 
 // ── The corpus a perpetual agent reads is edited while it runs ────────────────
 //
-// db-sentinel is the second consumer of `@loom/knowledge` (loom ADR 0091/0083),
+// db-sentinel is the second consumer of `@loomwork/knowledge` (loom ADR 0091/0083),
 // and it is deliberately unlike the first: `runbook-recall` answers one question
 // against a corpus ingested once, where an append-only store and an upsertable one
 // are indistinguishable. A sentinel runs for a year, and somebody edits the wiki in

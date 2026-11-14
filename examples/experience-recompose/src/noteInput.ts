@@ -1,4 +1,4 @@
-import type { DomWidgetRenderer } from "@loom-ui/renderer-lit/dom";
+import type { DomWidgetRenderer } from "@loomwork/ui-renderer-lit/dom";
 
 /**
  * The app's NoteInput: a labelled <textarea>. Two rules from the loom-ui design (§2.2):

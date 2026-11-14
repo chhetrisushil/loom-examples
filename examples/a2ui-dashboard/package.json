@@ -1,5 +1,5 @@
 {
-  "name": "@loom/agent-surface-dashboard",
+  "name": "@loomwork/agent-surface-dashboard",
   "version": "0.0.1",
   "description": "A live ops dashboard where each agent drives its OWN agent surface — the canonical showcase of defineConfig({ agentSurface: true }): one addressable surface per agent$, populated by createSurfaceEmitter(emit, agent.id), folded durably from the event log, rendered headlessly.",
   "private": true,
@@ -10,10 +10,10 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@loom/agent-surface": "*",
-    "@loom/app": "*",
-    "@loom/core": "*",
-    "@loom/workflow-runtime": "*",
+    "@loomwork/agent-surface": "*",
+    "@loomwork/app": "*",
+    "@loomwork/core": "*",
+    "@loomwork/workflow-runtime": "*",
     "zod": "catalog:"
   },
   "devDependencies": {

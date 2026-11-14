@@ -1,15 +1,15 @@
-import { toolSpecFor } from "@loom/agent";
-import { defineConfig, runAgentOnce } from "@loom/app";
-import { agent$, flow$, handler$, step$ } from "@loom/core";
-import { type LlmProvider, type LlmRequest, type LlmResponse, toParts } from "@loom/llm";
+import { toolSpecFor } from "@loomwork/agent";
+import { defineConfig, runAgentOnce } from "@loomwork/app";
+import { agent$, flow$, handler$, step$ } from "@loomwork/core";
+import { type LlmProvider, type LlmRequest, type LlmResponse, toParts } from "@loomwork/llm";
 import {
   A2APeerClient,
   createA2AClientEffect,
   createA2AServer,
   toAgentCard,
-} from "@loom/plugin-a2a";
-import { AgentRegistry } from "@loom/registry";
-import type { FlowRunner, RegisteredFlow } from "@loom/workflow-runtime";
+} from "@loomwork/plugin-a2a";
+import { AgentRegistry } from "@loomwork/registry";
+import type { FlowRunner, RegisteredFlow } from "@loomwork/workflow-runtime";
 import { z } from "zod";
 import { startMockExternalAgent } from "./mockExternalAgent";
 
@@ -29,7 +29,7 @@ import { startMockExternalAgent } from "./mockExternalAgent";
  * runs fully offline; the README shows how to point it at a real ADK/LangGraph
  * endpoint — the Loom-side code does not change.
  *
- * Run with:  pnpm --filter @loom/plugin-a2a-mesh start
+ * Run with:  pnpm --filter @loomwork/plugin-a2a-mesh start
  */
 
 /** Demo-only shared secret for the inbound A2A server; a real deployment verifies a signed token. */
@@ -63,7 +63,7 @@ class ScriptedLlmProvider implements LlmProvider {
 }
 
 async function main(): Promise<void> {
-  // The outbound side is a script-style run: `runAgentOnce` (@loom/app) builds the throwaway in-memory app
+  // The outbound side is a script-style run: `runAgentOnce` (@loomwork/app) builds the throwaway in-memory app
   // and one-off flow the agent loop needs, and the model call + every tool call resolve through its
   // EffectRuntime. The peer's tool definition is read up front with `map()` (the agent's menu needs it);
   // the peer is registered for real inside `registerEffects`, which runAgentOnce awaits.

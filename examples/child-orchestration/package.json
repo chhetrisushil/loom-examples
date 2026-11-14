@@ -1,5 +1,5 @@
 {
-  "name": "@loom/example-child-orchestration",
+  "name": "@loomwork/example-child-orchestration",
   "version": "0.0.1",
   "description": "Child-workflow orchestration end to end: a release pipeline that fans out builds with awaitChildren (settled, tolerate partial failure), gates smoke tests with awaitAll (all-or-nothing), and publishes with awaitChild (one child) \u2014 all durable, replay-safe, no new syscall.",
   "private": true,
@@ -11,13 +11,13 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@loom/core": "*",
-    "@loom/effect-runtime": "*",
-    "@loom/event-runtime": "*",
-    "@loom/live-query": "*",
-    "@loom/orchestration": "*",
-    "@loom/snapshot-runtime": "*",
-    "@loom/workflow-runtime": "*",
+    "@loomwork/core": "*",
+    "@loomwork/effect-runtime": "*",
+    "@loomwork/event-runtime": "*",
+    "@loomwork/live-query": "*",
+    "@loomwork/orchestration": "*",
+    "@loomwork/snapshot-runtime": "*",
+    "@loomwork/workflow-runtime": "*",
     "zod": "catalog:"
   },
   "devDependencies": {

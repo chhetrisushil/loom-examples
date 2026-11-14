@@ -1,4 +1,4 @@
-import { type SemanticCatalog, defineSemanticCatalog } from "@loom-ui/core";
+import { type SemanticCatalog, defineSemanticCatalog } from "@loomwork/ui-core";
 
 // One widget, one loom built-in kind: the "top order's lines" is a plain records table, so no
 // framework kind is needed here — this example is about the STATUS channel (ADR 0100's `empty`),

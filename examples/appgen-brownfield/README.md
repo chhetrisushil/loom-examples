@@ -87,10 +87,10 @@ loom appgen --from-spec ./planner/.loom/appgen/<timestamp>.spec.json --dir ./pla
 Install the optional planner and point `--model` at a local `.gguf`:
 
 ```bash
-pnpm add @loom/appgen-model node-llama-cpp
+pnpm add @loomwork/appgen-model node-llama-cpp
 loom appgen "Add a summarize step to the planner." --dir ./planner --model ./models/gemma-e4b.gguf --dry-run
 ```
 
 If the model is missing, too weak, or produces an invalid plan, appgen falls back to the deterministic
 parser — you always get a valid plan. See the
-`@loom/appgen-model` README (`loom/tools/appgen-model/README.md`).
+`@loomwork/appgen-model` README (`loom/tools/appgen-model/README.md`).

@@ -1,11 +1,11 @@
-import { HYDRATION_PROJECTION_ID, HydrationStore } from "@loom-ui/hydration";
-import { litRegistry, renderBlueprintDom } from "@loom-ui/renderer-lit/dom";
-import "@loom-ui/renderer-lit/register";
-import { MetricCard, blueprint$, cell, grid } from "@loom/blueprint-runtime";
-import { InMemoryProjectionRuntime } from "@loom/projection-runtime";
+import { HYDRATION_PROJECTION_ID, HydrationStore } from "@loomwork/ui-hydration";
+import { litRegistry, renderBlueprintDom } from "@loomwork/ui-renderer-lit/dom";
+import "@loomwork/ui-renderer-lit/register";
+import { MetricCard, blueprint$, cell, grid } from "@loomwork/blueprint-runtime";
+import { InMemoryProjectionRuntime } from "@loomwork/projection-runtime";
 import { describe, expect, it } from "vitest";
 
-describe("smoke: @loom-ui/renderer-lit loads under vitest + happy-dom from the linked workspace", () => {
+describe("smoke: @loomwork/ui-renderer-lit loads under vitest + happy-dom from the linked workspace", () => {
   it("mounts a MetricCard through litRegistry and updates it through handle.update", async () => {
     const runtime = new InMemoryProjectionRuntime();
     const store = new HydrationStore(runtime, { experienceId: "smoke" });
