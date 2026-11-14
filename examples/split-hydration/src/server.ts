@@ -1,5 +1,5 @@
 import { createHmac } from "node:crypto";
-import { type CompileResult, type Finding, compile } from "@loom-ui/core";
+import { type CompileResult, type Finding, compile } from "@loomwork/ui-core";
 import {
   type DriftReport,
   HYDRATION_PROJECTION_ID,
@@ -12,7 +12,7 @@ import {
   handleInventory,
   serveHandle,
   serveHandles,
-} from "@loom-ui/hydration";
+} from "@loomwork/ui-hydration";
 import { catalog } from "./catalog";
 import { stationBoard } from "./experience";
 import { reshapers } from "./reshapers";

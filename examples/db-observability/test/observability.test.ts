@@ -1,5 +1,5 @@
-import { blueprint$, builtinCatalog, stack, validateBlueprint } from "@loom/blueprint-runtime";
-import type { Blueprint, Layout, Widget } from "@loom/blueprint-runtime";
+import { blueprint$, builtinCatalog, stack, validateBlueprint } from "@loomwork/blueprint-runtime";
+import type { Blueprint, Layout, Widget } from "@loomwork/blueprint-runtime";
 import { describe, expect, it } from "vitest";
 import { buildApp } from "../src/app";
 import { catalogueEntry } from "../src/catalogue";

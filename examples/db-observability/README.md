@@ -66,10 +66,10 @@ in-process (`src/mcpServer.ts`) — still offline, still deterministic.
 ## How it works
 
 - **Transient hydration + durable repair** (`src/hydration.ts` + `src/mcpServer.ts`) — the
-  interpreter above: plain-code `invokeTransient` over `mcp.invoke` (`@loom/plugin-mcp`,
-  schema pins from `listTools`) chained into `sandbox.eval` (`@loom/plugin-sandbox`,
+  interpreter above: plain-code `invokeTransient` over `mcp.invoke` (`@loomwork/plugin-mcp`,
+  schema pins from `listTools`) chained into `sandbox.eval` (`@loomwork/plugin-sandbox`,
   content-addressed scripts in a `ContentStore`), escalating to a durable repair flow
-  (`fanout$` from `@loom/orchestration`) only on the typed drift→repair branch.
+  (`fanout$` from `@loomwork/orchestration`) only on the typed drift→repair branch.
 - **Telemetry projections** (`src/telemetry.ts`) — `cpu`, `connections`, `replication`,
   `queries` read-models, populated from the hydration flow's output (the browser build
   keeps the deterministic seeded scenario — hydration is the Node/terminal path),
@@ -87,7 +87,7 @@ in-process (`src/mcpServer.ts`) — still offline, still deterministic.
 - **Stated preferences** (`src/preferences.ts` + `src/preferenceService.ts`) — Phase 1 of
   the adaptive Operator Profile: what the operator explicitly chose, scoped per
   `(tenant, operator, topic)`, stored as versioned durable state
-  (`@loom/plugin-durable-state` — keyed CAS, so a load and a save are both recorded
+  (`@loomwork/plugin-durable-state` — keyed CAS, so a load and a save are both recorded
   steps), read when the surface is composed. **No inference of any kind** — no flags, no
   evidence, no cohorts. See below.
 
@@ -164,7 +164,7 @@ Two invariants hold this in place, and both are tests rather than intentions
   zeroed, so a holdout costs nothing and the canonical path cannot drift from the adaptive
   one — they are the same path.
 - **No arrangement removes a node the canonical surface has.** Checked with
-  `preservesNodes` from `@loom/blueprint-runtime`, which reports the node ids a structural
+  `preservesNodes` from `@loomwork/blueprint-runtime`, which reports the node ids a structural
   change dropped. A preference reorders and re-spaces; the widget set is the agent's, and
   nothing an operator can state removes a widget from it. The worst case is a worse
   layout, never a missing capability.
@@ -187,7 +187,7 @@ Three mechanisms, each replacing something the original design specified differe
 
 | | Design said | Here, and why |
 |---|---|---|
-| Where the profile lives | a projection folded per run | a **read model** (`@loom/plugin-read-model`) over ordinary run logs — a projection has no snapshot anchor, so a run-start re-fold is *O(operator's lifetime)* |
+| Where the profile lives | a projection folded per run | a **read model** (`@loomwork/plugin-read-model`) over ordinary run logs — a projection has no snapshot anchor, so a run-start re-fold is *O(operator's lifetime)* |
 | Expiry | a timestamp comparison at read time | an **event**. A read-time horizon makes the fold a function of `(events, now)`, so two reads of the same history disagree and pinning anything pins nothing. A scheduled evaluator observes the horizon and appends a lapse; the fold takes no clock |
 | What a run journals | the log offset it read at | the **resolved profile**, through `ctx.decide`. An offset reproduces the events but not the *fold* — and the fold is a versioned catalogue plus this code, both of which change. Both versions ride on the value: `catalogueVersion` and `evidenceVersion` |
 
@@ -303,8 +303,8 @@ second test now refuses any rule whose additions all sit inside the floor.
 **Visual dashboard (browser):**
 
 ```bash
-pnpm --filter @loom/db-observability dev       # http://localhost:5173 — ask a question, watch the charts
-pnpm --filter @loom/db-observability build:ui  # production bundle (dist/ui)
+pnpm --filter @loomwork/db-observability dev       # http://localhost:5173 — ask a question, watch the charts
+pnpm --filter @loomwork/db-observability build:ui  # production bundle (dist/ui)
 ```
 
 Ask *"Why is the CPU utilization high?"* and the **WHAT** renders as a radial **gauge**
@@ -316,16 +316,16 @@ push deterministic samples so the gauge/area animate.
 **Headless (terminal):**
 
 ```bash
-pnpm --filter @loom/db-observability start   # hydrate via MCP+sandbox, ask 4 questions, drift+repair midway
-pnpm --filter @loom/db-observability test    # classification, dynamic assembly, hydration + drift repair, registry
+pnpm --filter @loomwork/db-observability start   # hydrate via MCP+sandbox, ask 4 questions, drift+repair midway
+pnpm --filter @loomwork/db-observability test    # classification, dynamic assembly, hydration + drift repair, registry
 ```
 
 ## One blueprint, two surfaces
 
 The composer emits a **framework-agnostic `Blueprint`** — the intent→WHAT/WHY brain
 (`agent`/`topics`/`catalogue`/`composer`) is shared verbatim. Only the *rendering* differs:
-- **terminal** (`@loom/plugin-renderer-terminal`) prints each widget as `title: value`.
-- **browser** (`@loom/plugin-renderer-react`) renders the *same* blueprint with a custom
+- **terminal** (`@loomwork/plugin-renderer-terminal`) prints each widget as `title: value`.
+- **browser** (`@loomwork/plugin-renderer-react`) renders the *same* blueprint with a custom
   `RendererRegistry`: our Recharts renderers (`src/browser/renderers.tsx`) are registered
   under the standard widget-kind names and merged over the built-ins, so `MetricCard` →
   gauge, `Timeline` → area chart, `ProgressBar` → bar, `DataTable` → table. No catalogue

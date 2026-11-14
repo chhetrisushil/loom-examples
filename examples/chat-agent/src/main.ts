@@ -1,4 +1,4 @@
-import { textOf } from "@loom/llm";
+import { textOf } from "@loomwork/llm";
 import { startChat } from "./chat";
 import { openSse, until } from "./client";
 import { promptChars } from "./model";

@@ -1,4 +1,4 @@
-import type { A2UIServerMessage } from "@loom/plugin-a2ui";
+import type { A2UIServerMessage } from "@loomwork/plugin-a2ui";
 
 // ── Terminal formatting for A2UI wire messages ────────────────────────────────
 //

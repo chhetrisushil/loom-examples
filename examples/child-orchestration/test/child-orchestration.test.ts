@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { type ReleaseIn, type ReleaseOut, releaseFlow } from "../src/flows";
 import { type ReleaseRuntime, awaitTerminal, buildRuntime } from "../src/runtime";
 
-// Waits on the log, not on a clock: `@loom/live-query` folds the execution's state and
+// Waits on the log, not on a clock: `@loomwork/live-query` folds the execution's state and
 // pushes it again on every event, so this settles as soon as the supervisor finishes rather
 // than on the next 5ms tick — and there is no iteration cap guessing how long that takes.
 async function runRelease(

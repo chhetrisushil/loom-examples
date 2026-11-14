@@ -16,7 +16,7 @@ A reference application that demonstrates Loom is *frontend-framework agnostic*:
 | Telemetry hook                | ~ConsoleTelemetryAdapter~ + ~createTelemetryHook~ in ~loom.service.ts~ |
 | In-memory durability (demo)   | ~src/app/stores.ts~ (~InMemoryEventStore~, ~InMemorySnapshotStore~) — async-first, so swappable for SQLite / a BYO backend |
 
-Framework-agnostic by design: there is *no* ~@loom/renderer-angular~. ~WorkflowRuntime~ emits plain domain events; ~LoomService~ forwards them into a ~ProjectionRuntime~ and exposes the result as Angular ~signal()~s. The only framework coupling is ~zone.run()~, which lets runtime events trigger Angular change detection.
+Framework-agnostic by design: there is *no* ~@loomwork/renderer-angular~. ~WorkflowRuntime~ emits plain domain events; ~LoomService~ forwards them into a ~ProjectionRuntime~ and exposes the result as Angular ~signal()~s. The only framework coupling is ~zone.run()~, which lets runtime events trigger Angular change detection.
 
 * Prerequisites
 
@@ -39,7 +39,7 @@ pnpm build
 
 #+begin_src bash
 # From the repo root
-pnpm --filter @loom/angular-command-center dev
+pnpm --filter @loomwork/angular-command-center dev
 
 # Or from this directory
 pnpm dev
@@ -95,18 +95,18 @@ The component reads those signals directly — no observables or manual subscrip
 * Building for Production
 
 #+begin_src bash
-pnpm --filter @loom/angular-command-center build
+pnpm --filter @loomwork/angular-command-center build
 #+end_src
 
 * Configuration
 
-Angular is compiled by Vite via ~@analogjs/vite-plugin-angular~ (not the Angular CLI). The ~vite.config.ts~ carries the workspace-interop settings the ~@loom/*~ CommonJS packages require:
+Angular is compiled by Vite via ~@analogjs/vite-plugin-angular~ (not the Angular CLI). The ~vite.config.ts~ carries the workspace-interop settings the ~@loomwork/*~ CommonJS packages require:
 
 #+begin_src typescript
 export default defineConfig({
   plugins: [angular()],
   resolve: { conditions: ["require", "default"] },   // resolve pnpm workspace CJS
-  optimizeDeps: { include: loomPackages },            // pre-bundle @loom/* to ESM in dev
+  optimizeDeps: { include: loomPackages },            // pre-bundle @loomwork/* to ESM in dev
   build: {
     commonjsOptions: {
       transformMixedEsModules: true,                  // trace named exports for prod build
@@ -116,7 +116,7 @@ export default defineConfig({
 });
 #+end_src
 
-- ~optimizeDeps.include~ pre-bundles the CJS ~@loom/*~ packages into ESM for the dev server.
+- ~optimizeDeps.include~ pre-bundles the CJS ~@loomwork/*~ packages into ESM for the dev server.
 - ~build.commonjsOptions.transformMixedEsModules~ lets Rollup resolve named exports through Loom's transitive re-export chain in the production build (otherwise it fails with "step$ is not exported by dist/index.js").
 
 * Notes

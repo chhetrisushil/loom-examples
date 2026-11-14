@@ -1,7 +1,7 @@
 {
-  "name": "@loom/runbook-recall",
+  "name": "@loomwork/runbook-recall",
   "version": "0.0.1",
-  "description": "Knowledge retrieval (RAG) over a corpus that CHANGES: a semantic memory tier as the corpus, @loom/knowledge for the document-to-passage mapping (upsert, sync, citations), ctx.decide to make the retrieval a recorded fact, and the ADR-0085 taint that refuses a retrieved passage in an instruction position. No knowledge$ construct, no embedding SPI, no kernel change. Headless.",
+  "description": "Knowledge retrieval (RAG) over a corpus that CHANGES: a semantic memory tier as the corpus, @loomwork/knowledge for the document-to-passage mapping (upsert, sync, citations), ctx.decide to make the retrieval a recorded fact, and the ADR-0085 taint that refuses a retrieved passage in an instruction position. No knowledge$ construct, no embedding SPI, no kernel change. Headless.",
   "private": true,
   "scripts": {
     "build": "tsc --build",
@@ -10,14 +10,14 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@loom/app": "*",
-    "@loom/classify": "*",
-    "@loom/core": "*",
-    "@loom/knowledge": "*",
-    "@loom/llm": "*",
-    "@loom/memory": "*",
-    "@loom/plugin-sqlite": "*",
-    "@loom/workflow-runtime": "*",
+    "@loomwork/app": "*",
+    "@loomwork/classify": "*",
+    "@loomwork/core": "*",
+    "@loomwork/knowledge": "*",
+    "@loomwork/llm": "*",
+    "@loomwork/memory": "*",
+    "@loomwork/plugin-sqlite": "*",
+    "@loomwork/workflow-runtime": "*",
     "zod": "catalog:"
   },
   "devDependencies": {

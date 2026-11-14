@@ -1,6 +1,6 @@
-# mcp-app-release-approval — serve a Loom surface as an MCP App (`@loom/plugin-mcp-app`)
+# mcp-app-release-approval — serve a Loom surface as an MCP App (`@loomwork/plugin-mcp-app`)
 
-A Loom flow drives an **agent surface** with durable delta patches. `@loom/plugin-mcp-app`
+A Loom flow drives an **agent surface** with durable delta patches. `@loomwork/plugin-mcp-app`
 projects it onto the **MCP Apps** extension ([SEP-1865](https://modelcontextprotocol.io/seps/1865-mcp-apps-interactive-user-interfaces-for-mcp),
 `io.modelcontextprotocol/ui`), so any MCP host renders a Loom-driven UI.
 
@@ -143,7 +143,7 @@ a prop the A2UI `list()` helper never emits, so every list rendered empty.
 
 This app's entire output is a record of **who approved a production release**, so two questions
 have to stay separate. The K12 `ResumeAuthenticator` decides whether an approval is *accepted* —
-only the trust boundary may approve. `@loom/plugin-audit-chain` answers the other one: whether
+only the trust boundary may approve. `@loomwork/plugin-audit-chain` answers the other one: whether
 the accepted approval is still the one **recorded**. It hash-chains every event into `metadata`,
 which the fold ignores, so replay is byte-identical whether or not it is wired, and
 `app.auditLog.verifyChain(executionId)` recomputes the chain out of band.

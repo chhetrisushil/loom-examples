@@ -1,9 +1,9 @@
-import type { SurfaceEmitter } from "@loom/agent-surface";
-import type { ExecutionState } from "@loom/core";
-import type { ExecutionDispatcher } from "@loom/dispatcher";
-import type { BranchRegistry } from "@loom/event-runtime";
-import { parallelLimit } from "@loom/scheduler";
-import type { WorkflowRuntime } from "@loom/workflow-runtime";
+import type { SurfaceEmitter } from "@loomwork/agent-surface";
+import type { ExecutionState } from "@loomwork/core";
+import type { ExecutionDispatcher } from "@loomwork/dispatcher";
+import type { BranchRegistry } from "@loomwork/event-runtime";
+import { parallelLimit } from "@loomwork/scheduler";
+import type { WorkflowRuntime } from "@loomwork/workflow-runtime";
 import { MigrationExecutionFlow } from "../capabilities/flows";
 import { BRANCH_TARGET } from "../compute/dispatcher";
 import { progressHub } from "../runtime/progressHub";
@@ -26,7 +26,7 @@ import {
 //                   (ctx.suspend), point `main` at it, and propose the candidate
 //                   strategies. The parent is now a durable fork point.
 //   2. explore()  — fork one child per candidate strategy from the gate, then
-//                   resume each *in simulate mode* CONCURRENTLY (@loom/scheduler
+//                   resume each *in simulate mode* CONCURRENTLY (@loomwork/scheduler
 //                   parallelLimit — deterministic, input-ordered results). Each
 //                   branch runs its strategy against a shadow schema, streaming
 //                   live backfill progress, without touching the real table.

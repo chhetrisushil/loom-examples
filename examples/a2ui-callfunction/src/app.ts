@@ -1,6 +1,6 @@
-import { type LoomApp, type StorageConfig, defineConfig } from "@loom/app";
-import { registerA2UICallFunction } from "@loom/plugin-a2ui";
-import type { A2UICallFunctionTransport } from "@loom/plugin-a2ui";
+import { type LoomApp, type StorageConfig, defineConfig } from "@loomwork/app";
+import { registerA2UICallFunction } from "@loomwork/plugin-a2ui";
+import type { A2UICallFunctionTransport } from "@loomwork/plugin-a2ui";
 import { RegisteredCheckoutFlow } from "./flow";
 
 // ── Composition root ──────────────────────────────────────────────────────────

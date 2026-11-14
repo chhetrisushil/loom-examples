@@ -1,10 +1,10 @@
-import type { InProcessA2ABus } from "@loom/app";
-import type { CapabilityCatalog } from "@loom/capability";
-import type { ExecutionDispatcher } from "@loom/dispatcher";
-import { type GraphExecution, executeGraph } from "@loom/graph-executor";
-import { IntentRuntime } from "@loom/intent";
-import { decideApproval } from "@loom/orchestrator";
-import { PlannerRuntime } from "@loom/planner";
+import type { InProcessA2ABus } from "@loomwork/app";
+import type { CapabilityCatalog } from "@loomwork/capability";
+import type { ExecutionDispatcher } from "@loomwork/dispatcher";
+import { type GraphExecution, executeGraph } from "@loomwork/graph-executor";
+import { IntentRuntime } from "@loomwork/intent";
+import { decideApproval } from "@loomwork/orchestrator";
+import { PlannerRuntime } from "@loomwork/planner";
 import { CAPABILITY_AGENT } from "../agents/definitions";
 import type {
   AuditRunResult,

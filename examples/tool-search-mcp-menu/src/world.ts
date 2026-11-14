@@ -3,17 +3,17 @@ import {
   type ToolRankerFactory,
   agentLoop$,
   createAgentModelEffect,
-} from "@loom/agent";
-import type { EventEnvelope, FlowDefinition, ToolDefinition } from "@loom/core";
-import { agent$ } from "@loom/core";
-import { EffectRuntime, ToolEffect } from "@loom/effect-runtime";
-import { InMemoryAsyncEventStore } from "@loom/event-runtime";
-import type { LlmProvider, LlmRequest, LlmResponse } from "@loom/llm";
-import type { MappedMcpTool } from "@loom/plugin-mcp";
-import { ReplayVM } from "@loom/replay-vm";
-import { InMemoryAsyncSnapshotStore } from "@loom/snapshot-runtime";
-import { WorkflowRuntime } from "@loom/workflow-runtime";
-import type { FlowRunner } from "@loom/workflow-runtime";
+} from "@loomwork/agent";
+import type { EventEnvelope, FlowDefinition, ToolDefinition } from "@loomwork/core";
+import { agent$ } from "@loomwork/core";
+import { EffectRuntime, ToolEffect } from "@loomwork/effect-runtime";
+import { InMemoryAsyncEventStore } from "@loomwork/event-runtime";
+import type { LlmProvider, LlmRequest, LlmResponse } from "@loomwork/llm";
+import type { MappedMcpTool } from "@loomwork/plugin-mcp";
+import { ReplayVM } from "@loomwork/replay-vm";
+import { InMemoryAsyncSnapshotStore } from "@loomwork/snapshot-runtime";
+import { WorkflowRuntime } from "@loomwork/workflow-runtime";
+import type { FlowRunner } from "@loomwork/workflow-runtime";
 import { z } from "zod";
 import { ANNOTATIONS } from "./catalog";
 import { scriptedModel } from "./model";
@@ -33,7 +33,7 @@ const flowDef: FlowDefinition = {
 };
 
 export interface WorldOptions {
-  /** The 64 MCP tools, mapped by `@loom/plugin-mcp` (`origin: "remote"`). */
+  /** The 64 MCP tools, mapped by `@loomwork/plugin-mcp` (`origin: "remote"`). */
   mcp: MappedMcpTool[];
   /**
    * A custom tool-ranker FACTORY (`toolSearch.ranker`): switches search into two-ranker mode and is

@@ -1,4 +1,4 @@
-import type { SurfaceState } from "@loom/agent-surface";
+import type { SurfaceState } from "@loomwork/agent-surface";
 import { describe, expect, it } from "vitest";
 import { buildApp } from "../src/app";
 import { PANELS } from "../src/flows";

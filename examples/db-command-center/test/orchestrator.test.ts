@@ -1,5 +1,5 @@
-import type { ProjectionRuntime } from "@loom/projection-runtime";
-import { createTestApp, waitFor } from "@loom/testing";
+import type { ProjectionRuntime } from "@loomwork/projection-runtime";
+import { createTestApp, waitFor } from "@loomwork/testing";
 import { describe, expect, it } from "vitest";
 import { AGENT_CARDS, CAPABILITY_AGENT } from "../src/agents/definitions";
 import { registerDiagnosticsEffects } from "../src/agents/diagnosticsRunner";

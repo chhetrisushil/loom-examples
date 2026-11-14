@@ -1,6 +1,6 @@
-import type { EventEnvelope } from "@loom/core";
-import { A2UISurfaceBridge, A2UI_VERSION } from "@loom/plugin-a2ui";
-import type { A2UIServerMessage } from "@loom/plugin-a2ui";
+import type { EventEnvelope } from "@loomwork/core";
+import { A2UISurfaceBridge, A2UI_VERSION } from "@loomwork/plugin-a2ui";
+import type { A2UIServerMessage } from "@loomwork/plugin-a2ui";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { buildApp } from "../src/app";
 import type { ExpenseInput } from "../src/flow";

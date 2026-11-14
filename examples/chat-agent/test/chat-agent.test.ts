@@ -1,4 +1,4 @@
-import { textOf } from "@loom/llm";
+import { textOf } from "@loomwork/llm";
 import { afterEach, describe, expect, it } from "vitest";
 import { type Chat, newStores, startChat } from "../src/chat";
 import { type Sse, openSse, until } from "../src/client";

@@ -1,5 +1,5 @@
-import { findNode, keyConflicts, nodeIds } from "@loom-ui/core";
-import type { ContainerNode, ExperienceNode, SemanticNode } from "@loom-ui/core";
+import { findNode, keyConflicts, nodeIds } from "@loomwork/ui-core";
+import type { ContainerNode, ExperienceNode, SemanticNode } from "@loomwork/ui-core";
 import { describe, expect, it } from "vitest";
 import {
   baseBoard,

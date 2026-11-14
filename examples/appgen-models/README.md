@@ -52,14 +52,14 @@ loom appgen "Add a summarize step to the planner and pause for approval." \
   --dir ./planner --model gemini:gemini-2.0-flash --dry-run
 ```
 
-Any `@loom/llm` `LlmProvider` works; these three are wired **by name** for convenience.
+Any `@loomwork/llm` `LlmProvider` works; these three are wired **by name** for convenience.
 
 ## 2. A local model — fully offline (`.gguf`)
 
 Install the optional planner in your project and point `--model` at a local model file:
 
 ```bash
-pnpm add -D @loom/appgen-model node-llama-cpp
+pnpm add -D @loomwork/appgen-model node-llama-cpp
 loom appgen "Add a summarize step to the planner and pause for approval." \
   --dir ./planner --model ./models/gemma-e4b.gguf --dry-run
 # gemma:<path> and local:<path> are equivalent spellings.
@@ -98,6 +98,6 @@ loom appgen --from-spec ./planner/.loom/appgen/1783875332959.spec.json --dir ./e
 |---|---|
 | No dependencies, deterministic, CI-safe | *(no `--model`)* / `--offline` |
 | A model you already pay for | `anthropic:` / `openai:` / `gemini:` |
-| Nothing leaves the machine (privacy) | a local `.gguf` (`@loom/appgen-model`) |
+| Nothing leaves the machine (privacy) | a local `.gguf` (`@loomwork/appgen-model`) |
 | Cheap-first with a strong fallback | `--model <cheap>` + `--model-big <strong>` |
 | Reproduce a past plan with no model | `--from-spec <lockfile>` |

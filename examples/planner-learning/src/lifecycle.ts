@@ -6,7 +6,7 @@ import {
   evaluatePolicy,
   promotionGate,
   sliceByVersion,
-} from "@loom/learning";
+} from "@loomwork/learning";
 import { BOOTSTRAP, type Batch, GATE, type Lab } from "./lab";
 import { POLICY_ID, type Version, versionHash } from "./policies";
 import type { Epoch, Layout } from "./world";

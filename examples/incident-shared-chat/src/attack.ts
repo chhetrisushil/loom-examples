@@ -4,7 +4,7 @@
 // policy slip (or a hostile node) that lets raw bytes into the coordinator's inbox. What arrives is data,
 // not authority: the conversation body acts only on an envelope the host signed, for THIS conversation,
 // fresh, and never twice.
-import { CONVERSATION_TOPIC } from "@loom/conversation";
+import { CONVERSATION_TOPIC } from "@loomwork/conversation";
 import type { Room } from "./room";
 
 type Envelope = Record<string, unknown> & { text?: string };

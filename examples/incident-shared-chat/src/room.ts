@@ -7,7 +7,7 @@
 //   - the SERVICE principal that owns the coordinating execution (no human can `query` its raw log),
 //   - the OWNER-SCOPED runtime policy `createConversations` asserts at construction,
 //   - the HMAC key every inbox envelope is signed under.
-import { createAgentModelEffect } from "@loom/agent";
+import { createAgentModelEffect } from "@loomwork/agent";
 import {
   type ConversationConfig,
   ConversationHub,
@@ -18,17 +18,17 @@ import {
   inboxBargeIn,
   logParticipants,
   sameIdentity,
-} from "@loom/conversation";
-import { agent$, tool$ } from "@loom/core";
-import { EffectRuntime, GrantTable, ToolEffect } from "@loom/effect-runtime";
-import type { PrincipalChain } from "@loom/effect-runtime";
-import { InMemoryAsyncEventStore, InMemoryTimerStore } from "@loom/event-runtime";
-import type { LlmMessage, LlmProvider, LlmRequest, LlmResponse } from "@loom/llm";
-import { textOf } from "@loom/llm";
-import { createConversationSseServer } from "@loom/plugin-conversation-sse";
-import type { ConversationSseServer } from "@loom/plugin-conversation-sse";
-import { InMemoryAsyncSnapshotStore } from "@loom/snapshot-runtime";
-import { WorkflowRuntime, executionAccessPolicy } from "@loom/workflow-runtime";
+} from "@loomwork/conversation";
+import { agent$, tool$ } from "@loomwork/core";
+import { EffectRuntime, GrantTable, ToolEffect } from "@loomwork/effect-runtime";
+import type { PrincipalChain } from "@loomwork/effect-runtime";
+import { InMemoryAsyncEventStore, InMemoryTimerStore } from "@loomwork/event-runtime";
+import type { LlmMessage, LlmProvider, LlmRequest, LlmResponse } from "@loomwork/llm";
+import { textOf } from "@loomwork/llm";
+import { createConversationSseServer } from "@loomwork/plugin-conversation-sse";
+import type { ConversationSseServer } from "@loomwork/plugin-conversation-sse";
+import { InMemoryAsyncSnapshotStore } from "@loomwork/snapshot-runtime";
+import { WorkflowRuntime, executionAccessPolicy } from "@loomwork/workflow-runtime";
 import { z } from "zod";
 
 // ── people ──────────────────────────────────────────────────────────────────────────────────────

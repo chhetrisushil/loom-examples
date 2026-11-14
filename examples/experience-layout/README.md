@@ -23,8 +23,8 @@ There is **no consumer-specific code** here — only a library's own vocabulary 
 generic kinds (`Kpi`, `Note`).
 
 ```bash
-pnpm --filter @loom/experience-layout test
-pnpm --filter @loom/experience-layout build
+pnpm --filter @loomwork/experience-layout test
+pnpm --filter @loomwork/experience-layout build
 ```
 
 Requires the sibling `../loom-ui` built at a commit with Blueprint IR 2.1.0 support.

@@ -21,7 +21,7 @@ pipeline is replay-safe and crash-recoverable frame by frame.
 
 The supervisor turns spawn intents into child executions and completions back into parent
 resumes, all off the event loop — so "is the release done?" is a question about the LOG.
-`buildRuntime()` returns a `LiveQuery` (`@loom/live-query`) over the same store, and
+`buildRuntime()` returns a `LiveQuery` (`@loomwork/live-query`) over the same store, and
 `awaitTerminal` resolves on the first terminal push: `subscribe` delivers current state
 immediately and again after every event, so an execution that already finished still settles.
 
@@ -32,8 +32,8 @@ release takes.
 ## Run it
 
 ```bash
-pnpm --filter @loom/example-child-orchestration start   # narrated two-scenario demo
-pnpm --filter @loom/example-child-orchestration test    # asserts the outcomes
+pnpm --filter @loomwork/example-child-orchestration start   # narrated two-scenario demo
+pnpm --filter @loomwork/example-child-orchestration test    # asserts the outcomes
 ```
 
 Scenario A ships cleanly; Scenario B has a service that fails to **build** (tolerated —

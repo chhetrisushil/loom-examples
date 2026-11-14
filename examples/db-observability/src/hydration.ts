@@ -1,14 +1,14 @@
-import { TypedFailure } from "@loom/core";
-import type { EventEnvelope, FlowDefinition } from "@loom/core";
-import { EffectRuntime } from "@loom/effect-runtime";
-import { InMemoryAsyncEventStore } from "@loom/event-runtime";
-import { fanout$ } from "@loom/orchestration";
-import { InMemoryContentStore } from "@loom/plugin-content";
-import { McpClient, mcpInvoke$, registerMcpInvoke } from "@loom/plugin-mcp";
-import { registerSandboxEval, sandboxEval$, shapeHash } from "@loom/plugin-sandbox";
-import { InMemoryAsyncSnapshotStore } from "@loom/snapshot-runtime";
-import { WorkflowRuntime } from "@loom/workflow-runtime";
-import type { FlowRunner, RegisteredFlow } from "@loom/workflow-runtime";
+import { TypedFailure } from "@loomwork/core";
+import type { EventEnvelope, FlowDefinition } from "@loomwork/core";
+import { EffectRuntime } from "@loomwork/effect-runtime";
+import { InMemoryAsyncEventStore } from "@loomwork/event-runtime";
+import { fanout$ } from "@loomwork/orchestration";
+import { InMemoryContentStore } from "@loomwork/plugin-content";
+import { McpClient, mcpInvoke$, registerMcpInvoke } from "@loomwork/plugin-mcp";
+import { registerSandboxEval, sandboxEval$, shapeHash } from "@loomwork/plugin-sandbox";
+import { InMemoryAsyncSnapshotStore } from "@loomwork/snapshot-runtime";
+import { WorkflowRuntime } from "@loomwork/workflow-runtime";
+import type { FlowRunner, RegisteredFlow } from "@loomwork/workflow-runtime";
 import { z } from "zod";
 
 // ── Telemetry hydration — the transient blueprint-interpreter pattern ─────────

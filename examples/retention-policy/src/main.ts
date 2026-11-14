@@ -1,4 +1,4 @@
-import { RetentionPolicyError, retentionPolicy } from "@loom/workflow-runtime";
+import { RetentionPolicyError, retentionPolicy } from "@loomwork/workflow-runtime";
 import { IDS, NAMES, type Name, blobOf, buildHistory, snapshotSequences } from "./history";
 import { applyAll, evaluateAll, sweep } from "./passes";
 // Narrated demo: `pnpm start`. Offline, SQLite in a temp dir, a simulated clock - no real waits.

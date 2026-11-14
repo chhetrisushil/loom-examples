@@ -1,4 +1,4 @@
-import type { WidgetValueCheck } from "@loom/plugin-renderer-terminal";
+import type { WidgetValueCheck } from "@loomwork/plugin-renderer-terminal";
 
 // ── The app's value contract, in loom's `check` seam ──────────────────────────
 // loom's matrix runs this between `error` and `stale`, and ONLY for a widget that declares a

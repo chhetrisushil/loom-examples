@@ -1,6 +1,6 @@
-import { agentSurfaceProjection } from "@loom/agent-surface";
-import type { WidgetAction } from "@loom/blueprint-runtime";
-import { InMemoryProjectionRuntime } from "@loom/projection-runtime";
+import { agentSurfaceProjection } from "@loomwork/agent-surface";
+import type { WidgetAction } from "@loomwork/blueprint-runtime";
+import { InMemoryProjectionRuntime } from "@loomwork/projection-runtime";
 import { MissionControlBlueprint } from "../blueprints/MissionControlBlueprint";
 import { ObservabilityBlueprint } from "../blueprints/ObservabilityBlueprint";
 import { type MountedBlueprint, mountBlueprint } from "../dom/BlueprintDom";

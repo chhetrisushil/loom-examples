@@ -1,4 +1,4 @@
-import { step$, tool$ } from "@loom/core";
+import { step$, tool$ } from "@loomwork/core";
 import { z } from "zod";
 
 // The AI triage step is an "llm"-kind effect. Its handler is registered in

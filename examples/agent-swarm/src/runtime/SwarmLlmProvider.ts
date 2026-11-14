@@ -1,5 +1,5 @@
-import type { LlmProvider, LlmRequest, LlmResponse } from "@loom/llm";
-import { textOf } from "@loom/llm";
+import type { LlmProvider, LlmRequest, LlmResponse } from "@loomwork/llm";
+import { textOf } from "@loomwork/llm";
 
 // A single deterministic, offline LlmProvider so the whole swarm runs with no API
 // key. It plays two model roles the runtimes ask for:

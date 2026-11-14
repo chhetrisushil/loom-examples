@@ -5,8 +5,8 @@ import {
   type ProviderSpec,
   type SemanticNode,
   genesis,
-} from "@loom-ui/core";
-import { seal } from "@loom-ui/core/log";
+} from "@loomwork/ui-core";
+import { seal } from "@loomwork/ui-core/log";
 import { TOOL_PINS, type ToolName } from "./tools";
 
 // One station, four widgets: the current reading and a frost-risk flag (both P0, both reading

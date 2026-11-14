@@ -4,7 +4,7 @@ import {
   type SemanticCatalog,
   defineSemanticCatalog,
   genesis,
-} from "@loom-ui/core";
+} from "@loomwork/ui-core";
 import {
   type CapabilityRef,
   type DecideContext,
@@ -14,7 +14,7 @@ import {
   ReferencePlanner,
   declaredToolClassesFrom,
   providerHandle,
-} from "@loom-ui/planner";
+} from "@loomwork/ui-planner";
 
 type DataClass = NonNullable<CapabilityRef["sensitivity"]>;
 

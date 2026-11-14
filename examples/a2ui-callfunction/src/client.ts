@@ -2,7 +2,7 @@ import type {
   A2UICallFunctionTransport,
   CallFunctionPayload,
   FunctionResponsePayload,
-} from "@loom/plugin-a2ui";
+} from "@loomwork/plugin-a2ui";
 
 // ── An in-process A2UI "client" ────────────────────────────────────────────────
 //

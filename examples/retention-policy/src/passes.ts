@@ -1,7 +1,7 @@
-import { type ContentSweepReport, sweepUnpinnedContent } from "@loom/plugin-content";
+import { type ContentSweepReport, sweepUnpinnedContent } from "@loomwork/plugin-content";
 // The three retention passes, each taking the app's policy VALUE. These are thin on purpose: the
 // point of ADR 0145 is that the numbers live in `retention.ts`, and every pass just receives them.
-import type { RetentionOutcome, RetentionPolicy, RetentionVerdict } from "@loom/workflow-runtime";
+import type { RetentionOutcome, RetentionPolicy, RetentionVerdict } from "@loomwork/workflow-runtime";
 import { IDS, NAMES, type Name } from "./history";
 import type { World } from "./world";
 

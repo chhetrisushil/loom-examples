@@ -1,5 +1,5 @@
-import { BlueprintRenderer } from "@loom/plugin-renderer-react";
-import type { RendererRegistry, WidgetRenderer } from "@loom/plugin-renderer-react";
+import { BlueprintRenderer } from "@loomwork/plugin-renderer-react";
+import type { RendererRegistry, WidgetRenderer } from "@loomwork/plugin-renderer-react";
 import type { CSSProperties } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { DashboardResult } from "../composer";

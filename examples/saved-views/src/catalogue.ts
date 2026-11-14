@@ -1,4 +1,4 @@
-import { defineWidgetCatalog } from "@loom/blueprint-runtime";
+import { defineWidgetCatalog } from "@loomwork/blueprint-runtime";
 
 // ── The vocabulary a composer may assemble from ──────────────────────────────
 //

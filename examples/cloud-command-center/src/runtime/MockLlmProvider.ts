@@ -1,11 +1,11 @@
-import type { LlmProvider, LlmRequest, LlmResponse, LlmStreamChunk } from "@loom/llm";
+import type { LlmProvider, LlmRequest, LlmResponse, LlmStreamChunk } from "@loomwork/llm";
 
 // A deterministic, offline LlmProvider so the example runs with no API key.
 //
 // Because the framework's LlmProvider contract is provider-agnostic, swapping
 // this for a real model is a one-line change in setup.ts:
 //
-//   import { AnthropicProvider } from "@loom/llm";
+//   import { AnthropicProvider } from "@loomwork/llm";
 //   export const llmProvider = new AnthropicProvider({ model: "claude-opus-4-8" });
 //
 // Everything downstream (streaming step, projection, StreamingText widget)

@@ -1,5 +1,5 @@
 {
-  "name": "@loom/retention-policy",
+  "name": "@loomwork/retention-policy",
   "version": "0.0.1",
   "private": true,
   "description": "App-owned retention policy (loom ADR 0145) and the end-of-execution content clock (ADR 0146): one frozen policy value drives log retention, snapshot pruning and the content sweep over SQLite stores on a simulated clock.",
@@ -10,14 +10,14 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@loom/core": "*",
-    "@loom/effect-runtime": "*",
-    "@loom/event-runtime": "*",
-    "@loom/middleware": "*",
-    "@loom/plugin-content": "*",
-    "@loom/plugin-sqlite": "*",
-    "@loom/snapshot-runtime": "*",
-    "@loom/workflow-runtime": "*",
+    "@loomwork/core": "*",
+    "@loomwork/effect-runtime": "*",
+    "@loomwork/event-runtime": "*",
+    "@loomwork/middleware": "*",
+    "@loomwork/plugin-content": "*",
+    "@loomwork/plugin-sqlite": "*",
+    "@loomwork/snapshot-runtime": "*",
+    "@loomwork/workflow-runtime": "*",
     "zod": "catalog:"
   },
   "devDependencies": {

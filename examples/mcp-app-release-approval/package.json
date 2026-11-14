@@ -1,7 +1,7 @@
 {
-  "name": "@loom/mcp-app-release-approval",
+  "name": "@loomwork/mcp-app-release-approval",
   "version": "0.0.1",
-  "description": "Serves a Loom agent surface as an MCP App (SEP-1865) via @loom/plugin-mcp-app: one static content-pinned surface-host template, an ambient app-visibility cursor that substitutes for the extension's missing server push, and decision provenance (seenSequence/isStale) across a long-held approval gate. The View is the REAL template, executed in jsdom against a real MCP server over HTTP.",
+  "description": "Serves a Loom agent surface as an MCP App (SEP-1865) via @loomwork/plugin-mcp-app: one static content-pinned surface-host template, an ambient app-visibility cursor that substitutes for the extension's missing server push, and decision provenance (seenSequence/isStale) across a long-held approval gate. The View is the REAL template, executed in jsdom against a real MCP server over HTTP.",
   "private": true,
   "scripts": {
     "build": "tsc --build",
@@ -10,16 +10,16 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@loom/agent-surface": "*",
-    "@loom/app": "*",
-    "@loom/core": "*",
-    "@loom/event-runtime": "*",
-    "@loom/plugin-a2ui": "*",
-    "@loom/plugin-audit-chain": "*",
-    "@loom/plugin-mcp": "*",
-    "@loom/plugin-mcp-app": "*",
-    "@loom/snapshot-runtime": "*",
-    "@loom/workflow-runtime": "*",
+    "@loomwork/agent-surface": "*",
+    "@loomwork/app": "*",
+    "@loomwork/core": "*",
+    "@loomwork/event-runtime": "*",
+    "@loomwork/plugin-a2ui": "*",
+    "@loomwork/plugin-audit-chain": "*",
+    "@loomwork/plugin-mcp": "*",
+    "@loomwork/plugin-mcp-app": "*",
+    "@loomwork/snapshot-runtime": "*",
+    "@loomwork/workflow-runtime": "*",
     "zod": "catalog:"
   },
   "devDependencies": {

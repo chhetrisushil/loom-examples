@@ -17,7 +17,7 @@ This is the example built to show off Loom's most distinctive and least-demonstr
 > reusing the `BranchOrchestrator` and branch UI verbatim — plus live per-branch simulation progress.
 
 ```
-pnpm --filter @loom/incident-war-room dev     # client :5173  +  server :8787
+pnpm --filter @loomwork/incident-war-room dev     # client :5173  +  server :8787
 # then open http://localhost:5173
 ```
 
@@ -33,7 +33,7 @@ Fully offline (deterministic `DemoLlmProvider`). `dev` runs both processes; or r
 2. **Gate** — the mutating remediation flow suspends at a durable approval gate (`ctx.suspend`). `main`
    points at the suspended execution. The UI jumps to the **War Room** tab.
 3. **Explore branches** — the server forks one child per candidate strategy from the gate and resumes each
-   **in `simulate` mode**, concurrently, via `@loom/scheduler`'s `parallelLimit`. Each branch previews a
+   **in `simulate` mode**, concurrently, via `@loomwork/scheduler`'s `parallelLimit`. Each branch previews a
    projected outcome (lag-after, ETA, downtime, cost, risk) **without touching real infrastructure**. The
    parent log is never modified (copy-on-write).
 4. **Review — a gate *inside* each branch.** Every simulation then parks on its own
@@ -66,10 +66,10 @@ first-class artifact (`BranchRegistry` lineage), not a lost draft.
 | Capability | Where |
 |---|---|
 | **`fork()` / `BranchRegistry` / `promote()`** | `src/branching/BranchOrchestrator.ts` (the core seam) |
-| `@loom/scheduler` `parallelLimit` | fan-out speculative simulations, deterministic input-ordered results |
+| `@loomwork/scheduler` `parallelLimit` | fan-out speculative simulations, deterministic input-ordered results |
 | Durable suspend/resume (HITL) | `remediate-lag` flow gate in `src/capabilities/flows.ts` |
 | Snapshots + replay VM | `fork()` seeds a snapshot at the gate; branches resume from an empty tail |
-| A2A agent mesh + `agent$` | `src/agents/*`, `InProcessA2ABus` from `@loom/app` |
+| A2A agent mesh + `agent$` | `src/agents/*`, `InProcessA2ABus` from `@loomwork/app` |
 | Intent → Planner → Capability | `src/orchestrator/Orchestrator.ts` |
 | Projections + A2UI + Blueprint | `mission`, `telemetry`, **`branch`** surfaces |
 | BYOR / BYOC (Web Components) | `BranchGraph` / `BranchDiff` / `BranchControls` in `src/dom/elements.ts` |
@@ -106,11 +106,11 @@ a Postgres reference (schema + `LISTEN/NOTIFY`) lives in
 
 ## Verify
 
-- `pnpm --filter @loom/incident-war-room demo:fork` — narrated, headless walkthrough: run to the gate, fork
+- `pnpm --filter @loomwork/incident-war-room demo:fork` — narrated, headless walkthrough: run to the gate, fork
   three speculative branches, watch each one *park on its own review gate*, let the reviews arrive one at a
   time, show the parent untouched, promote the winner onto `main`, and print the lineage.
   Source: `src/scripts/speculativeFork.ts`.
-- `pnpm --filter @loom/incident-war-room test` — headless e2e over the durable SQLite wiring. Beyond the
+- `pnpm --filter @loomwork/incident-war-room test` — headless e2e over the durable SQLite wiring. Beyond the
   fork/promote path it pins the three things the review gate introduces: `exploreBranches()` returns with
   every branch still `suspended`; a review naming another branch leaves its target parked (and one naming
   no branch is refused before the append); and promoting **cancels** the siblings still waiting, so a late

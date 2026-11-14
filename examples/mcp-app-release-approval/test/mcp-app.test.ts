@@ -1,9 +1,9 @@
 import { generateKeyPairSync } from "node:crypto";
-import type { SurfaceState } from "@loom/agent-surface";
-import { InMemoryAsyncEventStore } from "@loom/event-runtime";
-import { ed25519Signer, ed25519Verifier, hashChainedEventStore } from "@loom/plugin-audit-chain";
-import { McpClient } from "@loom/plugin-mcp";
-import { SURFACE_HOST_URI, surfaceHostPin } from "@loom/plugin-mcp-app";
+import type { SurfaceState } from "@loomwork/agent-surface";
+import { InMemoryAsyncEventStore } from "@loomwork/event-runtime";
+import { ed25519Signer, ed25519Verifier, hashChainedEventStore } from "@loomwork/plugin-audit-chain";
+import { McpClient } from "@loomwork/plugin-mcp";
+import { SURFACE_HOST_URI, surfaceHostPin } from "@loomwork/plugin-mcp-app";
 import { afterEach, describe, expect, it } from "vitest";
 import { RELEASE_KEY_ID, auditorView, buildApp } from "../src/app";
 import { RELEASE_SIGNAL, RegisteredReleaseFlow } from "../src/flow";
@@ -266,7 +266,7 @@ describe("the resume authenticator", () => {
 describe("the approval log is tamper-evident", () => {
   // The K12 authenticator decides whether an approval is ACCEPTED. That says nothing about
   // whether the record still says what it said — and this app's entire output is a record of
-  // who approved a production release. `@loom/plugin-audit-chain` hash-chains every event in
+  // who approved a production release. `@loomwork/plugin-audit-chain` hash-chains every event in
   // metadata the fold ignores, so the two questions stay separate and both are answerable.
 
   it("verifies the chain over a real approval, and counts what it checked", async () => {

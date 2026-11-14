@@ -2,11 +2,11 @@
 
 loom **R17 shared mode** (ADR 0122 D10) on an incident war room: several responders share ONE conversation
 with an AI assistant, and the same conversation is shown differently to each of them. Offline: a scripted model,
-the real `@loom/plugin-conversation-sse` transport on an ephemeral port (closed in teardown), in-memory stores.
+the real `@loomwork/plugin-conversation-sse` transport on an ephemeral port (closed in teardown), in-memory stores.
 
 ```bash
-pnpm --filter @loom/incident-shared-chat start   # a narrated run (~1 s)
-pnpm --filter @loom/incident-shared-chat test    # the tests ARE the proof
+pnpm --filter @loomwork/incident-shared-chat start   # a narrated run (~1 s)
+pnpm --filter @loomwork/incident-shared-chat test    # the tests ARE the proof
 ```
 
 ## The cast
@@ -51,7 +51,7 @@ pnpm --filter @loom/incident-shared-chat test    # the tests ARE the proof
   and the scripted model.
 - `src/client.ts`: a responder's `fetch` + SSE client and the `ChatFeed` folding.
 - `src/attack.ts`: ATTACK DEMONSTRATION, never copy into a host (hosts never write to the inbox): raw inbox writes (capture a signed envelope, re-inject it).
-- `test/sharedChat.test.ts` uses `signInboxEnvelope` (`@loom/conversation`) for the one body that SHOULD be accepted: a control next to the impersonation test, signed with the envelope key, proving the forgeries are refused for the missing signature alone. The attack demo stays keyless.
+- `test/sharedChat.test.ts` uses `signInboxEnvelope` (`@loomwork/conversation`) for the one body that SHOULD be accepted: a control next to the impersonation test, signed with the envelope key, proving the forgeries are refused for the missing signature alone. The attack demo stays keyless.
 - `src/main.ts`: the narrated run. `test/sharedChat.test.ts`: one test per claim.
 
-Message content is read through `@loom/llm`'s `textOf`. Waits are on conditions (`until`), never fixed sleeps.
+Message content is read through `@loomwork/llm`'s `textOf`. Waits are on conditions (`until`), never fixed sleeps.

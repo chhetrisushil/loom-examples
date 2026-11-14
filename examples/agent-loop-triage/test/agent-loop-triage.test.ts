@@ -1,8 +1,8 @@
-import type { AgentLoopConfig } from "@loom/agent";
-import { isTainted } from "@loom/classify";
-import { InMemoryAsyncEventStore } from "@loom/event-runtime";
-import type { LlmRequest } from "@loom/llm";
-import { textOf } from "@loom/llm";
+import type { AgentLoopConfig } from "@loomwork/agent";
+import { isTainted } from "@loomwork/classify";
+import { InMemoryAsyncEventStore } from "@loomwork/event-runtime";
+import type { LlmRequest } from "@loomwork/llm";
+import { textOf } from "@loomwork/llm";
 import { beforeAll, describe, expect, it } from "vitest";
 import { DEEP, FAST, TICKET_A, TICKET_B, TICKET_C } from "../src/model";
 import {

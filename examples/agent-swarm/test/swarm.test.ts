@@ -1,6 +1,6 @@
-import { flow$, handler$, step$ } from "@loom/core";
-import { waitFor } from "@loom/testing";
-import type { FlowRunner, RegisteredFlow } from "@loom/workflow-runtime";
+import { flow$, handler$, step$ } from "@loomwork/core";
+import { waitFor } from "@loomwork/testing";
+import type { FlowRunner, RegisteredFlow } from "@loomwork/workflow-runtime";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { buildApp } from "../src/app";

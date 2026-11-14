@@ -1,7 +1,7 @@
-import type { Blueprint } from "@loom/blueprint-runtime";
-import type { EventEnvelope } from "@loom/core";
-import { TerminalRenderer, defaultTerminalRegistry } from "@loom/plugin-renderer-terminal";
-import { InMemoryProjectionRuntime } from "@loom/projection-runtime";
+import type { Blueprint } from "@loomwork/blueprint-runtime";
+import type { EventEnvelope } from "@loomwork/core";
+import { TerminalRenderer, defaultTerminalRegistry } from "@loomwork/plugin-renderer-terminal";
+import { InMemoryProjectionRuntime } from "@loomwork/projection-runtime";
 import { healthBoard } from "./blueprint";
 import { valueContract } from "./check";
 import { healthProjection } from "./health";

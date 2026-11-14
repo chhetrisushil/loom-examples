@@ -1,8 +1,8 @@
-import { type KindContract, type SemanticCatalog, defineSemanticCatalog } from "@loom-ui/core";
+import { type KindContract, type SemanticCatalog, defineSemanticCatalog } from "@loomwork/ui-core";
 
 // This app's vocabulary: an instruction (static text) and a bound highlight, drawn as loom-ui's
 // framework kinds `Note` and `Kpi` on both surfaces — exactly `frameworkKindContracts` from
-// `@loom-ui/renderer-lit/dom`, spelled out so a terminal-only consumer never loads a DOM
+// `@loomwork/ui-renderer-lit/dom`, spelled out so a terminal-only consumer never loads a DOM
 // renderer (the pattern `experience-layout` uses for its own two entries).
 
 export const KIND_CONTRACTS = {

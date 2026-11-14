@@ -7,8 +7,8 @@ specific to any one app: it is the pattern for any planner whose model call must
 attributed and bounded like the rest of the flow.
 
 ```
-pnpm --filter @loom/planner-decide-scope start   # prints the stamped identity + grant/deny/replay
-pnpm --filter @loom/planner-decide-scope test    # the tests ARE the proof
+pnpm --filter @loomwork/planner-decide-scope start   # prints the stamped identity + grant/deny/replay
+pnpm --filter @loomwork/planner-decide-scope test    # the tests ARE the proof
 ```
 
 ## The pattern

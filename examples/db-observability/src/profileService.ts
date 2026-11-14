@@ -1,11 +1,11 @@
-import type { EventEnvelope, FlowDefinition, PinReport } from "@loom/core";
-import { EffectRuntime } from "@loom/effect-runtime";
-import { InMemoryAsyncEventStore } from "@loom/event-runtime";
-import type { Policy } from "@loom/learning";
-import { InMemoryReadModelStore, ReadModelService } from "@loom/plugin-read-model";
-import { InMemoryAsyncSnapshotStore } from "@loom/snapshot-runtime";
-import { WorkflowRuntime } from "@loom/workflow-runtime";
-import type { FlowRunner, RegisteredFlow } from "@loom/workflow-runtime";
+import type { EventEnvelope, FlowDefinition, PinReport } from "@loomwork/core";
+import { EffectRuntime } from "@loomwork/effect-runtime";
+import { InMemoryAsyncEventStore } from "@loomwork/event-runtime";
+import type { Policy } from "@loomwork/learning";
+import { InMemoryReadModelStore, ReadModelService } from "@loomwork/plugin-read-model";
+import { InMemoryAsyncSnapshotStore } from "@loomwork/snapshot-runtime";
+import { WorkflowRuntime } from "@loomwork/workflow-runtime";
+import type { FlowRunner, RegisteredFlow } from "@loomwork/workflow-runtime";
 import { z } from "zod";
 import { ExplorationFloor } from "./exploration";
 import { flagDefinition } from "./flags";
@@ -139,7 +139,7 @@ const outcomeRunner: FlowRunner<OutcomeInput, { scored: true }> = async (
   ctx,
   { explorationId, used }
 ) => {
-  // The shape `@loom/learning` mines for direct credit: an OUTCOME_RECORDED naming the
+  // The shape `@loomwork/learning` mines for direct credit: an OUTCOME_RECORDED naming the
   // decision. `score: 0` is a measurement; omitting the event is not.
   ctx.emit("OUTCOME_RECORDED", { decisionId: explorationId, score: used ? 1 : 0 });
   return { scored: true };

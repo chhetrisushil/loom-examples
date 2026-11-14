@@ -1,8 +1,8 @@
-import { loomPlugin } from "@loom/compiler";
+import { loomPlugin } from "@loomwork/compiler";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
-// The @loom/* workspace packages ship CommonJS. Vite pre-bundles them in dev via
+// The @loomwork/* workspace packages ship CommonJS. Vite pre-bundles them in dev via
 // optimizeDeps, but `vite build` (build:ui) hands them to Rollup, whose CommonJS
 // interop cannot statically trace named exports through the transitive re-export
 // getter chain (e.g. "LlmEffect is not exported by dist/index.js").
@@ -12,20 +12,20 @@ export default defineConfig({
   resolve: { conditions: ["require", "default"] },
   optimizeDeps: {
     include: [
-      "@loom/app",
-      "@loom/agent-surface",
-      "@loom/agent",
-      "@loom/blueprint-runtime",
-      "@loom/capability",
-      "@loom/core",
-      "@loom/effect-runtime",
-      "@loom/event-runtime",
-      "@loom/intent",
-      "@loom/llm",
-      "@loom/projection-runtime",
-      "@loom/plugin-renderer-react",
-      "@loom/snapshot-runtime",
-      "@loom/workflow-runtime",
+      "@loomwork/app",
+      "@loomwork/agent-surface",
+      "@loomwork/agent",
+      "@loomwork/blueprint-runtime",
+      "@loomwork/capability",
+      "@loomwork/core",
+      "@loomwork/effect-runtime",
+      "@loomwork/event-runtime",
+      "@loomwork/intent",
+      "@loomwork/llm",
+      "@loomwork/projection-runtime",
+      "@loomwork/plugin-renderer-react",
+      "@loomwork/snapshot-runtime",
+      "@loomwork/workflow-runtime",
     ],
   },
   build: {

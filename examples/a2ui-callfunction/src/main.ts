@@ -1,7 +1,7 @@
-import type { SurfaceState } from "@loom/agent-surface";
-import type { EventEnvelope } from "@loom/core";
-import { A2UISurfaceBridge, A2UI_VERSION } from "@loom/plugin-a2ui";
-import type { A2UICallFunctionTransport, CallFunctionPayload } from "@loom/plugin-a2ui";
+import type { SurfaceState } from "@loomwork/agent-surface";
+import type { EventEnvelope } from "@loomwork/core";
+import { A2UISurfaceBridge, A2UI_VERSION } from "@loomwork/plugin-a2ui";
+import type { A2UICallFunctionTransport, CallFunctionPayload } from "@loomwork/plugin-a2ui";
 import { buildApp } from "./app";
 import { CHECKOUT_CATALOG } from "./catalog";
 import { answerClientFunction } from "./client";

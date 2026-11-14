@@ -1,10 +1,10 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { defineConfig } from "@loom/app";
-import { analyzeReachNode } from "@loom/compiler";
-import { GrantTable, ToolEffect } from "@loom/effect-runtime";
-import type { VerificationReport } from "@loom/verify";
-import type { RegisteredFlow } from "@loom/workflow-runtime";
+import { defineConfig } from "@loomwork/app";
+import { analyzeReachNode } from "@loomwork/compiler";
+import { GrantTable, ToolEffect } from "@loomwork/effect-runtime";
+import type { VerificationReport } from "@loomwork/verify";
+import type { RegisteredFlow } from "@loomwork/workflow-runtime";
 import ts from "typescript";
 import { TRIAGE_FLOW, type TriageApp } from "./app";
 import { LLM_TOOL_ID, fakeLlm } from "./llm";

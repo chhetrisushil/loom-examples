@@ -1,5 +1,5 @@
-import type { AgentCard } from "@loom/plugin-a2a";
-import { createTestApp } from "@loom/testing";
+import type { AgentCard } from "@loomwork/plugin-a2a";
+import { createTestApp } from "@loomwork/testing";
 import { describe, expect, it } from "vitest";
 import { AGENT_CARDS, CAPABILITY_AGENT, FLEET } from "../src/agents/definitions";
 import { registerDiagnosticsEffects } from "../src/agents/diagnosticsRunner";

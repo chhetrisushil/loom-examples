@@ -1,5 +1,5 @@
-import { InMemoryProjectionRuntime } from "@loom/projection-runtime";
-import type { ProjectionRuntime } from "@loom/projection-runtime";
+import { InMemoryProjectionRuntime } from "@loomwork/projection-runtime";
+import type { ProjectionRuntime } from "@loomwork/projection-runtime";
 import { ObservabilityLlmProvider } from "./agent";
 import { DashboardComposer } from "./composer";
 import { TELEMETRY_PROJECTIONS, answerProjection, seedScenario } from "./telemetry";

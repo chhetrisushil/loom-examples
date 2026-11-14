@@ -46,8 +46,8 @@ suspends `rebuild-index-gated` on the remote HTTP worker and resumes it on Cloud
 ## Run it
 
 ```bash
-pnpm --filter @loom/compute-cloudrun start   # runs the flow on all 3 backends + a cross-backend suspend/resume
-pnpm --filter @loom/compute-cloudrun test    # asserts equivalent results, cross-backend resume, and Cloud Run sizing
+pnpm --filter @loomwork/compute-cloudrun start   # runs the flow on all 3 backends + a cross-backend suspend/resume
+pnpm --filter @loomwork/compute-cloudrun test    # asserts equivalent results, cross-backend resume, and Cloud Run sizing
 ```
 
 Expected: identical business output on every backend; the gated flow suspends on one
@@ -64,4 +64,4 @@ backend and completes on another; the Cloud Run platform records its `allocate`
 | `src/main.ts` | Headless driver |
 | `test/compute.test.ts` | Equivalence, cross-backend resume, Cloud Run sizing |
 
-See also `@loom/plugin-cloudrun` deploy guide (`loom/plugins/cloudrun/deploy.md`).
+See also `@loomwork/plugin-cloudrun` deploy guide (`loom/plugins/cloudrun/deploy.md`).

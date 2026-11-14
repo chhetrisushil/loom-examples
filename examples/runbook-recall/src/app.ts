@@ -1,8 +1,8 @@
-import { type LoomApp, defineConfig } from "@loom/app";
-import { createLlmEffect } from "@loom/llm";
-import type { LlmProvider } from "@loom/llm";
-import type { MemoryStore } from "@loom/memory";
-import type { RegisteredFlow } from "@loom/workflow-runtime";
+import { type LoomApp, defineConfig } from "@loomwork/app";
+import { createLlmEffect } from "@loomwork/llm";
+import type { LlmProvider } from "@loomwork/llm";
+import type { MemoryStore } from "@loomwork/memory";
+import type { RegisteredFlow } from "@loomwork/workflow-runtime";
 import type { AnswerCall } from "./prompt";
 import { buildAnswerRequest } from "./prompt";
 

@@ -1,11 +1,11 @@
-import { sweepUnpinnedContent } from "@loom/plugin-content";
+import { sweepUnpinnedContent } from "@loomwork/plugin-content";
 import {
   LogLifecycle,
   RetentionPolicyError,
   type RetentionVerdict,
   SnapshotListingUnsupportedError,
   retentionPolicy,
-} from "@loom/workflow-runtime";
+} from "@loomwork/workflow-runtime";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { IDS, type Name, blobOf, buildHistory, snapshotSequences } from "../src/history";
 import { applyAll, evaluateAll, sweep } from "../src/passes";

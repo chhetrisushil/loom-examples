@@ -1,5 +1,5 @@
-import { DataTable, MetricCard, ProgressBar, Timeline } from "@loom/blueprint-runtime";
-import type { Widget } from "@loom/blueprint-runtime";
+import { DataTable, MetricCard, ProgressBar, Timeline } from "@loomwork/blueprint-runtime";
+import type { Widget } from "@loomwork/blueprint-runtime";
 
 // ── The available widget catalogue ────────────────────────────────────────────
 // The palette the dashboard is generated from. Each entry knows what telemetry it

@@ -1,5 +1,5 @@
-import { projection$ } from "@loom/core";
-import type { EventEnvelope } from "@loom/core";
+import { projection$ } from "@loomwork/core";
+import type { EventEnvelope } from "@loomwork/core";
 
 // ── The derivations a saved view binds THROUGH ───────────────────────────────
 //

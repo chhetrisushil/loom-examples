@@ -1,6 +1,6 @@
-import type { Blueprint, Layout, WidgetAction } from "@loom/blueprint-runtime";
-import { resolveWidgetValue, traverseBlueprint } from "@loom/blueprint-runtime";
-import type { ProjectionRuntime } from "@loom/projection-runtime";
+import type { Blueprint, Layout, WidgetAction } from "@loomwork/blueprint-runtime";
+import { resolveWidgetValue, traverseBlueprint } from "@loomwork/blueprint-runtime";
+import type { ProjectionRuntime } from "@loomwork/projection-runtime";
 import { KIND_TO_TAG, type WidgetHost } from "./elements";
 
 // ── BlueprintDom — the framework-agnostic BYOR core, for the DOM ──────────────

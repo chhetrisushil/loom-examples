@@ -1,4 +1,4 @@
-import { blueprintNodeIds, preservesNodes } from "@loom/blueprint-runtime";
+import { blueprintNodeIds, preservesNodes } from "@loomwork/blueprint-runtime";
 import { buildApp } from "./app";
 import { INITIAL_COHORT_STATE, assignCohort, describeTransition, nextCohortState } from "./cohorts";
 import { ExplorationFloor } from "./exploration";

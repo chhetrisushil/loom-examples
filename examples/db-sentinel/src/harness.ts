@@ -1,10 +1,10 @@
-import type { ExecutionState } from "@loom/core";
-import { EffectRuntime } from "@loom/effect-runtime";
-import { InMemoryAsyncEventStore } from "@loom/event-runtime";
-import { InMemoryContentStore } from "@loom/plugin-content";
-import { InMemoryDurableStateStore } from "@loom/plugin-durable-state";
-import { InMemoryAsyncSnapshotStore } from "@loom/snapshot-runtime";
-import { WorkflowRuntime } from "@loom/workflow-runtime";
+import type { ExecutionState } from "@loomwork/core";
+import { EffectRuntime } from "@loomwork/effect-runtime";
+import { InMemoryAsyncEventStore } from "@loomwork/event-runtime";
+import { InMemoryContentStore } from "@loomwork/plugin-content";
+import { InMemoryDurableStateStore } from "@loomwork/plugin-durable-state";
+import { InMemoryAsyncSnapshotStore } from "@loomwork/snapshot-runtime";
+import { WorkflowRuntime } from "@loomwork/workflow-runtime";
 import type { SentinelDeployment, SentinelDeps } from "./sentinel";
 import { makeSentinel, occurrenceId } from "./sentinel";
 

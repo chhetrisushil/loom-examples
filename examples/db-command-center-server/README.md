@@ -10,7 +10,7 @@ its **multi-surface rendering** on the client, bridged by the **resumability sea
 (`serializeProjections` → `seedState`) plus a live patch stream.
 
 ```
-pnpm --filter @loom/db-command-center-server dev     # client :5173  +  server :8787
+pnpm --filter @loomwork/db-command-center-server dev     # client :5173  +  server :8787
 # then open http://localhost:5173
 ```
 
@@ -89,7 +89,7 @@ intact.
 Run the narrated end-to-end demo (real `ScaleReplicasFlow`, SQLite stores):
 
 ```
-pnpm --filter @loom/db-command-center-server demo:fork
+pnpm --filter @loomwork/db-command-center-server demo:fork
 ```
 
 It starts the scale-read-replicas task, runs it to the approval gate, forks `spec/approve` + `spec/reject`
@@ -98,10 +98,10 @@ shows the parent still suspended, then promotes the winner onto `main`. Source: 
 
 ## Verify
 
-- `pnpm --filter @loom/db-command-center-server test` — a headless test drives a mission through the
+- `pnpm --filter @loomwork/db-command-center-server test` — a headless test drives a mission through the
   server's durable wiring (SQLite), asserts the replica goal reaches `awaiting-approval`, resolves after
   approval, streams patches, and writes `events.db`.
-- `pnpm --filter @loom/db-command-center-server demo:fork` — runs the speculative-fork demo above end to end.
+- `pnpm --filter @loomwork/db-command-center-server demo:fork` — runs the speculative-fork demo above end to end.
 - Live: `curl -N http://localhost:8787/api/missions/mission-1/stream` in one shell;
   `curl -X POST .../api/missions -d '{"goal":"…"}'` in another; watch the frames.
 

@@ -1,6 +1,6 @@
-import type { LlmMessageInput, LlmProvider, LlmRequest, LlmResponse, LlmToolCall } from "@loom/llm";
-import { textOf } from "@loom/llm";
-import type { ModelRoute, ReasoningRequest, Router } from "@loom/reasoning";
+import type { LlmMessageInput, LlmProvider, LlmRequest, LlmResponse, LlmToolCall } from "@loomwork/llm";
+import { textOf } from "@loomwork/llm";
+import type { ModelRoute, ReasoningRequest, Router } from "@loomwork/reasoning";
 
 export const FAST = "triage-fast";
 export const DEEP = "triage-deep";

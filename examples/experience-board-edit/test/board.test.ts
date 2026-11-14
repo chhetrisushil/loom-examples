@@ -1,6 +1,6 @@
-import { type Operation, apply, findNode, genesis, replay } from "@loom-ui/core";
-import { seal } from "@loom-ui/core/log";
-import { EXPERIENCE_OP_ACTION, interpretAction } from "@loom-ui/planner";
+import { type Operation, apply, findNode, genesis, replay } from "@loomwork/ui-core";
+import { seal } from "@loomwork/ui-core/log";
+import { EXPERIENCE_OP_ACTION, interpretAction } from "@loomwork/ui-planner";
 import { describe, expect, it } from "vitest";
 import { USAGE, composeBoard, handleFor, intent, meta } from "../src/board";
 

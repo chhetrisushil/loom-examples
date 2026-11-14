@@ -1,13 +1,13 @@
-import { surface } from "@loom/agent-surface";
-import { flow$, handler$, step$ } from "@loom/core";
-import type { FlowRunner, RegisteredFlow } from "@loom/workflow-runtime";
+import { surface } from "@loomwork/agent-surface";
+import { flow$, handler$, step$ } from "@loomwork/core";
+import type { FlowRunner, RegisteredFlow } from "@loomwork/workflow-runtime";
 import { z } from "zod";
 
 // ── An expense-approval flow that drives an agent surface ─────────────────────
 //
 // The point of this example is NOT the domain — it is the surface. Every
 // `surface(ctx).*` call below emits one durable, replayable `SURFACE_PATCH` event as a
-// *delta* (set / merge / append / increment). `@loom/plugin-a2ui` folds that same
+// *delta* (set / merge / append / increment). `@loomwork/plugin-a2ui` folds that same
 // event stream into the Google A2UI wire protocol, where the semantics are
 // *absolute* value-replacement. The driver (src/main.ts) prints both sides.
 

@@ -1,4 +1,4 @@
-import { type SemanticCatalog, defineSemanticCatalog } from "@loom-ui/core";
+import { type SemanticCatalog, defineSemanticCatalog } from "@loomwork/ui-core";
 
 // The app's semantic vocabulary. `Note` and `Alert` resolve to kinds OUTSIDE loom's built-in
 // catalogue (an app-registered NoteInput with a real <textarea>; an unbound Alert), so each

@@ -1,11 +1,11 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { unwrapTainted } from "@loom/classify";
-import type { KnowledgeBase } from "@loom/knowledge";
-import { UntrustedContentError, textOf } from "@loom/llm";
-import type { TieredMemory } from "@loom/memory";
-import type { SqliteMemoryStore } from "@loom/plugin-sqlite";
+import { unwrapTainted } from "@loomwork/classify";
+import type { KnowledgeBase } from "@loomwork/knowledge";
+import { UntrustedContentError, textOf } from "@loomwork/llm";
+import type { TieredMemory } from "@loomwork/memory";
+import type { SqliteMemoryStore } from "@loomwork/plugin-sqlite";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { ScriptedLlmProvider, citingAnswer } from "../src/ScriptedLlmProvider";
 import { buildApp } from "../src/app";
@@ -108,7 +108,7 @@ describe("runbook-recall — knowledge with no knowledge feature", () => {
   });
 
   it("a revised runbook supersedes its own text — the withdrawn step stops retrieving", async () => {
-    // The half this example could not show before `@loom/knowledge`: it ingested once,
+    // The half this example could not show before `@loomwork/knowledge`: it ingested once,
     // so an append-only corpus and an upsertable one behaved identically. Re-ingesting an
     // edited runbook used to leave BOTH revisions in the FTS index, and an answer would
     // cite a real document while quoting a step that had been withdrawn.

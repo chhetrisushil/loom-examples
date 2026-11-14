@@ -1,14 +1,14 @@
 import type * as http from "node:http";
-import type { EventStore } from "@loom/event-runtime";
-import { createMcpServer } from "@loom/plugin-mcp";
-import type { McpServedTool, McpServer } from "@loom/plugin-mcp";
+import type { EventStore } from "@loomwork/event-runtime";
+import { createMcpServer } from "@loomwork/plugin-mcp";
+import type { McpServedTool, McpServer } from "@loomwork/plugin-mcp";
 import {
   SURFACE_HOST_URI,
   isStale,
   surfaceCursorTool,
   surfaceHostResource,
-} from "@loom/plugin-mcp-app";
-import type { WorkflowRuntime } from "@loom/workflow-runtime";
+} from "@loomwork/plugin-mcp-app";
+import type { WorkflowRuntime } from "@loomwork/workflow-runtime";
 import { RELEASE_SIGNAL } from "./flow";
 import type { ReleaseSignal } from "./flow";
 import { RELEASE_VIEW } from "./view";

@@ -1,7 +1,7 @@
-import { AgentLoopConfigError, resetAgentLoopDefaults } from "@loom/agent";
-import { isTainted, unwrapTainted } from "@loom/classify";
-import { LLM_REASONING_CAPTURED, readReasoning } from "@loom/llm";
-import { InMemoryContentStore } from "@loom/plugin-content";
+import { AgentLoopConfigError, resetAgentLoopDefaults } from "@loomwork/agent";
+import { isTainted, unwrapTainted } from "@loomwork/classify";
+import { LLM_REASONING_CAPTURED, readReasoning } from "@loomwork/llm";
+import { InMemoryContentStore } from "@loomwork/plugin-content";
 import { afterEach, describe, expect, it } from "vitest";
 import { LIVE_REPLY, LIVE_THOUGHT_A, LIVE_THOUGHT_B, bootLive, listen, until } from "../src/live";
 import {

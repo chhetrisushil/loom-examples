@@ -1,8 +1,8 @@
-import { recordOutcome } from "@loom/analytics";
-import { flow$, handler$, step$ } from "@loom/core";
-import { decideWithPolicy } from "@loom/learning";
-import type { Policy } from "@loom/learning";
-import type { FlowRunner, RegisteredFlow } from "@loom/workflow-runtime";
+import { recordOutcome } from "@loomwork/analytics";
+import { flow$, handler$, step$ } from "@loomwork/core";
+import { decideWithPolicy } from "@loomwork/learning";
+import type { Policy } from "@loomwork/learning";
+import type { FlowRunner, RegisteredFlow } from "@loomwork/workflow-runtime";
 import { z } from "zod";
 import { ROUTES, type Route, quality } from "./domain";
 import { contextOf } from "./policy";

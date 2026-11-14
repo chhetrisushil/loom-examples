@@ -1,5 +1,5 @@
-import { seenToState } from "@loom-ui/core";
-import { seenKeySubject, seenStreamKey } from "@loom-ui/lineage";
+import { seenToState } from "@loomwork/ui-core";
+import { seenKeySubject, seenStreamKey } from "@loomwork/ui-lineage";
 import { describe, expect, it } from "vitest";
 import {
   EXPERIENCE_ID,

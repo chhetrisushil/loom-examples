@@ -7,14 +7,14 @@ import {
   compile,
   genesis,
   replay,
-} from "@loom-ui/core";
-import { seal } from "@loom-ui/core/log";
+} from "@loomwork/ui-core";
+import { seal } from "@loomwork/ui-core/log";
 import {
   HYDRATION_PROJECTION_ID,
   HYDRATION_PROJECTION_VERSION,
   outputShapeHashOf,
-} from "@loom-ui/hydration";
-import type { Blueprint } from "@loom/blueprint-runtime";
+} from "@loomwork/ui-hydration";
+import type { Blueprint } from "@loomwork/blueprint-runtime";
 import { catalog } from "./catalog";
 import type { OrderLine } from "./tools";
 

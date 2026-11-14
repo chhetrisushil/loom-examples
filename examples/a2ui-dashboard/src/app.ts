@@ -1,4 +1,4 @@
-import { type LoomApp, defineConfig } from "@loom/app";
+import { type LoomApp, defineConfig } from "@loomwork/app";
 import { FLEET } from "./agents";
 import { PANELS } from "./flows";
 

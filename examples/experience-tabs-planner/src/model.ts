@@ -1,4 +1,4 @@
-import type { DecideContext, DecideOptionsLike, DecideScope, PlannerModel } from "@loom-ui/planner";
+import type { DecideContext, DecideOptionsLike, DecideScope, PlannerModel } from "@loomwork/ui-planner";
 
 // ── The scripted model ──────────────────────────────────────────────────────────────────────
 // A reply is the FLAT entry list the planner contract takes: a container is an entry with

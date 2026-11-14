@@ -1,7 +1,7 @@
-import type { ExecutionDispatcher } from "@loom/dispatcher";
-import { createWorkerServer } from "@loom/plugin-worker-server";
-import type { ExecutionPackage } from "@loom/worker-runtime";
-import { LocalWorkerRuntime } from "@loom/worker-runtime-local";
+import type { ExecutionDispatcher } from "@loomwork/dispatcher";
+import { createWorkerServer } from "@loomwork/plugin-worker-server";
+import type { ExecutionPackage } from "@loomwork/worker-runtime";
+import { LocalWorkerRuntime } from "@loomwork/worker-runtime-local";
 import {
   cloudRunDispatcher,
   inProcessDispatcher,

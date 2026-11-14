@@ -1,5 +1,5 @@
-import type { Policy, PolicyContext, TrajectoryStep } from "@loom/learning";
-import { LinUcbPolicy, numericFeatures } from "loom-plugin-linucb";
+import type { Policy, PolicyContext, TrajectoryStep } from "@loomwork/learning";
+import { LinUcbPolicy, numericFeatures } from "@loomwork/plugin-linucb";
 import { type Route, seededRng } from "./domain";
 
 // ── The policy (third-party) ──────────────────────────────────────────────────

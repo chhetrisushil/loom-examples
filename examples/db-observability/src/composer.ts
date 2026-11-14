@@ -5,10 +5,10 @@ import {
   grid,
   stack,
   validateBlueprint,
-} from "@loom/blueprint-runtime";
-import type { Blueprint, BlueprintValidation, Layout, Widget } from "@loom/blueprint-runtime";
-import type { LlmProvider } from "@loom/llm";
-import type { ProjectionRuntime } from "@loom/projection-runtime";
+} from "@loomwork/blueprint-runtime";
+import type { Blueprint, BlueprintValidation, Layout, Widget } from "@loomwork/blueprint-runtime";
+import type { LlmProvider } from "@loomwork/llm";
+import type { ProjectionRuntime } from "@loomwork/projection-runtime";
 import { type Classification, classifyIntent } from "./agent";
 import { catalogueEntry } from "./catalogue";
 import { COHORT_MODEL_VERSION, type CohortId, cohortRule } from "./cohorts";

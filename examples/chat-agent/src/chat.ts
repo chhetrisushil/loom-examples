@@ -1,17 +1,17 @@
-import { createAgentModelEffect } from "@loom/agent";
+import { createAgentModelEffect } from "@loomwork/agent";
 import {
   ConversationHub,
   conversation$,
   createConversations,
   inboxBargeIn,
   summarizerText,
-} from "@loom/conversation";
-import { agent$ } from "@loom/core";
-import { EffectRuntime, type PrincipalChain, ToolEffect } from "@loom/effect-runtime";
-import { InMemoryAsyncEventStore, InMemoryTimerStore } from "@loom/event-runtime";
-import { createConversationSseServer } from "@loom/plugin-conversation-sse";
-import { InMemoryAsyncSnapshotStore } from "@loom/snapshot-runtime";
-import { WorkflowRuntime, executionAccessPolicy } from "@loom/workflow-runtime";
+} from "@loomwork/conversation";
+import { agent$ } from "@loomwork/core";
+import { EffectRuntime, type PrincipalChain, ToolEffect } from "@loomwork/effect-runtime";
+import { InMemoryAsyncEventStore, InMemoryTimerStore } from "@loomwork/event-runtime";
+import { createConversationSseServer } from "@loomwork/plugin-conversation-sse";
+import { InMemoryAsyncSnapshotStore } from "@loomwork/snapshot-runtime";
+import { WorkflowRuntime, executionAccessPolicy } from "@loomwork/workflow-runtime";
 import { type ScriptedModel, scriptedModel } from "./model";
 
 /** Bearer token -> principal: the stand-in for a real verifier. Two tenants, one user each. */

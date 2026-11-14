@@ -1,4 +1,4 @@
-import { type SemanticCatalog, defineSemanticCatalog } from "@loom-ui/core";
+import { type SemanticCatalog, defineSemanticCatalog } from "@loomwork/ui-core";
 
 // A support-ticket triage vocabulary: a headline number, a list, and a free-text memo. All three
 // resolve to loom-ui's generic kinds (`MetricCard`, `DataTable`, `Note`) on both surfaces.

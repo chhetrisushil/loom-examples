@@ -8,8 +8,8 @@ the app owns** (loom ADR 0145) and the clock the content sweep measures a blob's
 Offline, SQLite stores in a temp dir, a simulated clock (`SimClock`: whole days; nothing waits).
 
 ```bash
-pnpm --filter @loom/retention-policy start    # the narrated run
-pnpm --filter @loom/retention-policy test     # 26 tests, exact outcomes
+pnpm --filter @loomwork/retention-policy start    # the narrated run
+pnpm --filter @loomwork/retention-policy test     # 26 tests, exact outcomes
 ```
 
 ## The policy (`src/retention.ts`)

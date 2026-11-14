@@ -1,5 +1,5 @@
-import { stableBucketPolicy } from "@loom-ui/planner";
-import { type Policy, type PolicyChoice, type PolicyContext, contentHash } from "@loom/learning";
+import { stableBucketPolicy } from "@loomwork/ui-planner";
+import { type Policy, type PolicyChoice, type PolicyContext, contentHash } from "@loomwork/learning";
 import type { Layout, Segment } from "./world";
 
 // ── The policies ────────────────────────────────────────────────────────────────────────────

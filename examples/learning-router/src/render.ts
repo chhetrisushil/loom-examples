@@ -1,5 +1,5 @@
-import type { EvalReport, PromotionVerdict, Trajectory } from "@loom/learning";
-import { steps } from "@loom/learning";
+import type { EvalReport, PromotionVerdict, Trajectory } from "@loomwork/learning";
+import { steps } from "@loomwork/learning";
 import type { Route } from "./domain";
 
 const pct = (n: number) => `${(n * 100).toFixed(1)}%`;

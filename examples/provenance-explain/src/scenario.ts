@@ -5,7 +5,7 @@ import {
   type RecordedOperation,
   type Viewer,
   snapshotSeen,
-} from "@loom-ui/core";
+} from "@loomwork/ui-core";
 import {
   InMemoryLineageStore,
   InMemorySeenKeyStore,
@@ -16,10 +16,10 @@ import {
   collectSeenGarbage,
   eventStoreLineageStore,
   seenStoreOptions,
-} from "@loom-ui/lineage";
-import { plannerProvenance } from "@loom-ui/planner";
-import { InMemoryAsyncEventStore } from "@loom/event-runtime";
-import { InMemoryContentStore, contentAddress, encodeValue } from "@loom/plugin-content";
+} from "@loomwork/ui-lineage";
+import { plannerProvenance } from "@loomwork/ui-planner";
+import { InMemoryAsyncEventStore } from "@loomwork/event-runtime";
+import { InMemoryContentStore, contentAddress, encodeValue } from "@loomwork/plugin-content";
 import {
   EXPERIENCE_ID,
   capabilities,

@@ -1,4 +1,4 @@
-import { tool$ } from "@loom/core";
+import { tool$ } from "@loomwork/core";
 import { z } from "zod";
 import type { DepsResult, PerfResult, ScopeResult, SecurityResult } from "../domain";
 

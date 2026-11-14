@@ -13,14 +13,14 @@ import {
   findNode,
   genesis,
   orderKeyAfterAll,
-} from "@loom-ui/core";
+} from "@loomwork/ui-core";
 import {
   HYDRATION_PROJECTION_ID,
   HYDRATION_PROJECTION_VERSION,
   HydrationController,
   HydrationStore,
-} from "@loom-ui/hydration";
-import { InMemoryLineageStore, Lineage, type LineageResult } from "@loom-ui/lineage";
+} from "@loomwork/ui-hydration";
+import { InMemoryLineageStore, Lineage, type LineageResult } from "@loomwork/ui-lineage";
 import {
   type PlanResult,
   type PlannerModel,
@@ -28,14 +28,14 @@ import {
   contentRefArgsFrom,
   plannerProvenance,
   providerHandle,
-} from "@loom-ui/planner";
-import { referenceContainers } from "@loom-ui/renderer-lit/containers";
-import { type DomRenderHandle, litRegistry, renderBlueprintDom } from "@loom-ui/renderer-lit/dom";
-import "@loom-ui/renderer-lit/register";
-import { renderExperience, terminalRegistry } from "@loom-ui/renderer-terminal";
-import type { Blueprint } from "@loom/blueprint-runtime";
-import { InMemoryContentStore } from "@loom/plugin-content";
-import { InMemoryProjectionRuntime } from "@loom/projection-runtime";
+} from "@loomwork/ui-planner";
+import { referenceContainers } from "@loomwork/ui-renderer-lit/containers";
+import { type DomRenderHandle, litRegistry, renderBlueprintDom } from "@loomwork/ui-renderer-lit/dom";
+import "@loomwork/ui-renderer-lit/register";
+import { renderExperience, terminalRegistry } from "@loomwork/ui-renderer-terminal";
+import type { Blueprint } from "@loomwork/blueprint-runtime";
+import { InMemoryContentStore } from "@loomwork/plugin-content";
+import { InMemoryProjectionRuntime } from "@loomwork/projection-runtime";
 import { catalog } from "./catalog";
 import { memoryDecide } from "./model";
 import { TriageInvoker, capabilities, readPolicy as hostPolicy, refunds } from "./world";

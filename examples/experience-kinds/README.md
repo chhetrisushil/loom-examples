@@ -24,6 +24,6 @@ There is **no consumer-specific code** here: no names, value shapes or wording f
 app — only the domain's own vocabulary mapped onto loom-ui's generic kinds.
 
 ```bash
-pnpm --filter @loom/experience-kinds test
-pnpm --filter @loom/experience-kinds build
+pnpm --filter @loomwork/experience-kinds test
+pnpm --filter @loomwork/experience-kinds build
 ```

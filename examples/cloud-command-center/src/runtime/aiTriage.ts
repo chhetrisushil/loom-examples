@@ -1,13 +1,13 @@
-import { createSurfaceEmitter } from "@loom/agent-surface";
-import { type EffectRuntime, LlmEffect } from "@loom/effect-runtime";
-import type { LlmProvider } from "@loom/llm";
+import { createSurfaceEmitter } from "@loomwork/agent-surface";
+import { type EffectRuntime, LlmEffect } from "@loomwork/effect-runtime";
+import type { LlmProvider } from "@loomwork/llm";
 import { MockLlmProvider } from "./MockLlmProvider";
 
 // Browser-safe AI-triage wiring — no SQLite / Node-only imports, so both the
 // browser entry (main.tsx) and the Node setup (setup.ts) can share it.
 
 // The LLM is a swappable, configured dependency. Replace this single line with
-//   import { AnthropicProvider } from "@loom/llm";
+//   import { AnthropicProvider } from "@loomwork/llm";
 //   export const llmProvider = new AnthropicProvider({ model: "claude-opus-4-8" });
 // to run the exact same flow against a real model — no other code changes.
 export const llmProvider: LlmProvider = new MockLlmProvider();

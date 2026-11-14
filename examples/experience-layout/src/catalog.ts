@@ -1,8 +1,8 @@
-import { type KindContract, type SemanticCatalog, defineSemanticCatalog } from "@loom-ui/core";
+import { type KindContract, type SemanticCatalog, defineSemanticCatalog } from "@loomwork/ui-core";
 
 // The branch library's vocabulary: a bound count and a static notice, drawn as loom-ui's
 // framework kinds `Kpi` and `Note` on both surfaces. The contracts are exactly
-// `frameworkKindContracts` from `@loom-ui/renderer-lit/dom`, spelled out so a terminal-only
+// `frameworkKindContracts` from `@loomwork/ui-renderer-lit/dom`, spelled out so a terminal-only
 // consumer never loads a DOM renderer; the test pins them.
 
 export const KIND_CONTRACTS = {

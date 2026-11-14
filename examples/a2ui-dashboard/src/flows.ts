@@ -1,6 +1,6 @@
-import { createSurfaceEmitter } from "@loom/agent-surface";
-import { flow$ } from "@loom/core";
-import type { FlowRunner, RegisteredFlow } from "@loom/workflow-runtime";
+import { createSurfaceEmitter } from "@loomwork/agent-surface";
+import { flow$ } from "@loomwork/core";
+import type { FlowRunner, RegisteredFlow } from "@loomwork/workflow-runtime";
 import { z } from "zod";
 import { sampleCpu, sampleDisk, sampleMemory } from "./metrics";
 

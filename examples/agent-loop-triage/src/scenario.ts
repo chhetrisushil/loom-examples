@@ -1,5 +1,5 @@
-import type { LlmRequest } from "@loom/llm";
-import type { ReasoningCache } from "@loom/reasoning";
+import type { LlmRequest } from "@loomwork/llm";
+import type { ReasoningCache } from "@loomwork/reasoning";
 import { TICKET_A, TICKET_B, TICKET_C, sawToolError } from "./model";
 import {
   Backend,

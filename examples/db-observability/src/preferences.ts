@@ -1,8 +1,8 @@
-import type { FlowDefinition } from "@loom/core";
-import type { EffectRuntime } from "@loom/effect-runtime";
-import { InMemoryDurableStateStore, durableState } from "@loom/plugin-durable-state";
-import type { DurableStateHandle } from "@loom/plugin-durable-state";
-import type { FlowRunner } from "@loom/workflow-runtime";
+import type { FlowDefinition } from "@loomwork/core";
+import type { EffectRuntime } from "@loomwork/effect-runtime";
+import { InMemoryDurableStateStore, durableState } from "@loomwork/plugin-durable-state";
+import type { DurableStateHandle } from "@loomwork/plugin-durable-state";
+import type { FlowRunner } from "@loomwork/workflow-runtime";
 import { z } from "zod";
 
 // ── Phase 1 — stated preferences, and nothing else ───────────────────────────
@@ -74,7 +74,7 @@ const SEPARATOR = "/";
  * A part containing the separator is REFUSED rather than escaped. A tenant id of
  * `"acme/ana"` would otherwise address `acme`'s operator `ana`, which is a cross-tenant
  * read produced by nothing more exotic than a permissive id field — the same
- * key-injection shape `childIdFor` refuses in `@loom/orchestration`.
+ * key-injection shape `childIdFor` refuses in `@loomwork/orchestration`.
  */
 export function preferenceKey(scope: PreferenceScope): string {
   for (const [field, value] of Object.entries(scope)) {

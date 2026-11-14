@@ -1,6 +1,6 @@
-import type { Experience, ReadPolicy, SeenReader, Viewer } from "@loom-ui/core";
-import { HydrationController, HydrationStore, type TransientInvoker } from "@loom-ui/hydration";
-import { InMemoryProjectionRuntime } from "@loom/projection-runtime";
+import type { Experience, ReadPolicy, SeenReader, Viewer } from "@loomwork/ui-core";
+import { HydrationController, HydrationStore, type TransientInvoker } from "@loomwork/ui-hydration";
+import { InMemoryProjectionRuntime } from "@loomwork/projection-runtime";
 
 /** What the triage tools return right now. Mutate it to "change the data". */
 export interface World {

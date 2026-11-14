@@ -1,4 +1,4 @@
-import { CapabilityCatalog, capability$ } from "@loom/capability";
+import { CapabilityCatalog, capability$ } from "@loomwork/capability";
 import { z } from "zod";
 import {
   DepsAuditFlow,

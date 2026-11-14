@@ -149,7 +149,7 @@ import { LoomService } from "./loom.service";
             <h1>Cloud Command Center</h1>
             <span class="badge-angular">Angular</span>
           </div>
-          <div class="sub">Powered by @loom/workflow-runtime &nbsp;—&nbsp; framework-agnostic durable workflows</div>
+          <div class="sub">Powered by @loomwork/workflow-runtime &nbsp;—&nbsp; framework-agnostic durable workflows</div>
         </div>
         <span class="badge-phase" [ngClass]="phaseCls()">
           {{ loom.phase() | uppercase }}

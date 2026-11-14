@@ -1,13 +1,13 @@
-import { schedule$, step$ } from "@loom/core";
-import type { FlowDefinition, TaskDefinition } from "@loom/core";
-import { ToolEffect } from "@loom/effect-runtime";
-import type { EffectMiddleware } from "@loom/effect-runtime";
-import type { KnowledgeBase } from "@loom/knowledge";
-import { claimCheckMiddleware, isClaimCheck } from "@loom/middleware";
-import type { ClaimCheckStore } from "@loom/middleware";
-import { sentinelState } from "@loom/plugin-durable-state";
-import type { DurableStateStore, EffectRegistry, Migration } from "@loom/plugin-durable-state";
-import type { FlowRunner, RegisteredFlow } from "@loom/workflow-runtime";
+import { schedule$, step$ } from "@loomwork/core";
+import type { FlowDefinition, TaskDefinition } from "@loomwork/core";
+import { ToolEffect } from "@loomwork/effect-runtime";
+import type { EffectMiddleware } from "@loomwork/effect-runtime";
+import type { KnowledgeBase } from "@loomwork/knowledge";
+import { claimCheckMiddleware, isClaimCheck } from "@loomwork/middleware";
+import type { ClaimCheckStore } from "@loomwork/middleware";
+import { sentinelState } from "@loomwork/plugin-durable-state";
+import type { DurableStateStore, EffectRegistry, Migration } from "@loomwork/plugin-durable-state";
+import type { FlowRunner, RegisteredFlow } from "@loomwork/workflow-runtime";
 import { z } from "zod";
 import {
   FINDING_RECORDED,

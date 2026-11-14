@@ -4,16 +4,16 @@ import {
   loomCatalogFor,
   orderKeyBetween,
   replay,
-} from "@loom-ui/core";
-import { renderBlueprintDom } from "@loom-ui/renderer-lit/dom";
-import "@loom-ui/renderer-lit/register";
+} from "@loomwork/ui-core";
+import { renderBlueprintDom } from "@loomwork/ui-renderer-lit/dom";
+import "@loomwork/ui-renderer-lit/register";
 import {
   type Blueprint,
   type Layout,
   type Widget,
   validateBlueprint,
-} from "@loom/blueprint-runtime";
-import { InMemoryProjectionRuntime } from "@loom/projection-runtime";
+} from "@loomwork/blueprint-runtime";
+import { InMemoryProjectionRuntime } from "@loomwork/projection-runtime";
 import { describe, expect, it } from "vitest";
 import { type App, appRegistryFor, createApp } from "../src/app";
 import { catalog } from "../src/catalog";

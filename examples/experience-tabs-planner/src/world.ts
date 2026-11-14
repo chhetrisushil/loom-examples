@@ -1,6 +1,6 @@
-import type { ReadPolicy } from "@loom-ui/core";
-import type { TransientInvoker } from "@loom-ui/hydration";
-import { type CapabilityRef, declaredToolClassesFrom } from "@loom-ui/planner";
+import type { ReadPolicy } from "@loomwork/ui-core";
+import type { TransientInvoker } from "@loomwork/ui-hydration";
+import { type CapabilityRef, declaredToolClassesFrom } from "@loomwork/ui-planner";
 
 // The tools behind the triage view. Three are internal; the refund exposure is CLASSIFIED
 // (`secret`): the class is declared ONCE, on the capability, and everything else follows from it.

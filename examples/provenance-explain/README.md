@@ -6,8 +6,8 @@ scripted model, an in-memory content store, a fake transient invoker). Nothing h
 app; the board is just three Metric cards, one of them classified `secret`.
 
 ```bash
-pnpm --filter @loom/provenance-explain start   # a short narrated walkthrough
-pnpm --filter @loom/provenance-explain test    # the tests ARE the proof
+pnpm --filter @loomwork/provenance-explain start   # a short narrated walkthrough
+pnpm --filter @loomwork/provenance-explain test    # the tests ARE the proof
 ```
 
 ## The pattern

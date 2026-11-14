@@ -1,4 +1,4 @@
-import { IntentRuntime } from "@loom/intent";
+import { IntentRuntime } from "@loomwork/intent";
 import {
   ApprovalCardRenderer,
   BlueprintRenderer,
@@ -8,8 +8,8 @@ import {
   TimelineRenderer,
   defaultRegistry,
   useLoom,
-} from "@loom/plugin-renderer-react";
-import type { WidgetAction } from "@loom/plugin-renderer-react";
+} from "@loomwork/plugin-renderer-react";
+import type { WidgetAction } from "@loomwork/plugin-renderer-react";
 import type React from "react";
 import { useCallback, useMemo, useState } from "react";
 import { IncidentBlueprint } from "./blueprints/IncidentBlueprint";

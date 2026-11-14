@@ -7,8 +7,8 @@ no framework at all. It's the clearest demonstration of Loom's **BYOR**
 and only the render layer is swapped.
 
 ```
-pnpm --filter @loom/db-command-center-wc dev      # http://localhost:5173
-pnpm --filter @loom/db-command-center-wc build:ui # production bundle
+pnpm --filter @loomwork/db-command-center-wc dev      # http://localhost:5173
+pnpm --filter @loomwork/db-command-center-wc build:ui # production bundle
 ```
 
 Fully offline (deterministic `DemoLlmProvider`); swap it for

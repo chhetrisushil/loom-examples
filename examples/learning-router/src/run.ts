@@ -1,6 +1,6 @@
-import type { EventEnvelope } from "@loom/core";
-import type { Policy, Trajectory } from "@loom/learning";
-import { trajectories } from "@loom/learning";
+import type { EventEnvelope } from "@loomwork/core";
+import type { Policy, Trajectory } from "@loomwork/learning";
+import { trajectories } from "@loomwork/learning";
 import { buildApp } from "./app";
 import { type Route, type Ticket, tickets } from "./domain";
 import { registerTriageFlow } from "./flow";

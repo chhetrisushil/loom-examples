@@ -1,4 +1,4 @@
-import type { Audience } from "@loom-ui/core";
+import type { Audience } from "@loomwork/ui-core";
 import {
   type HandleInventory,
   type HandleLoadRequest,
@@ -6,8 +6,8 @@ import {
   type HandleLoader,
   HydrationStore,
   SplitHydrationController,
-} from "@loom-ui/hydration/client";
-import { InMemoryProjectionRuntime } from "@loom/projection-runtime";
+} from "@loomwork/ui-hydration/client";
+import { InMemoryProjectionRuntime } from "@loomwork/projection-runtime";
 
 // The browser side of ONE surface. It knows only the handles its inventory lists: the broadcast
 // inventory does not list the classified ones, so the wallboard's browser never even asks for them.

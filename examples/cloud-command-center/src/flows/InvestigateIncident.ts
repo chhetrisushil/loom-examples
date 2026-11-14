@@ -1,6 +1,6 @@
-import { surface } from "@loom/agent-surface";
-import { flow$ } from "@loom/core";
-import type { FlowRunner, RegisteredFlow } from "@loom/workflow-runtime";
+import { surface } from "@loomwork/agent-surface";
+import { flow$ } from "@loomwork/core";
+import type { FlowRunner, RegisteredFlow } from "@loomwork/workflow-runtime";
 import { z } from "zod";
 import { AiTriageStep } from "../tools/AiTriageTool";
 import { FetchLogsStep } from "../tools/LogsTool";

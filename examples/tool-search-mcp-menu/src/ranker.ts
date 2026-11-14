@@ -1,4 +1,4 @@
-import { DEFAULT_STOPWORDS, type ToolHit, type ToolRanker, type ToolSearchDoc } from "@loom/agent";
+import { DEFAULT_STOPWORDS, type ToolHit, type ToolRanker, type ToolSearchDoc } from "@loomwork/agent";
 
 const STOP = new Set<string>(DEFAULT_STOPWORDS);
 

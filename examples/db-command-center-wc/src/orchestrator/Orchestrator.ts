@@ -1,13 +1,13 @@
-import { createSurfaceEmitter } from "@loom/agent-surface";
-import type { SurfaceEmitter } from "@loom/agent-surface";
-import type { InProcessA2ABus } from "@loom/app";
-import type { ApprovalDecision } from "@loom/app";
-import type { CapabilityCatalog } from "@loom/capability";
-import type { EventEnvelope } from "@loom/core";
-import { IntentRuntime } from "@loom/intent";
-import { PlannerRuntime } from "@loom/planner";
-import type { ProjectionRuntime } from "@loom/projection-runtime";
-import type { WorkflowRuntime } from "@loom/workflow-runtime";
+import { createSurfaceEmitter } from "@loomwork/agent-surface";
+import type { SurfaceEmitter } from "@loomwork/agent-surface";
+import type { InProcessA2ABus } from "@loomwork/app";
+import type { ApprovalDecision } from "@loomwork/app";
+import type { CapabilityCatalog } from "@loomwork/capability";
+import type { EventEnvelope } from "@loomwork/core";
+import { IntentRuntime } from "@loomwork/intent";
+import { PlannerRuntime } from "@loomwork/planner";
+import type { ProjectionRuntime } from "@loomwork/projection-runtime";
+import type { WorkflowRuntime } from "@loomwork/workflow-runtime";
 import { AGENT_CARDS, CAPABILITY_AGENT, FLEET } from "../agents/definitions";
 import type {
   AgentTask,

@@ -8,14 +8,14 @@ import {
   genesis,
   isContainer,
   replay,
-} from "@loom-ui/core";
-import { seal } from "@loom-ui/core/log";
+} from "@loomwork/ui-core";
+import { seal } from "@loomwork/ui-core/log";
 import {
   type DriftRecord,
   type TransientInvoker,
   executeProvider,
   outputShapeHashOf,
-} from "@loom-ui/hydration";
+} from "@loomwork/ui-hydration";
 import {
   type CapabilityRef,
   type DecideContext,
@@ -26,7 +26,7 @@ import {
   driftCapabilities,
   driftRequest,
   reviseForDrift,
-} from "@loom-ui/planner";
+} from "@loomwork/ui-planner";
 
 // ── A SECOND greenhouse widget, whose own provider is TWO steps (gap G4) ──────────────────────
 // Every other provider on this board (climate.ts) is one step. Trend is not: the node's own

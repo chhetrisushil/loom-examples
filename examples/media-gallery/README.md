@@ -4,8 +4,8 @@ Multi-modal media, claim-checked by **address** (loom **R5**, ADR 0120, plus loo
 offline: a scripted model, an in-memory content store, and PNGs built in code (no binary fixtures).
 
 ```bash
-pnpm --filter @loom/media-gallery start   # a narrated walkthrough
-pnpm --filter @loom/media-gallery test    # the tests ARE the proof
+pnpm --filter @loomwork/media-gallery start   # a narrated walkthrough
+pnpm --filter @loomwork/media-gallery test    # the tests ARE the proof
 ```
 
 ## The pattern
@@ -20,7 +20,7 @@ createAgentModelEffect(provider, { resolveContent: async (ref, ctx) => canRead(c
 
 // 3. A tool argument that is itself a content ref: marked in the schema, checked at composition AND run time.
 inputSchema: { properties: { image: { type: "string", "x-content-ref": true } } }
-const table = contentRefArgsFrom(capabilities);                       // @loom-ui/planner
+const table = contentRefArgsFrom(capabilities);                       // @loomwork/ui-planner
 serveHandles(exp, requests, { contentRefArgs: table,
   acceptContentRefParam: (c) => vault.canRead(c.principalId, String(c.value)) });
 ```

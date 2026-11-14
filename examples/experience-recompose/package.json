@@ -1,5 +1,5 @@
 {
-  "name": "@loom/experience-recompose",
+  "name": "@loomwork/experience-recompose",
   "version": "0.0.1",
   "description": "loom-ui slice 6a reference: an agent revision lands while the user types into a form. A scripted planner composes an experience with an app-registered NoteInput kind (a real <textarea>), the user types into it, the planner revises (adds, reorders, relabels, drops), and renderBlueprintDom's handle.update patches the live tree by widget id — the textarea keeps its text, caret and focus; the kept metric keeps its element; only the changed nodes move.",
   "private": true,
@@ -10,12 +10,12 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@loom-ui/core": "*",
-    "@loom-ui/hydration": "*",
-    "@loom-ui/planner": "*",
-    "@loom-ui/renderer-lit": "*",
-    "@loom/blueprint-runtime": "*",
-    "@loom/projection-runtime": "*",
+    "@loomwork/ui-core": "*",
+    "@loomwork/ui-hydration": "*",
+    "@loomwork/ui-planner": "*",
+    "@loomwork/ui-renderer-lit": "*",
+    "@loomwork/blueprint-runtime": "*",
+    "@loomwork/projection-runtime": "*",
     "lit": "catalog:"
   },
   "devDependencies": {

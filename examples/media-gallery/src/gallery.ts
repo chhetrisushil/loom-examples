@@ -13,8 +13,8 @@ import {
   mediaCatalogEntries,
   orderKeyBetween,
   replay,
-} from "@loom-ui/core";
-import { seal } from "@loom-ui/core/log";
+} from "@loomwork/ui-core";
+import { seal } from "@loomwork/ui-core/log";
 import {
   HYDRATION_PROJECTION_ID,
   HYDRATION_PROJECTION_VERSION,
@@ -22,13 +22,13 @@ import {
   HydrationStore,
   type TransientInvoker,
   serveHandles,
-} from "@loom-ui/hydration";
-import { contentRefArgsFrom } from "@loom-ui/planner";
-import type { CapabilityRef } from "@loom-ui/planner";
-import { renderExperience, terminalRegistry } from "@loom-ui/renderer-terminal";
-import type { TransientInvokeOptions } from "@loom/effect-runtime";
-import { MCP_INVOKE_TOOL_ID } from "@loom/plugin-mcp";
-import { InMemoryProjectionRuntime } from "@loom/projection-runtime";
+} from "@loomwork/ui-hydration";
+import { contentRefArgsFrom } from "@loomwork/ui-planner";
+import type { CapabilityRef } from "@loomwork/ui-planner";
+import { renderExperience, terminalRegistry } from "@loomwork/ui-renderer-terminal";
+import type { TransientInvokeOptions } from "@loomwork/effect-runtime";
+import { MCP_INVOKE_TOOL_ID } from "@loomwork/plugin-mcp";
+import { InMemoryProjectionRuntime } from "@loomwork/projection-runtime";
 import { readPng } from "./png";
 import type { MediaVault } from "./vault";
 

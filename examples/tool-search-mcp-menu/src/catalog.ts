@@ -1,4 +1,4 @@
-import type { McpServedTool } from "@loom/plugin-mcp";
+import type { McpServedTool } from "@loomwork/plugin-mcp";
 
 /**
  * The 64-tool catalogue a (fake) ops MCP server serves. Far too many to put in a prompt every

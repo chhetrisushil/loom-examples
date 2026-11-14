@@ -1,6 +1,6 @@
-import type { EventEnvelope } from "@loom/core";
-import { InMemoryContentStore, sweepUnpinnedContent } from "@loom/plugin-content";
-import type { ContentStore } from "@loom/plugin-content";
+import type { EventEnvelope } from "@loomwork/core";
+import { InMemoryContentStore, sweepUnpinnedContent } from "@loomwork/plugin-content";
+import type { ContentStore } from "@loomwork/plugin-content";
 import { type SavedViewsApp, buildApp } from "./app";
 import { composeOffCatalogue, composeSpendView } from "./compose";
 import { BLUEPRINT_COMPOSED, type PromoteOutput, openView } from "./flow";
@@ -25,7 +25,7 @@ import {
  * from a rolling week to a calendar month — a deploy, not an edit to any view — and every
  * saved view bound to it renders a different number under an unchanged hash.
  *
- * Run with:  pnpm --filter @loom/saved-views start
+ * Run with:  pnpm --filter @loomwork/saved-views start
  */
 
 function section(title: string): void {

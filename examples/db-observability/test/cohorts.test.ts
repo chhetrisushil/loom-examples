@@ -1,4 +1,4 @@
-import { blueprintNodeIds } from "@loom/blueprint-runtime";
+import { blueprintNodeIds } from "@loomwork/blueprint-runtime";
 import { describe, expect, it } from "vitest";
 import type { Topic } from "../src/catalogue";
 import {

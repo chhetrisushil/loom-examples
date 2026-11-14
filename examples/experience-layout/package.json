@@ -1,5 +1,5 @@
 {
-  "name": "@loom/experience-layout",
+  "name": "@loomwork/experience-layout",
   "version": "0.0.1",
   "description": "loom-ui placement and section titles for anyone: a branch-library board with two titled sections — one placing every node on explicit grid lines (a two-row notice beside stacked counts), one flowing — compiled for web (Lit) and terminal from one Experience, and a revision that moves widgets by restyling them in place.",
   "private": true,
@@ -10,12 +10,12 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@loom-ui/core": "*",
-    "@loom-ui/hydration": "*",
-    "@loom-ui/renderer-lit": "*",
-    "@loom-ui/renderer-terminal": "*",
-    "@loom/blueprint-runtime": "*",
-    "@loom/projection-runtime": "*",
+    "@loomwork/ui-core": "*",
+    "@loomwork/ui-hydration": "*",
+    "@loomwork/ui-renderer-lit": "*",
+    "@loomwork/ui-renderer-terminal": "*",
+    "@loomwork/blueprint-runtime": "*",
+    "@loomwork/projection-runtime": "*",
     "lit": "catalog:"
   },
   "devDependencies": {

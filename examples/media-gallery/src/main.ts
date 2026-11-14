@@ -3,8 +3,8 @@ import {
   MAX_INLINE_TOTAL_BYTES,
   OversizedInlinePartError,
   guardRequest,
-} from "@loom/llm";
-import { InMemoryContentStore } from "@loom/plugin-content";
+} from "@loomwork/llm";
+import { InMemoryContentStore } from "@loomwork/plugin-content";
 import { createAssistant } from "./assistant";
 import { GallerySession, GalleryTools, contentRefTable } from "./gallery";
 import { DAY_MS, sweepMedia } from "./gc";
@@ -13,7 +13,7 @@ import { tinyPng } from "./png";
 import { MediaVault } from "./vault";
 
 // A narrated walkthrough. Everything is offline: a scripted model, an in-memory content store, tiny PNGs
-// built in code. `pnpm --filter @loom/media-gallery test` is the proof; this is the story.
+// built in code. `pnpm --filter @loomwork/media-gallery test` is the proof; this is the story.
 
 const say = (heading: string, ...lines: string[]): void => {
   console.log(`\n== ${heading}`);

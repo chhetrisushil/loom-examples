@@ -1,5 +1,5 @@
-import { MetricCard, StatusBadge, blueprint$, stack } from "@loom/blueprint-runtime";
-import type { Blueprint, VersionPins } from "@loom/blueprint-runtime";
+import { MetricCard, StatusBadge, blueprint$, stack } from "@loomwork/blueprint-runtime";
+import type { Blueprint, VersionPins } from "@loomwork/blueprint-runtime";
 
 // ── Composition ──────────────────────────────────────────────────────────────
 //

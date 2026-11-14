@@ -36,6 +36,6 @@ There is no consumer-specific code here: only a desk's own vocabulary on loom-ui
 **Depends on loom-ui `feat/slice7-audience` (loom-ui PR #80)** and loom `2944ff32` or later (Blueprint IR 2.5.0).
 
 ```bash
-pnpm --filter @loom/experience-broadcast test
-pnpm --filter @loom/experience-broadcast build
+pnpm --filter @loomwork/experience-broadcast test
+pnpm --filter @loomwork/experience-broadcast build
 ```

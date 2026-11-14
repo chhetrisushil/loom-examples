@@ -4,18 +4,18 @@ import {
   createAgentModelEffect,
   memoryWriteBackEffect,
   selectedSkillsOf,
-} from "@loom/agent";
-import { defineConfig, runAgentOnce } from "@loom/app";
-import { CapabilityCatalog } from "@loom/capability";
-import { agent$, flow$, handler$, instructions$, skill$, step$ } from "@loom/core";
-import { IntentRuntime } from "@loom/intent";
-import { InMemoryMemoryStore, TieredMemory } from "@loom/memory";
-import { PlannerRuntime } from "@loom/planner";
-import { createA2AClientEffect, createA2AServer, toAgentCard } from "@loom/plugin-a2a";
-import { McpClient } from "@loom/plugin-mcp";
-import { TerminalRenderer } from "@loom/plugin-renderer-terminal";
-import { AgentRegistry } from "@loom/registry";
-import type { FlowRunner, RegisteredFlow } from "@loom/workflow-runtime";
+} from "@loomwork/agent";
+import { defineConfig, runAgentOnce } from "@loomwork/app";
+import { CapabilityCatalog } from "@loomwork/capability";
+import { agent$, flow$, handler$, instructions$, skill$, step$ } from "@loomwork/core";
+import { IntentRuntime } from "@loomwork/intent";
+import { InMemoryMemoryStore, TieredMemory } from "@loomwork/memory";
+import { PlannerRuntime } from "@loomwork/planner";
+import { createA2AClientEffect, createA2AServer, toAgentCard } from "@loomwork/plugin-a2a";
+import { McpClient } from "@loomwork/plugin-mcp";
+import { TerminalRenderer } from "@loomwork/plugin-renderer-terminal";
+import { AgentRegistry } from "@loomwork/registry";
+import type { FlowRunner, RegisteredFlow } from "@loomwork/workflow-runtime";
 /**
  * Agent Network — a server-side showcase of Loom's agentic capabilities.
  *
@@ -29,7 +29,7 @@ import type { FlowRunner, RegisteredFlow } from "@loom/workflow-runtime";
  *   7. Agent memory          — an agent that recalls prior turns
  *   8. Multi-surface         — render one blueprint to the terminal surface
  *
- * Run with:  pnpm --filter @loom/agent-network start
+ * Run with:  pnpm --filter @loomwork/agent-network start
  */
 import { z } from "zod";
 import { ScriptedLlmProvider, plainUserMessages } from "./ScriptedLlmProvider";
@@ -45,7 +45,7 @@ function section(title: string): void {
 
 async function main(): Promise<void> {
   // The agent loop (agentLoop$) needs an ExecutionContext, which only a flow has. This is a script, so
-  // `runAgentOnce` (@loom/app) builds the throwaway in-memory app + one-off flow for each run; its model
+  // `runAgentOnce` (@loomwork/app) builds the throwaway in-memory app + one-off flow for each run; its model
   // call and every tool call (the MCP tools below) resolve through that app's EffectRuntime, one journaled
   // frame each. The A2A-fronted service and the capability app further down are separate defineConfig roots.
 
@@ -103,7 +103,7 @@ async function main(): Promise<void> {
   // Skills — progressively-disclosed expertise. Only the description sits in
   // context by default; the runbook body is loaded on demand when the incident
   // prompt selects it (deterministic selection here → replay-safe). The
-  // instructions$ marker is what the @loom/compiler would extract into a lazy
+  // instructions$ marker is what the @loomwork/compiler would extract into a lazy
   // chunk; run under tsx it stays inline, and loadInstructions resolves either.
   const skills = new SkillRegistry().register(
     skill$({

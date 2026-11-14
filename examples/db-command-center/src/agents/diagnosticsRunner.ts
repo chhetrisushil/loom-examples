@@ -1,7 +1,7 @@
-import { agentLoop$, createAgentModelEffect } from "@loom/agent";
-import { type EffectRuntime, ToolEffect } from "@loom/effect-runtime";
-import { type LlmProvider, type LlmRequest, type LlmResponse, textOf, toParts } from "@loom/llm";
-import type { ExecutionContext } from "@loom/workflow-runtime";
+import { agentLoop$, createAgentModelEffect } from "@loomwork/agent";
+import { type EffectRuntime, ToolEffect } from "@loomwork/effect-runtime";
+import { type LlmProvider, type LlmRequest, type LlmResponse, textOf, toParts } from "@loomwork/llm";
+import type { ExecutionContext } from "@loomwork/workflow-runtime";
 import { DiagnosticsAgent } from "./definitions";
 import { fetchMetrics } from "./tools";
 

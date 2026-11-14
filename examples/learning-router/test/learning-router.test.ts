@@ -1,4 +1,4 @@
-import { evaluatePolicy, promotionGate, steps } from "@loom/learning";
+import { evaluatePolicy, promotionGate, steps } from "@loomwork/learning";
 import { describe, expect, it } from "vitest";
 import { ROUTES, type Route, quality, tickets } from "../src/domain";
 import { buildPolicy, trainCandidate } from "../src/policy";

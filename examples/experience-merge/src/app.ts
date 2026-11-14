@@ -9,8 +9,8 @@ import {
   mergeExperiences,
   replay,
   validateExperience,
-} from "@loom-ui/core";
-import { seal } from "@loom-ui/core/log";
+} from "@loomwork/ui-core";
+import { seal } from "@loomwork/ui-core/log";
 import { catalog } from "./catalog";
 
 // ── A community-garden rota board, edited by two volunteers ──────────────────

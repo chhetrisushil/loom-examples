@@ -3,19 +3,19 @@ import {
   agentLoop$,
   memoryWriteBackEffect,
   registerReasoningRoutes,
-} from "@loom/agent";
-import type { EventEnvelope, FlowDefinition } from "@loom/core";
-import { agent$, tool$ } from "@loom/core";
-import { EffectRuntime, GrantTable, ToolEffect } from "@loom/effect-runtime";
-import { InMemoryAsyncEventStore } from "@loom/event-runtime";
-import type { LlmRequest } from "@loom/llm";
-import { InMemoryMemoryStore, TieredMemory } from "@loom/memory";
-import { QuotaExceededError } from "@loom/middleware";
-import { ReasoningRuntime } from "@loom/reasoning";
-import type { ReasoningCache } from "@loom/reasoning";
-import { InMemoryAsyncSnapshotStore } from "@loom/snapshot-runtime";
-import { WorkflowRuntime, answerApproval } from "@loom/workflow-runtime";
-import type { FlowRunner } from "@loom/workflow-runtime";
+} from "@loomwork/agent";
+import type { EventEnvelope, FlowDefinition } from "@loomwork/core";
+import { agent$, tool$ } from "@loomwork/core";
+import { EffectRuntime, GrantTable, ToolEffect } from "@loomwork/effect-runtime";
+import { InMemoryAsyncEventStore } from "@loomwork/event-runtime";
+import type { LlmRequest } from "@loomwork/llm";
+import { InMemoryMemoryStore, TieredMemory } from "@loomwork/memory";
+import { QuotaExceededError } from "@loomwork/middleware";
+import { ReasoningRuntime } from "@loomwork/reasoning";
+import type { ReasoningCache } from "@loomwork/reasoning";
+import { InMemoryAsyncSnapshotStore } from "@loomwork/snapshot-runtime";
+import { WorkflowRuntime, answerApproval } from "@loomwork/workflow-runtime";
+import type { FlowRunner } from "@loomwork/workflow-runtime";
 import { z } from "zod";
 import { DEEP, FAST, routeProvider, triageRouter } from "./model";
 

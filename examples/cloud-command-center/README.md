@@ -13,7 +13,7 @@ examples — same durable runtime, assembled once with `defineConfig`, driving a
 - **A durable investigate-incident flow** (`src/flows/InvestigateIncident.ts`) — gather metrics + logs,
   AI-triage, then a human-approved remediation (`ctx.suspend` → resume from the log).
 - **AI triage as a swappable effect** — `registerAiTriageEffect` wires a `MockLlmProvider`
-  (`src/runtime/`); point it at a hosted `@loom/llm` provider to go live.
+  (`src/runtime/`); point it at a hosted `@loomwork/llm` provider to go live.
 - **A2UI-driven UI** — the flow patches the `"ui"` surface; the React `LoomProvider` +
   `BlueprintRenderer` bind to it. Widgets read `{ projectionId: "ui" | "metrics" | "incident", path }`.
 

@@ -1,6 +1,6 @@
-import type { BindingStatus } from "@loom/blueprint-runtime";
-import type { EventEnvelope } from "@loom/core";
-import type { Projection } from "@loom/projection-runtime";
+import type { BindingStatus } from "@loomwork/blueprint-runtime";
+import type { EventEnvelope } from "@loomwork/core";
+import type { Projection } from "@loomwork/projection-runtime";
 
 // ── The app's own read-model ──────────────────────────────────────────────────
 // One projection holds, per widget key, the VALUE the widget shows and the STATUS of its

@@ -1,5 +1,5 @@
-import { agent$, policy$ } from "@loom/core";
-import type { AgentDefinition, PolicyDefinition } from "@loom/core";
+import { agent$, policy$ } from "@loomwork/core";
+import type { AgentDefinition, PolicyDefinition } from "@loomwork/core";
 import { DepsTool, PerfTool, ScopeTool, SecurityTool, SignoffTool } from "./tools";
 
 // Least-privilege per agent: each audit agent may invoke ONLY its own audit effect (the step

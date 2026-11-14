@@ -1,5 +1,5 @@
-import { checkPlannerConformance } from "@loom-ui/planner";
-import type { FlowDefinition } from "@loom/core";
+import { checkPlannerConformance } from "@loomwork/ui-planner";
+import type { FlowDefinition } from "@loomwork/core";
 import {
   type CapabilityRequest,
   DelegationAuthorizer,
@@ -9,11 +9,11 @@ import {
   GrantTable,
   delegationDigest,
   signDelegation,
-} from "@loom/effect-runtime";
-import { InMemoryAsyncEventStore } from "@loom/event-runtime";
-import { InMemoryAsyncSnapshotStore } from "@loom/snapshot-runtime";
-import { recordReach } from "@loom/verify";
-import { type FlowRunner, type PrincipalResolver, WorkflowRuntime } from "@loom/workflow-runtime";
+} from "@loomwork/effect-runtime";
+import { InMemoryAsyncEventStore } from "@loomwork/event-runtime";
+import { InMemoryAsyncSnapshotStore } from "@loomwork/snapshot-runtime";
+import { recordReach } from "@loomwork/verify";
+import { type FlowRunner, type PrincipalResolver, WorkflowRuntime } from "@loomwork/workflow-runtime";
 import { z } from "zod";
 import { capabilities, triageCatalog } from "./catalog";
 import { LLM_TOOL_ID, fakeLlm } from "./llm";

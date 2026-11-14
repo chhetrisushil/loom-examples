@@ -1,4 +1,4 @@
-import { handler$, step$, tool$ } from "@loom/core";
+import { handler$, step$, tool$ } from "@loomwork/core";
 import { z } from "zod";
 
 export const LogsTool = tool$({

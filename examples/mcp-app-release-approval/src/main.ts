@@ -1,6 +1,6 @@
-import type { SurfaceState } from "@loom/agent-surface";
-import { McpClient } from "@loom/plugin-mcp";
-import { SURFACE_HOST_URI, surfaceHostPin } from "@loom/plugin-mcp-app";
+import type { SurfaceState } from "@loomwork/agent-surface";
+import { McpClient } from "@loomwork/plugin-mcp";
+import { SURFACE_HOST_URI, surfaceHostPin } from "@loomwork/plugin-mcp-app";
 import { buildApp } from "./app";
 import { RegisteredReleaseFlow } from "./flow";
 import { RELEASE_SIGNAL } from "./flow";

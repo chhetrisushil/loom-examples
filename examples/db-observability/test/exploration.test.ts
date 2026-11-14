@@ -1,4 +1,4 @@
-import { blueprintNodeIds, preservesNodes } from "@loom/blueprint-runtime";
+import { blueprintNodeIds, preservesNodes } from "@loomwork/blueprint-runtime";
 import { describe, expect, it } from "vitest";
 import { ExplorationFloor, NO_EXPLORATION, explorationActions } from "../src/exploration";
 import { FLAG_CATALOGUE } from "../src/flags";

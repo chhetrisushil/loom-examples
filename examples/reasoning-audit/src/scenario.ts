@@ -1,10 +1,10 @@
-import { unwrapTainted } from "@loom/classify";
-import type { EventEnvelope } from "@loom/core";
-import { InMemoryAsyncEventStore } from "@loom/event-runtime";
-import { LLM_REASONING_CAPTURED, readReasoning } from "@loom/llm";
-import type { ReasoningStepRead } from "@loom/llm";
-import { InMemoryContentStore } from "@loom/plugin-content";
-import { ReplayVM } from "@loom/replay-vm";
+import { unwrapTainted } from "@loomwork/classify";
+import type { EventEnvelope } from "@loomwork/core";
+import { InMemoryAsyncEventStore } from "@loomwork/event-runtime";
+import { LLM_REASONING_CAPTURED, readReasoning } from "@loomwork/llm";
+import type { ReasoningStepRead } from "@loomwork/llm";
+import { InMemoryContentStore } from "@loomwork/plugin-content";
+import { ReplayVM } from "@loomwork/replay-vm";
 import { THOUGHTS } from "./model";
 import { type Run, type World, boot, flowDef, review } from "./world";
 

@@ -9,16 +9,16 @@ import {
   isContainer,
   orderKeyBetween,
   replay,
-} from "@loom-ui/core";
-import { seal } from "@loom-ui/core/log";
+} from "@loomwork/ui-core";
+import { seal } from "@loomwork/ui-core/log";
 import {
   HYDRATION_PROJECTION_ID,
   HYDRATION_PROJECTION_VERSION,
   HydrationController,
   HydrationStore,
   type TransientInvoker,
-} from "@loom-ui/hydration";
-import { type CapabilityRef, ReferencePlanner, buildProviderSpec } from "@loom-ui/planner";
+} from "@loomwork/ui-hydration";
+import { type CapabilityRef, ReferencePlanner, buildProviderSpec } from "@loomwork/ui-planner";
 import {
   type DomRegistry,
   type DomRenderHandle,
@@ -26,10 +26,10 @@ import {
   type RecomposeReport,
   litRegistry,
   renderBlueprintDom,
-} from "@loom-ui/renderer-lit/dom";
-import "@loom-ui/renderer-lit/register";
-import { type Blueprint, RendererRegistry } from "@loom/blueprint-runtime";
-import { InMemoryProjectionRuntime } from "@loom/projection-runtime";
+} from "@loomwork/ui-renderer-lit/dom";
+import "@loomwork/ui-renderer-lit/register";
+import { type Blueprint, RendererRegistry } from "@loomwork/blueprint-runtime";
+import { InMemoryProjectionRuntime } from "@loomwork/projection-runtime";
 import { catalog } from "./catalog";
 import { alert, noteInput } from "./noteInput";
 import { memoryDecide, scriptedModel } from "./planner";

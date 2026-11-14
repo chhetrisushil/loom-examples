@@ -4,11 +4,11 @@
 // Injection"). AOT hides this because ngtsc resolves the token statically.
 // biome-ignore lint/style/useImportType: NgZone is a runtime Angular DI token — a type-only import erases it and breaks DI.
 import { Injectable, NgZone, signal } from "@angular/core";
-import { defineConfig } from "@loom/app";
-import type { EventEnvelope } from "@loom/core";
-import { InMemoryProjectionRuntime } from "@loom/projection-runtime";
-import { ConsoleTelemetryAdapter } from "@loom/telemetry";
-import type { RegisteredFlow, WorkflowRuntime } from "@loom/workflow-runtime";
+import { defineConfig } from "@loomwork/app";
+import type { EventEnvelope } from "@loomwork/core";
+import { InMemoryProjectionRuntime } from "@loomwork/projection-runtime";
+import { ConsoleTelemetryAdapter } from "@loomwork/telemetry";
+import type { RegisteredFlow, WorkflowRuntime } from "@loomwork/workflow-runtime";
 import {
   type IncidentInput,
   InvestigateIncidentFlow,
@@ -16,7 +16,7 @@ import {
   type MetricsData,
 } from "./incident.flow";
 
-// This composition root uses `defineConfig` from @loom/app. @loom/app lazy-loads
+// This composition root uses `defineConfig` from @loomwork/app. @loomwork/app lazy-loads
 // the SQLite stores (behind an opaque require + the `/memory` subpath), so
 // `storage.kind:"memory"` pulls NO better-sqlite3 / node:fs into this browser
 // bundle — the same reason the React / Web-Components examples stay clean.

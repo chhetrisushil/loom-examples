@@ -1,19 +1,19 @@
-import { createAgentModelEffect } from "@loom/agent";
+import { createAgentModelEffect } from "@loomwork/agent";
 import {
   ConversationHub,
   type LiveEvent,
   conversation$,
   createConversations,
   inboxBargeIn,
-} from "@loom/conversation";
-import { agent$ } from "@loom/core";
-import { EffectRuntime } from "@loom/effect-runtime";
-import { InMemoryAsyncEventStore, InMemoryTimerStore } from "@loom/event-runtime";
-import type { LlmProvider, LlmRequest, LlmStreamChunk } from "@loom/llm";
-import { textOf } from "@loom/llm";
-import type { InMemoryContentStore } from "@loom/plugin-content";
-import { InMemoryAsyncSnapshotStore } from "@loom/snapshot-runtime";
-import { WorkflowRuntime } from "@loom/workflow-runtime";
+} from "@loomwork/conversation";
+import { agent$ } from "@loomwork/core";
+import { EffectRuntime } from "@loomwork/effect-runtime";
+import { InMemoryAsyncEventStore, InMemoryTimerStore } from "@loomwork/event-runtime";
+import type { LlmProvider, LlmRequest, LlmStreamChunk } from "@loomwork/llm";
+import { textOf } from "@loomwork/llm";
+import type { InMemoryContentStore } from "@loomwork/plugin-content";
+import { InMemoryAsyncSnapshotStore } from "@loomwork/snapshot-runtime";
+import { WorkflowRuntime } from "@loomwork/workflow-runtime";
 import { PROVIDER } from "./model";
 
 /** What a streaming Anthropic-shaped model "thinks" while it answers, in two increments. */

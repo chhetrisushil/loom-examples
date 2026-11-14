@@ -1,5 +1,5 @@
-import type { LlmProvider, LlmRequest, LlmResponse, LlmStreamChunk } from "@loom/llm";
-import { textOf } from "@loom/llm";
+import type { LlmProvider, LlmRequest, LlmResponse, LlmStreamChunk } from "@loomwork/llm";
+import { textOf } from "@loomwork/llm";
 
 // ── DemoLlmProvider ───────────────────────────────────────────────────────────
 //
@@ -13,7 +13,7 @@ import { textOf } from "@loom/llm";
 // Because the framework's LlmProvider contract is provider-agnostic, going live
 // is a one-line swap in main.tsx:
 //
-//   import { AnthropicProvider } from "@loom/llm";
+//   import { AnthropicProvider } from "@loomwork/llm";
 //   export const llm = new AnthropicProvider({ model: "claude-opus-4-8" });
 //
 // Nothing downstream (Planner/Intent/Agent/streaming widgets) changes.

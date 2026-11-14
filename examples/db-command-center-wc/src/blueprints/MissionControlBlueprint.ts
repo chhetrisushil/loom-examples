@@ -1,4 +1,4 @@
-import { blueprint$, grid, stack } from "@loom/blueprint-runtime";
+import { blueprint$, grid, stack } from "@loomwork/blueprint-runtime";
 import {
   AgentTaskList,
   ConsoleLog,

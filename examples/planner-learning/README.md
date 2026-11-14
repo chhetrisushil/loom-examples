@@ -5,8 +5,8 @@ seeded viewers, in-memory stores). A planner draws the same dashboard in one of 
 or `tabs`); *which* layout is a learned loom decision, and the viewers' votes are what teach it.
 
 ```bash
-pnpm --filter @loom/planner-learning start   # a narrated run (~8 s)
-pnpm --filter @loom/planner-learning test    # the tests ARE the proof
+pnpm --filter @loomwork/planner-learning start   # a narrated run (~8 s)
+pnpm --filter @loomwork/planner-learning test    # the tests ARE the proof
 ```
 
 ## The loop

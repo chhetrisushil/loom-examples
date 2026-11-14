@@ -1,9 +1,9 @@
-import { compile } from "@loom-ui/core";
-import { HYDRATION_PROJECTION_ID, HYDRATION_PROJECTION_VERSION } from "@loom-ui/hydration";
-import { currentLocale, setLocale } from "@loom-ui/renderer-lit";
-import { frameworkKindContracts, litRegistry, renderBlueprintDom } from "@loom-ui/renderer-lit/dom";
-import "@loom-ui/renderer-lit/register";
-import { renderExperience, terminalRegistry } from "@loom-ui/renderer-terminal";
+import { compile } from "@loomwork/ui-core";
+import { HYDRATION_PROJECTION_ID, HYDRATION_PROJECTION_VERSION } from "@loomwork/ui-hydration";
+import { currentLocale, setLocale } from "@loomwork/ui-renderer-lit";
+import { frameworkKindContracts, litRegistry, renderBlueprintDom } from "@loomwork/ui-renderer-lit/dom";
+import "@loomwork/ui-renderer-lit/register";
+import { renderExperience, terminalRegistry } from "@loomwork/ui-renderer-terminal";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { PICK_LIST, TITLES, createApp } from "../src/app";
 import { KIND_CONTRACTS, catalog } from "../src/catalog";

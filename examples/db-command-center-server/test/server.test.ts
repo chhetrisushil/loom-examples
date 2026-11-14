@@ -1,7 +1,7 @@
 import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { waitFor, waitForPhase } from "@loom/testing";
+import { waitFor, waitForPhase } from "@loomwork/testing";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { type ServerApp, createApp } from "../src/server/app";
 import type { ServerFrame } from "../src/wire";

@@ -6,13 +6,13 @@ import {
   guardRequest,
   mediaTypeAccepted,
   textOf,
-} from "@loom/llm";
-import type { LlmRequest } from "@loom/llm";
+} from "@loomwork/llm";
+import type { LlmRequest } from "@loomwork/llm";
 import {
   InMemoryContentStore,
   ReclaimOrphansSnapshotAckError,
   sweepUnpinnedContent,
-} from "@loom/plugin-content";
+} from "@loomwork/plugin-content";
 import { describe, expect, it } from "vitest";
 import { createAssistant } from "../src/assistant";
 import { GallerySession, GalleryTools } from "../src/gallery";

@@ -1,5 +1,5 @@
-import type { EventEnvelope } from "@loom/core";
-import type { Projection, ProjectionRuntime } from "@loom/projection-runtime";
+import type { EventEnvelope } from "@loomwork/core";
+import type { Projection, ProjectionRuntime } from "@loomwork/projection-runtime";
 
 // ── Telemetry read-models ─────────────────────────────────────────────────────
 // The live signals the dashboard binds to. Each is a Loom projection folded from

@@ -3,10 +3,10 @@ import { defineConfig } from "vite";
 // Client-only Vite config. The durable runtime lives in a separate Node process
 // (src/server/main.ts on :8787); the dev client proxies /api to it (SSE included).
 //
-// @loom/* ship CommonJS; transformMixedEsModules lets Rollup trace their named
-// exports during `vite build`. Only browser-safe @loom/* reach the client bundle
+// @loomwork/* ship CommonJS; transformMixedEsModules lets Rollup trace their named
+// exports during `vite build`. Only browser-safe @loomwork/* reach the client bundle
 // (the server-only packages are imported solely by src/server/*, which Vite never
-// bundles). @loom/plugin-a2a is used for its types only (import type …).
+// bundles). @loomwork/plugin-a2a is used for its types only (import type …).
 export default defineConfig({
   server: {
     proxy: {
@@ -15,7 +15,7 @@ export default defineConfig({
   },
   resolve: { conditions: ["require", "default"] },
   optimizeDeps: {
-    include: ["@loom/a2ui", "@loom/blueprint-runtime", "@loom/core", "@loom/projection-runtime"],
+    include: ["@loomwork/a2ui", "@loomwork/blueprint-runtime", "@loomwork/core", "@loomwork/projection-runtime"],
   },
   build: {
     commonjsOptions: {

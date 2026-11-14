@@ -16,5 +16,5 @@ tsconfig.tsbuildinfo
 # Generated docs (rebuild with scripts/build-architecture-pdf.sh)
 docs/pdf/*.pdf
 
-# local model files for @loom/appgen-model (never commit — multi-GB)
+# local model files for @loomwork/appgen-model (never commit — multi-GB)
 .models/

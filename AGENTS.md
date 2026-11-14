@@ -10,7 +10,7 @@ the sibling **`../loom`** repo and is **not published to any registry**.
 
 ## The one thing you must know: it needs `../loom` beside it
 
-Examples consume Loom's unpublished `@loom/*` packages from the sibling checkout
+Examples consume Loom's unpublished `@loomwork/*` packages from the sibling checkout
 via a central `link:` map. **`../loom` must be checked out next to this repo and
 installed/built**, or nothing resolves:
 
@@ -21,9 +21,9 @@ workspace/
 └── loom-examples/   ← this repo.                   pnpm install
 ```
 
-- The map is `pnpm.overrides` in `./package.json`: every `@loom/*` dep is
+- The map is `pnpm.overrides` in `./package.json`: every `@loomwork/*` dep is
   redirected to `link:../loom/{packages,plugins,tools}/<name>`. Paths resolve
-  relative to this workspace root. Examples declare `"@loom/x": "*"` (the override
+  relative to this workspace root. Examples declare `"@loomwork/x": "*"` (the override
   wins) — do **not** reintroduce `workspace:*` for loom packages; there is no loom
   package in this workspace to satisfy it.
 - Third-party versions shared across examples live in the `catalog:` of
@@ -40,14 +40,14 @@ workspace/
 pnpm install                       # after ../loom is installed + built
 pnpm -r build                      # build every example
 pnpm -r test                       # test every example
-pnpm --filter @loom/db-observability start   # run one example end-to-end
+pnpm --filter @loomwork/db-observability start   # run one example end-to-end
 ```
 
 ## Adding / editing an example
 
 - New loom package used by an example? Add one line to `pnpm.overrides` in
-  `package.json` (`"@loom/newpkg": "link:../loom/packages/newpkg"`) and declare
-  `"@loom/newpkg": "*"` in the example.
+  `package.json` (`"@loomwork/newpkg": "link:../loom/packages/newpkg"`) and declare
+  `"@loomwork/newpkg": "*"` in the example.
 - Example `tsconfig.json` must **not** carry TypeScript project `references` to
   `../../packages/*` — those exist only inside the loom monorepo. Extend
   `../../tsconfig.base.json` and let types resolve from `node_modules`.
@@ -62,13 +62,13 @@ pnpm --filter @loom/db-observability start   # run one example end-to-end
   it does them.
 - **Don't vendor a loom class into an example.** A local copy rots silently when
   the linked `../loom` interface moves: vitest/esbuild happily runs the stale
-  copy and only `pnpm build` (tsc) catches it. Import from `@loom/app` and the
+  copy and only `pnpm build` (tsc) catches it. Import from `@loomwork/app` and the
   plugin barrels instead. If you must copy, run `pnpm build` — not just
   `pnpm test` — before believing it works.
 
 ## Gotcha: React must be a singleton
 
-An example that **mounts** `@loom/plugin-renderer-react` hooks under jsdom (e.g.
+An example that **mounts** `@loomwork/plugin-renderer-react` hooks under jsdom (e.g.
 `db-command-center`) can hit `Cannot read properties of null (reading 'useState')`.
 Cause: renderer-react is linked from `../loom`, whose built hooks import React
 from `../loom`'s `node_modules`, while the app's react-dom would use this repo's
@@ -135,7 +135,7 @@ and `loom verify` also gets the manifest's three source analyses injected automa
 (`loopIdentity`, `nonDeterministic`, `runnerReach`) — nothing is hand-plumbed.
 
 ```bash
-pnpm --filter @loom/<example> exec loom doctor
+pnpm --filter @loomwork/<example> exec loom doctor
 ```
 
 In an example's own `defineConfig`, enable `checks: { verify: "error" }` when the example has

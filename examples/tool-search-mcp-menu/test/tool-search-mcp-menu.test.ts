@@ -1,4 +1,4 @@
-import { isTainted } from "@loom/classify";
+import { isTainted } from "@loomwork/classify";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { CATALOG_SIZE } from "../src/catalog";
 import { resultsOf } from "../src/model";

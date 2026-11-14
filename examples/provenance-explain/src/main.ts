@@ -1,4 +1,4 @@
-import { seenToState } from "@loom-ui/core";
+import { seenToState } from "@loomwork/ui-core";
 import { EXPERIENCE_ID, handleFor, incidents } from "./board";
 import {
   DANA,

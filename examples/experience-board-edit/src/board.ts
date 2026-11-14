@@ -5,8 +5,8 @@ import {
   defineSemanticCatalog,
   genesis,
   replay,
-} from "@loom-ui/core";
-import { seal } from "@loom-ui/core/log";
+} from "@loomwork/ui-core";
+import { seal } from "@loomwork/ui-core/log";
 import {
   type CapabilityRef,
   type DecideContext,
@@ -17,7 +17,7 @@ import {
   type PlannerUsage,
   ReferencePlanner,
   providerHandle,
-} from "@loom-ui/planner";
+} from "@loomwork/ui-planner";
 
 // A greenhouse board: air temperature, humidity and the watering log, all read from ONE climate
 // tool. Three paths into one tool are three providers (the reshaping path is part of a

@@ -1,5 +1,5 @@
-import type { KpiValue, TableValue, TimeSeriesValue } from "@loom-ui/core";
-import { defineReshapers } from "@loom-ui/hydration";
+import type { KpiValue, TableValue, TimeSeriesValue } from "@loomwork/ui-core";
+import { defineReshapers } from "@loomwork/ui-hydration";
 
 // The host's own reshapers (`reshaping.engine: "Named"`): plain functions from a tool's raw
 // output to a widget's value, run in-process on the server — no sandbox hop. What they return is

@@ -1,4 +1,4 @@
-import type { LlmProvider } from "@loom/llm";
+import type { LlmProvider } from "@loomwork/llm";
 import { SwarmLlmProvider } from "./SwarmLlmProvider";
 
 // The single, swappable model dependency. Deterministic + offline by default;

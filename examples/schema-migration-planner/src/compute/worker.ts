@@ -1,7 +1,7 @@
 import { join } from "node:path";
-import { EffectRuntime } from "@loom/effect-runtime";
-import { SqliteEventStore, SqliteSnapshotStore, SqliteTimerStore } from "@loom/plugin-sqlite";
-import { WorkflowRuntime } from "@loom/workflow-runtime";
+import { EffectRuntime } from "@loomwork/effect-runtime";
+import { SqliteEventStore, SqliteSnapshotStore, SqliteTimerStore } from "@loomwork/plugin-sqlite";
+import { WorkflowRuntime } from "@loomwork/workflow-runtime";
 import { MigrationExecutionFlow } from "../capabilities/flows";
 
 // ── The branch worker ─────────────────────────────────────────────────────────

@@ -1,4 +1,4 @@
-import type { DecideContext, DecideOptionsLike, DecideScope, PlannerModel } from "@loom-ui/planner";
+import type { DecideContext, DecideOptionsLike, DecideScope, PlannerModel } from "@loomwork/ui-planner";
 
 // The compose draft and two revisions, as a real model would return them. Ids are STABLE across
 // revisions — that is what keyed recompose keys on. Spans: a 12-column row. The planner appends

@@ -26,69 +26,69 @@ catalogs:
       version: 3.25.76
 
 overrides:
-  '@loom/agent': link:../loom/packages/agent
-  '@loom/agent-surface': link:../loom/packages/agent-surface
-  '@loom/analytics': link:../loom/packages/analytics
-  '@loom/app': link:../loom/packages/app
-  '@loom/blueprint-runtime': link:../loom/packages/blueprint-runtime
-  '@loom-ui/core': link:../loom-ui/packages/core
-  '@loom-ui/hydration': link:../loom-ui/packages/hydration
-  '@loom-ui/learning': link:../loom-ui/packages/learning
-  '@loom-ui/lineage': link:../loom-ui/packages/lineage
-  '@loom-ui/planner': link:../loom-ui/packages/planner
-  '@loom-ui/renderer-lit': link:../loom-ui/packages/renderer-lit
-  '@loom-ui/renderer-terminal': link:../loom-ui/packages/renderer-terminal
-  '@loom/capability': link:../loom/packages/capability
-  '@loom/classify': link:../loom/packages/classify
-  '@loom/cli': link:../loom/tools/cli
-  '@loom/compiler': link:../loom/tools/compiler
-  '@loom/conversation': link:../loom/packages/conversation
-  '@loom/core': link:../loom/packages/core
-  '@loom/dispatcher': link:../loom/packages/dispatcher
-  '@loom/dst': link:../loom/tools/dst
-  '@loom/effect-runtime': link:../loom/packages/effect-runtime
-  '@loom/event-runtime': link:../loom/packages/event-runtime
-  '@loom/graph-executor': link:../loom/packages/graph-executor
-  '@loom/intent': link:../loom/packages/intent
-  '@loom/learning': link:../loom/packages/learning
-  '@loom/live-query': link:../loom/packages/live-query
-  '@loom/llm': link:../loom/packages/llm
-  '@loom/knowledge': link:../loom/packages/knowledge
-  '@loom/memory': link:../loom/packages/memory
-  '@loom/middleware': link:../loom/packages/middleware
-  '@loom/orchestration': link:../loom/packages/orchestration
-  '@loom/orchestrator': link:../loom/packages/orchestrator
-  '@loom/planner': link:../loom/packages/planner
-  '@loom/plugin-a2a': link:../loom/plugins/a2a
-  '@loom/plugin-a2ui': link:../loom/plugins/a2ui
-  '@loom/plugin-audit-chain': link:../loom/plugins/audit-chain
-  '@loom/plugin-cloudrun': link:../loom/plugins/cloudrun
-  '@loom/plugin-content': link:../loom/plugins/content
-  '@loom/plugin-conversation-sse': link:../loom/plugins/conversation-sse
-  '@loom/plugin-durable-state': link:../loom/plugins/durable-state
-  '@loom/plugin-mcp': link:../loom/plugins/mcp
-  '@loom/plugin-mcp-app': link:../loom/plugins/mcp-app
-  '@loom/plugin-read-model': link:../loom/plugins/read-model
-  '@loom/plugin-renderer-react': link:../loom/plugins/renderer-react
-  '@loom/plugin-renderer-terminal': link:../loom/plugins/renderer-terminal
-  '@loom/plugin-sandbox': link:../loom/plugins/sandbox
-  '@loom/plugin-sqlite': link:../loom/plugins/sqlite
-  '@loom/plugin-worker-remote': link:../loom/plugins/worker-remote
-  '@loom/plugin-worker-server': link:../loom/plugins/worker-server
-  '@loom/projection-runtime': link:../loom/packages/projection-runtime
-  '@loom/reasoning': link:../loom/packages/reasoning
-  '@loom/registry': link:../loom/packages/registry
-  '@loom/replay-vm': link:../loom/packages/replay-vm
-  '@loom/scheduler': link:../loom/packages/scheduler
-  '@loom/sdk': link:../loom/packages/sdk
-  '@loom/snapshot-runtime': link:../loom/packages/snapshot-runtime
-  '@loom/telemetry': link:../loom/packages/telemetry
-  '@loom/testing': link:../loom/tools/testing
-  '@loom/verify': link:../loom/packages/verify
-  '@loom/worker-runtime': link:../loom/packages/worker-runtime
-  '@loom/worker-runtime-local': link:../loom/packages/worker-runtime-local
-  '@loom/workflow-runtime': link:../loom/packages/workflow-runtime
-  loom-plugin-linucb: link:../loom-plugins/plugins/loom-plugin-linucb
+  '@loomwork/agent': link:../loom/packages/agent
+  '@loomwork/agent-surface': link:../loom/packages/agent-surface
+  '@loomwork/analytics': link:../loom/packages/analytics
+  '@loomwork/app': link:../loom/packages/app
+  '@loomwork/blueprint-runtime': link:../loom/packages/blueprint-runtime
+  '@loomwork/ui-core': link:../loom-ui/packages/core
+  '@loomwork/ui-hydration': link:../loom-ui/packages/hydration
+  '@loomwork/ui-learning': link:../loom-ui/packages/learning
+  '@loomwork/ui-lineage': link:../loom-ui/packages/lineage
+  '@loomwork/ui-planner': link:../loom-ui/packages/planner
+  '@loomwork/ui-renderer-lit': link:../loom-ui/packages/renderer-lit
+  '@loomwork/ui-renderer-terminal': link:../loom-ui/packages/renderer-terminal
+  '@loomwork/capability': link:../loom/packages/capability
+  '@loomwork/classify': link:../loom/packages/classify
+  '@loomwork/cli': link:../loom/tools/cli
+  '@loomwork/compiler': link:../loom/tools/compiler
+  '@loomwork/conversation': link:../loom/packages/conversation
+  '@loomwork/core': link:../loom/packages/core
+  '@loomwork/dispatcher': link:../loom/packages/dispatcher
+  '@loomwork/dst': link:../loom/tools/dst
+  '@loomwork/effect-runtime': link:../loom/packages/effect-runtime
+  '@loomwork/event-runtime': link:../loom/packages/event-runtime
+  '@loomwork/graph-executor': link:../loom/packages/graph-executor
+  '@loomwork/intent': link:../loom/packages/intent
+  '@loomwork/learning': link:../loom/packages/learning
+  '@loomwork/live-query': link:../loom/packages/live-query
+  '@loomwork/llm': link:../loom/packages/llm
+  '@loomwork/knowledge': link:../loom/packages/knowledge
+  '@loomwork/memory': link:../loom/packages/memory
+  '@loomwork/middleware': link:../loom/packages/middleware
+  '@loomwork/orchestration': link:../loom/packages/orchestration
+  '@loomwork/orchestrator': link:../loom/packages/orchestrator
+  '@loomwork/planner': link:../loom/packages/planner
+  '@loomwork/plugin-a2a': link:../loom/plugins/a2a
+  '@loomwork/plugin-a2ui': link:../loom/plugins/a2ui
+  '@loomwork/plugin-audit-chain': link:../loom/plugins/audit-chain
+  '@loomwork/plugin-cloudrun': link:../loom/plugins/cloudrun
+  '@loomwork/plugin-content': link:../loom/plugins/content
+  '@loomwork/plugin-conversation-sse': link:../loom/plugins/conversation-sse
+  '@loomwork/plugin-durable-state': link:../loom/plugins/durable-state
+  '@loomwork/plugin-mcp': link:../loom/plugins/mcp
+  '@loomwork/plugin-mcp-app': link:../loom/plugins/mcp-app
+  '@loomwork/plugin-read-model': link:../loom/plugins/read-model
+  '@loomwork/plugin-renderer-react': link:../loom/plugins/renderer-react
+  '@loomwork/plugin-renderer-terminal': link:../loom/plugins/renderer-terminal
+  '@loomwork/plugin-sandbox': link:../loom/plugins/sandbox
+  '@loomwork/plugin-sqlite': link:../loom/plugins/sqlite
+  '@loomwork/plugin-worker-remote': link:../loom/plugins/worker-remote
+  '@loomwork/plugin-worker-server': link:../loom/plugins/worker-server
+  '@loomwork/projection-runtime': link:../loom/packages/projection-runtime
+  '@loomwork/reasoning': link:../loom/packages/reasoning
+  '@loomwork/registry': link:../loom/packages/registry
+  '@loomwork/replay-vm': link:../loom/packages/replay-vm
+  '@loomwork/scheduler': link:../loom/packages/scheduler
+  '@loomwork/sdk': link:../loom/packages/sdk
+  '@loomwork/snapshot-runtime': link:../loom/packages/snapshot-runtime
+  '@loomwork/telemetry': link:../loom/packages/telemetry
+  '@loomwork/testing': link:../loom/tools/testing
+  '@loomwork/verify': link:../loom/packages/verify
+  '@loomwork/worker-runtime': link:../loom/packages/worker-runtime
+  '@loomwork/worker-runtime-local': link:../loom/packages/worker-runtime-local
+  '@loomwork/workflow-runtime': link:../loom/packages/workflow-runtime
+  '@loomwork/plugin-linucb': link:../loom-plugins/plugins/loom-plugin-linucb
 
 importers:
 
@@ -103,34 +103,34 @@ importers:
 
   examples/a2a-mesh:
     dependencies:
-      '@loom/agent':
+      '@loomwork/agent':
         specifier: link:../../../loom/packages/agent
         version: link:../../../loom/packages/agent
-      '@loom/app':
+      '@loomwork/app':
         specifier: link:../../../loom/packages/app
         version: link:../../../loom/packages/app
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/effect-runtime':
+      '@loomwork/effect-runtime':
         specifier: link:../../../loom/packages/effect-runtime
         version: link:../../../loom/packages/effect-runtime
-      '@loom/event-runtime':
+      '@loomwork/event-runtime':
         specifier: link:../../../loom/packages/event-runtime
         version: link:../../../loom/packages/event-runtime
-      '@loom/llm':
+      '@loomwork/llm':
         specifier: link:../../../loom/packages/llm
         version: link:../../../loom/packages/llm
-      '@loom/plugin-a2a':
+      '@loomwork/plugin-a2a':
         specifier: link:../../../loom/plugins/a2a
         version: link:../../../loom/plugins/a2a
-      '@loom/registry':
+      '@loomwork/registry':
         specifier: link:../../../loom/packages/registry
         version: link:../../../loom/packages/registry
-      '@loom/snapshot-runtime':
+      '@loomwork/snapshot-runtime':
         specifier: link:../../../loom/packages/snapshot-runtime
         version: link:../../../loom/packages/snapshot-runtime
-      '@loom/workflow-runtime':
+      '@loomwork/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime
       zod:
@@ -152,19 +152,19 @@ importers:
 
   examples/a2ui-callfunction:
     dependencies:
-      '@loom/agent-surface':
+      '@loomwork/agent-surface':
         specifier: link:../../../loom/packages/agent-surface
         version: link:../../../loom/packages/agent-surface
-      '@loom/app':
+      '@loomwork/app':
         specifier: link:../../../loom/packages/app
         version: link:../../../loom/packages/app
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/plugin-a2ui':
+      '@loomwork/plugin-a2ui':
         specifier: link:../../../loom/plugins/a2ui
         version: link:../../../loom/plugins/a2ui
-      '@loom/workflow-runtime':
+      '@loomwork/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime
       zod:
@@ -186,16 +186,16 @@ importers:
 
   examples/a2ui-dashboard:
     dependencies:
-      '@loom/agent-surface':
+      '@loomwork/agent-surface':
         specifier: link:../../../loom/packages/agent-surface
         version: link:../../../loom/packages/agent-surface
-      '@loom/app':
+      '@loomwork/app':
         specifier: link:../../../loom/packages/app
         version: link:../../../loom/packages/app
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/workflow-runtime':
+      '@loomwork/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime
       zod:
@@ -217,19 +217,19 @@ importers:
 
   examples/a2ui-egress:
     dependencies:
-      '@loom/agent-surface':
+      '@loomwork/agent-surface':
         specifier: link:../../../loom/packages/agent-surface
         version: link:../../../loom/packages/agent-surface
-      '@loom/app':
+      '@loomwork/app':
         specifier: link:../../../loom/packages/app
         version: link:../../../loom/packages/app
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/plugin-a2ui':
+      '@loomwork/plugin-a2ui':
         specifier: link:../../../loom/plugins/a2ui
         version: link:../../../loom/plugins/a2ui
-      '@loom/workflow-runtime':
+      '@loomwork/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime
       zod:
@@ -251,37 +251,37 @@ importers:
 
   examples/agent-loop-triage:
     dependencies:
-      '@loom/agent':
+      '@loomwork/agent':
         specifier: link:../../../loom/packages/agent
         version: link:../../../loom/packages/agent
-      '@loom/classify':
+      '@loomwork/classify':
         specifier: link:../../../loom/packages/classify
         version: link:../../../loom/packages/classify
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/effect-runtime':
+      '@loomwork/effect-runtime':
         specifier: link:../../../loom/packages/effect-runtime
         version: link:../../../loom/packages/effect-runtime
-      '@loom/event-runtime':
+      '@loomwork/event-runtime':
         specifier: link:../../../loom/packages/event-runtime
         version: link:../../../loom/packages/event-runtime
-      '@loom/llm':
+      '@loomwork/llm':
         specifier: link:../../../loom/packages/llm
         version: link:../../../loom/packages/llm
-      '@loom/memory':
+      '@loomwork/memory':
         specifier: link:../../../loom/packages/memory
         version: link:../../../loom/packages/memory
-      '@loom/middleware':
+      '@loomwork/middleware':
         specifier: link:../../../loom/packages/middleware
         version: link:../../../loom/packages/middleware
-      '@loom/reasoning':
+      '@loomwork/reasoning':
         specifier: link:../../../loom/packages/reasoning
         version: link:../../../loom/packages/reasoning
-      '@loom/snapshot-runtime':
+      '@loomwork/snapshot-runtime':
         specifier: link:../../../loom/packages/snapshot-runtime
         version: link:../../../loom/packages/snapshot-runtime
-      '@loom/workflow-runtime':
+      '@loomwork/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime
       zod:
@@ -303,61 +303,61 @@ importers:
 
   examples/agent-network:
     dependencies:
-      '@loom/agent':
+      '@loomwork/agent':
         specifier: link:../../../loom/packages/agent
         version: link:../../../loom/packages/agent
-      '@loom/agent-surface':
+      '@loomwork/agent-surface':
         specifier: link:../../../loom/packages/agent-surface
         version: link:../../../loom/packages/agent-surface
-      '@loom/app':
+      '@loomwork/app':
         specifier: link:../../../loom/packages/app
         version: link:../../../loom/packages/app
-      '@loom/blueprint-runtime':
+      '@loomwork/blueprint-runtime':
         specifier: link:../../../loom/packages/blueprint-runtime
         version: link:../../../loom/packages/blueprint-runtime
-      '@loom/capability':
+      '@loomwork/capability':
         specifier: link:../../../loom/packages/capability
         version: link:../../../loom/packages/capability
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/effect-runtime':
+      '@loomwork/effect-runtime':
         specifier: link:../../../loom/packages/effect-runtime
         version: link:../../../loom/packages/effect-runtime
-      '@loom/event-runtime':
+      '@loomwork/event-runtime':
         specifier: link:../../../loom/packages/event-runtime
         version: link:../../../loom/packages/event-runtime
-      '@loom/intent':
+      '@loomwork/intent':
         specifier: link:../../../loom/packages/intent
         version: link:../../../loom/packages/intent
-      '@loom/llm':
+      '@loomwork/llm':
         specifier: link:../../../loom/packages/llm
         version: link:../../../loom/packages/llm
-      '@loom/memory':
+      '@loomwork/memory':
         specifier: link:../../../loom/packages/memory
         version: link:../../../loom/packages/memory
-      '@loom/planner':
+      '@loomwork/planner':
         specifier: link:../../../loom/packages/planner
         version: link:../../../loom/packages/planner
-      '@loom/plugin-a2a':
+      '@loomwork/plugin-a2a':
         specifier: link:../../../loom/plugins/a2a
         version: link:../../../loom/plugins/a2a
-      '@loom/plugin-mcp':
+      '@loomwork/plugin-mcp':
         specifier: link:../../../loom/plugins/mcp
         version: link:../../../loom/plugins/mcp
-      '@loom/plugin-renderer-terminal':
+      '@loomwork/plugin-renderer-terminal':
         specifier: link:../../../loom/plugins/renderer-terminal
         version: link:../../../loom/plugins/renderer-terminal
-      '@loom/projection-runtime':
+      '@loomwork/projection-runtime':
         specifier: link:../../../loom/packages/projection-runtime
         version: link:../../../loom/packages/projection-runtime
-      '@loom/registry':
+      '@loomwork/registry':
         specifier: link:../../../loom/packages/registry
         version: link:../../../loom/packages/registry
-      '@loom/snapshot-runtime':
+      '@loomwork/snapshot-runtime':
         specifier: link:../../../loom/packages/snapshot-runtime
         version: link:../../../loom/packages/snapshot-runtime
-      '@loom/workflow-runtime':
+      '@loomwork/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime
       zod:
@@ -376,50 +376,50 @@ importers:
 
   examples/agent-swarm:
     dependencies:
-      '@loom/app':
+      '@loomwork/app':
         specifier: link:../../../loom/packages/app
         version: link:../../../loom/packages/app
-      '@loom/capability':
+      '@loomwork/capability':
         specifier: link:../../../loom/packages/capability
         version: link:../../../loom/packages/capability
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/dispatcher':
+      '@loomwork/dispatcher':
         specifier: link:../../../loom/packages/dispatcher
         version: link:../../../loom/packages/dispatcher
-      '@loom/graph-executor':
+      '@loomwork/graph-executor':
         specifier: link:../../../loom/packages/graph-executor
         version: link:../../../loom/packages/graph-executor
-      '@loom/intent':
+      '@loomwork/intent':
         specifier: link:../../../loom/packages/intent
         version: link:../../../loom/packages/intent
-      '@loom/llm':
+      '@loomwork/llm':
         specifier: link:../../../loom/packages/llm
         version: link:../../../loom/packages/llm
-      '@loom/orchestrator':
+      '@loomwork/orchestrator':
         specifier: link:../../../loom/packages/orchestrator
         version: link:../../../loom/packages/orchestrator
-      '@loom/planner':
+      '@loomwork/planner':
         specifier: link:../../../loom/packages/planner
         version: link:../../../loom/packages/planner
-      '@loom/plugin-a2a':
+      '@loomwork/plugin-a2a':
         specifier: link:../../../loom/plugins/a2a
         version: link:../../../loom/plugins/a2a
-      '@loom/plugin-sqlite':
+      '@loomwork/plugin-sqlite':
         specifier: link:../../../loom/plugins/sqlite
         version: link:../../../loom/plugins/sqlite
-      '@loom/worker-runtime-local':
+      '@loomwork/worker-runtime-local':
         specifier: link:../../../loom/packages/worker-runtime-local
         version: link:../../../loom/packages/worker-runtime-local
-      '@loom/workflow-runtime':
+      '@loomwork/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime
       zod:
         specifier: 'catalog:'
         version: 3.25.76
     devDependencies:
-      '@loom/testing':
+      '@loomwork/testing':
         specifier: link:../../../loom/tools/testing
         version: link:../../../loom/tools/testing
       '@types/node':
@@ -446,28 +446,28 @@ importers:
       '@angular/platform-browser':
         specifier: ^20.0.0
         version: 20.3.26(@angular/common@20.3.26(@angular/core@20.3.26(@angular/compiler@20.3.26)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@20.3.26(@angular/compiler@20.3.26)(rxjs@7.8.2)(zone.js@0.15.1))
-      '@loom/app':
+      '@loomwork/app':
         specifier: link:../../../loom/packages/app
         version: link:../../../loom/packages/app
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/effect-runtime':
+      '@loomwork/effect-runtime':
         specifier: link:../../../loom/packages/effect-runtime
         version: link:../../../loom/packages/effect-runtime
-      '@loom/event-runtime':
+      '@loomwork/event-runtime':
         specifier: link:../../../loom/packages/event-runtime
         version: link:../../../loom/packages/event-runtime
-      '@loom/projection-runtime':
+      '@loomwork/projection-runtime':
         specifier: link:../../../loom/packages/projection-runtime
         version: link:../../../loom/packages/projection-runtime
-      '@loom/snapshot-runtime':
+      '@loomwork/snapshot-runtime':
         specifier: link:../../../loom/packages/snapshot-runtime
         version: link:../../../loom/packages/snapshot-runtime
-      '@loom/telemetry':
+      '@loomwork/telemetry':
         specifier: link:../../../loom/packages/telemetry
         version: link:../../../loom/packages/telemetry
-      '@loom/workflow-runtime':
+      '@loomwork/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime
       rxjs:
@@ -504,16 +504,16 @@ importers:
 
   examples/blueprint-status:
     dependencies:
-      '@loom/blueprint-runtime':
+      '@loomwork/blueprint-runtime':
         specifier: link:../../../loom/packages/blueprint-runtime
         version: link:../../../loom/packages/blueprint-runtime
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/plugin-renderer-terminal':
+      '@loomwork/plugin-renderer-terminal':
         specifier: link:../../../loom/plugins/renderer-terminal
         version: link:../../../loom/plugins/renderer-terminal
-      '@loom/projection-runtime':
+      '@loomwork/projection-runtime':
         specifier: link:../../../loom/packages/projection-runtime
         version: link:../../../loom/packages/projection-runtime
     devDependencies:
@@ -532,34 +532,34 @@ importers:
 
   examples/chat-agent:
     dependencies:
-      '@loom/agent':
+      '@loomwork/agent':
         specifier: link:../../../loom/packages/agent
         version: link:../../../loom/packages/agent
-      '@loom/classify':
+      '@loomwork/classify':
         specifier: link:../../../loom/packages/classify
         version: link:../../../loom/packages/classify
-      '@loom/conversation':
+      '@loomwork/conversation':
         specifier: link:../../../loom/packages/conversation
         version: link:../../../loom/packages/conversation
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/effect-runtime':
+      '@loomwork/effect-runtime':
         specifier: link:../../../loom/packages/effect-runtime
         version: link:../../../loom/packages/effect-runtime
-      '@loom/event-runtime':
+      '@loomwork/event-runtime':
         specifier: link:../../../loom/packages/event-runtime
         version: link:../../../loom/packages/event-runtime
-      '@loom/llm':
+      '@loomwork/llm':
         specifier: link:../../../loom/packages/llm
         version: link:../../../loom/packages/llm
-      '@loom/plugin-conversation-sse':
+      '@loomwork/plugin-conversation-sse':
         specifier: link:../../../loom/plugins/conversation-sse
         version: link:../../../loom/plugins/conversation-sse
-      '@loom/snapshot-runtime':
+      '@loomwork/snapshot-runtime':
         specifier: link:../../../loom/packages/snapshot-runtime
         version: link:../../../loom/packages/snapshot-runtime
-      '@loom/workflow-runtime':
+      '@loomwork/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime
     devDependencies:
@@ -578,25 +578,25 @@ importers:
 
   examples/child-orchestration:
     dependencies:
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/effect-runtime':
+      '@loomwork/effect-runtime':
         specifier: link:../../../loom/packages/effect-runtime
         version: link:../../../loom/packages/effect-runtime
-      '@loom/event-runtime':
+      '@loomwork/event-runtime':
         specifier: link:../../../loom/packages/event-runtime
         version: link:../../../loom/packages/event-runtime
-      '@loom/live-query':
+      '@loomwork/live-query':
         specifier: link:../../../loom/packages/live-query
         version: link:../../../loom/packages/live-query
-      '@loom/orchestration':
+      '@loomwork/orchestration':
         specifier: link:../../../loom/packages/orchestration
         version: link:../../../loom/packages/orchestration
-      '@loom/snapshot-runtime':
+      '@loomwork/snapshot-runtime':
         specifier: link:../../../loom/packages/snapshot-runtime
         version: link:../../../loom/packages/snapshot-runtime
-      '@loom/workflow-runtime':
+      '@loomwork/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime
       zod:
@@ -618,52 +618,52 @@ importers:
 
   examples/cloud-command-center:
     dependencies:
-      '@loom/agent':
+      '@loomwork/agent':
         specifier: link:../../../loom/packages/agent
         version: link:../../../loom/packages/agent
-      '@loom/agent-surface':
+      '@loomwork/agent-surface':
         specifier: link:../../../loom/packages/agent-surface
         version: link:../../../loom/packages/agent-surface
-      '@loom/app':
+      '@loomwork/app':
         specifier: link:../../../loom/packages/app
         version: link:../../../loom/packages/app
-      '@loom/blueprint-runtime':
+      '@loomwork/blueprint-runtime':
         specifier: link:../../../loom/packages/blueprint-runtime
         version: link:../../../loom/packages/blueprint-runtime
-      '@loom/capability':
+      '@loomwork/capability':
         specifier: link:../../../loom/packages/capability
         version: link:../../../loom/packages/capability
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/effect-runtime':
+      '@loomwork/effect-runtime':
         specifier: link:../../../loom/packages/effect-runtime
         version: link:../../../loom/packages/effect-runtime
-      '@loom/event-runtime':
+      '@loomwork/event-runtime':
         specifier: link:../../../loom/packages/event-runtime
         version: link:../../../loom/packages/event-runtime
-      '@loom/intent':
+      '@loomwork/intent':
         specifier: link:../../../loom/packages/intent
         version: link:../../../loom/packages/intent
-      '@loom/llm':
+      '@loomwork/llm':
         specifier: link:../../../loom/packages/llm
         version: link:../../../loom/packages/llm
-      '@loom/plugin-renderer-react':
+      '@loomwork/plugin-renderer-react':
         specifier: link:../../../loom/plugins/renderer-react
         version: link:../../../loom/plugins/renderer-react
-      '@loom/plugin-sqlite':
+      '@loomwork/plugin-sqlite':
         specifier: link:../../../loom/plugins/sqlite
         version: link:../../../loom/plugins/sqlite
-      '@loom/projection-runtime':
+      '@loomwork/projection-runtime':
         specifier: link:../../../loom/packages/projection-runtime
         version: link:../../../loom/packages/projection-runtime
-      '@loom/sdk':
+      '@loomwork/sdk':
         specifier: link:../../../loom/packages/sdk
         version: link:../../../loom/packages/sdk
-      '@loom/snapshot-runtime':
+      '@loomwork/snapshot-runtime':
         specifier: link:../../../loom/packages/snapshot-runtime
         version: link:../../../loom/packages/snapshot-runtime
-      '@loom/workflow-runtime':
+      '@loomwork/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime
       react:
@@ -676,10 +676,10 @@ importers:
         specifier: 'catalog:'
         version: 3.25.76
     devDependencies:
-      '@loom/compiler':
+      '@loomwork/compiler':
         specifier: link:../../../loom/tools/compiler
         version: link:../../../loom/tools/compiler
-      '@loom/testing':
+      '@loomwork/testing':
         specifier: link:../../../loom/tools/testing
         version: link:../../../loom/tools/testing
       '@types/node':
@@ -706,37 +706,37 @@ importers:
 
   examples/compute-cloudrun:
     dependencies:
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/dispatcher':
+      '@loomwork/dispatcher':
         specifier: link:../../../loom/packages/dispatcher
         version: link:../../../loom/packages/dispatcher
-      '@loom/effect-runtime':
+      '@loomwork/effect-runtime':
         specifier: link:../../../loom/packages/effect-runtime
         version: link:../../../loom/packages/effect-runtime
-      '@loom/event-runtime':
+      '@loomwork/event-runtime':
         specifier: link:../../../loom/packages/event-runtime
         version: link:../../../loom/packages/event-runtime
-      '@loom/plugin-cloudrun':
+      '@loomwork/plugin-cloudrun':
         specifier: link:../../../loom/plugins/cloudrun
         version: link:../../../loom/plugins/cloudrun
-      '@loom/plugin-worker-remote':
+      '@loomwork/plugin-worker-remote':
         specifier: link:../../../loom/plugins/worker-remote
         version: link:../../../loom/plugins/worker-remote
-      '@loom/plugin-worker-server':
+      '@loomwork/plugin-worker-server':
         specifier: link:../../../loom/plugins/worker-server
         version: link:../../../loom/plugins/worker-server
-      '@loom/snapshot-runtime':
+      '@loomwork/snapshot-runtime':
         specifier: link:../../../loom/packages/snapshot-runtime
         version: link:../../../loom/packages/snapshot-runtime
-      '@loom/worker-runtime':
+      '@loomwork/worker-runtime':
         specifier: link:../../../loom/packages/worker-runtime
         version: link:../../../loom/packages/worker-runtime
-      '@loom/worker-runtime-local':
+      '@loomwork/worker-runtime-local':
         specifier: link:../../../loom/packages/worker-runtime-local
         version: link:../../../loom/packages/worker-runtime-local
-      '@loom/workflow-runtime':
+      '@loomwork/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime
       zod:
@@ -758,67 +758,67 @@ importers:
 
   examples/db-command-center:
     dependencies:
-      '@loom/agent':
+      '@loomwork/agent':
         specifier: link:../../../loom/packages/agent
         version: link:../../../loom/packages/agent
-      '@loom/agent-surface':
+      '@loomwork/agent-surface':
         specifier: link:../../../loom/packages/agent-surface
         version: link:../../../loom/packages/agent-surface
-      '@loom/app':
+      '@loomwork/app':
         specifier: link:../../../loom/packages/app
         version: link:../../../loom/packages/app
-      '@loom/blueprint-runtime':
+      '@loomwork/blueprint-runtime':
         specifier: link:../../../loom/packages/blueprint-runtime
         version: link:../../../loom/packages/blueprint-runtime
-      '@loom/capability':
+      '@loomwork/capability':
         specifier: link:../../../loom/packages/capability
         version: link:../../../loom/packages/capability
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/dispatcher':
+      '@loomwork/dispatcher':
         specifier: link:../../../loom/packages/dispatcher
         version: link:../../../loom/packages/dispatcher
-      '@loom/effect-runtime':
+      '@loomwork/effect-runtime':
         specifier: link:../../../loom/packages/effect-runtime
         version: link:../../../loom/packages/effect-runtime
-      '@loom/event-runtime':
+      '@loomwork/event-runtime':
         specifier: link:../../../loom/packages/event-runtime
         version: link:../../../loom/packages/event-runtime
-      '@loom/intent':
+      '@loomwork/intent':
         specifier: link:../../../loom/packages/intent
         version: link:../../../loom/packages/intent
-      '@loom/llm':
+      '@loomwork/llm':
         specifier: link:../../../loom/packages/llm
         version: link:../../../loom/packages/llm
-      '@loom/orchestrator':
+      '@loomwork/orchestrator':
         specifier: link:../../../loom/packages/orchestrator
         version: link:../../../loom/packages/orchestrator
-      '@loom/planner':
+      '@loomwork/planner':
         specifier: link:../../../loom/packages/planner
         version: link:../../../loom/packages/planner
-      '@loom/plugin-a2a':
+      '@loomwork/plugin-a2a':
         specifier: link:../../../loom/plugins/a2a
         version: link:../../../loom/plugins/a2a
-      '@loom/plugin-renderer-react':
+      '@loomwork/plugin-renderer-react':
         specifier: link:../../../loom/plugins/renderer-react
         version: link:../../../loom/plugins/renderer-react
-      '@loom/projection-runtime':
+      '@loomwork/projection-runtime':
         specifier: link:../../../loom/packages/projection-runtime
         version: link:../../../loom/packages/projection-runtime
-      '@loom/registry':
+      '@loomwork/registry':
         specifier: link:../../../loom/packages/registry
         version: link:../../../loom/packages/registry
-      '@loom/sdk':
+      '@loomwork/sdk':
         specifier: link:../../../loom/packages/sdk
         version: link:../../../loom/packages/sdk
-      '@loom/snapshot-runtime':
+      '@loomwork/snapshot-runtime':
         specifier: link:../../../loom/packages/snapshot-runtime
         version: link:../../../loom/packages/snapshot-runtime
-      '@loom/worker-runtime-local':
+      '@loomwork/worker-runtime-local':
         specifier: link:../../../loom/packages/worker-runtime-local
         version: link:../../../loom/packages/worker-runtime-local
-      '@loom/workflow-runtime':
+      '@loomwork/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime
       react:
@@ -831,10 +831,10 @@ importers:
         specifier: 'catalog:'
         version: 3.25.76
     devDependencies:
-      '@loom/compiler':
+      '@loomwork/compiler':
         specifier: link:../../../loom/tools/compiler
         version: link:../../../loom/tools/compiler
-      '@loom/testing':
+      '@loomwork/testing':
         specifier: link:../../../loom/tools/testing
         version: link:../../../loom/tools/testing
       '@types/node':
@@ -861,71 +861,71 @@ importers:
 
   examples/db-command-center-server:
     dependencies:
-      '@loom/agent':
+      '@loomwork/agent':
         specifier: link:../../../loom/packages/agent
         version: link:../../../loom/packages/agent
-      '@loom/agent-surface':
+      '@loomwork/agent-surface':
         specifier: link:../../../loom/packages/agent-surface
         version: link:../../../loom/packages/agent-surface
-      '@loom/app':
+      '@loomwork/app':
         specifier: link:../../../loom/packages/app
         version: link:../../../loom/packages/app
-      '@loom/blueprint-runtime':
+      '@loomwork/blueprint-runtime':
         specifier: link:../../../loom/packages/blueprint-runtime
         version: link:../../../loom/packages/blueprint-runtime
-      '@loom/capability':
+      '@loomwork/capability':
         specifier: link:../../../loom/packages/capability
         version: link:../../../loom/packages/capability
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/dispatcher':
+      '@loomwork/dispatcher':
         specifier: link:../../../loom/packages/dispatcher
         version: link:../../../loom/packages/dispatcher
-      '@loom/effect-runtime':
+      '@loomwork/effect-runtime':
         specifier: link:../../../loom/packages/effect-runtime
         version: link:../../../loom/packages/effect-runtime
-      '@loom/event-runtime':
+      '@loomwork/event-runtime':
         specifier: link:../../../loom/packages/event-runtime
         version: link:../../../loom/packages/event-runtime
-      '@loom/intent':
+      '@loomwork/intent':
         specifier: link:../../../loom/packages/intent
         version: link:../../../loom/packages/intent
-      '@loom/llm':
+      '@loomwork/llm':
         specifier: link:../../../loom/packages/llm
         version: link:../../../loom/packages/llm
-      '@loom/planner':
+      '@loomwork/planner':
         specifier: link:../../../loom/packages/planner
         version: link:../../../loom/packages/planner
-      '@loom/plugin-a2a':
+      '@loomwork/plugin-a2a':
         specifier: link:../../../loom/plugins/a2a
         version: link:../../../loom/plugins/a2a
-      '@loom/plugin-sqlite':
+      '@loomwork/plugin-sqlite':
         specifier: link:../../../loom/plugins/sqlite
         version: link:../../../loom/plugins/sqlite
-      '@loom/projection-runtime':
+      '@loomwork/projection-runtime':
         specifier: link:../../../loom/packages/projection-runtime
         version: link:../../../loom/packages/projection-runtime
-      '@loom/registry':
+      '@loomwork/registry':
         specifier: link:../../../loom/packages/registry
         version: link:../../../loom/packages/registry
-      '@loom/sdk':
+      '@loomwork/sdk':
         specifier: link:../../../loom/packages/sdk
         version: link:../../../loom/packages/sdk
-      '@loom/snapshot-runtime':
+      '@loomwork/snapshot-runtime':
         specifier: link:../../../loom/packages/snapshot-runtime
         version: link:../../../loom/packages/snapshot-runtime
-      '@loom/worker-runtime-local':
+      '@loomwork/worker-runtime-local':
         specifier: link:../../../loom/packages/worker-runtime-local
         version: link:../../../loom/packages/worker-runtime-local
-      '@loom/workflow-runtime':
+      '@loomwork/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime
       zod:
         specifier: 'catalog:'
         version: 3.25.76
     devDependencies:
-      '@loom/testing':
+      '@loomwork/testing':
         specifier: link:../../../loom/tools/testing
         version: link:../../../loom/tools/testing
       '@types/node':
@@ -946,68 +946,68 @@ importers:
 
   examples/db-command-center-wc:
     dependencies:
-      '@loom/agent':
+      '@loomwork/agent':
         specifier: link:../../../loom/packages/agent
         version: link:../../../loom/packages/agent
-      '@loom/agent-surface':
+      '@loomwork/agent-surface':
         specifier: link:../../../loom/packages/agent-surface
         version: link:../../../loom/packages/agent-surface
-      '@loom/app':
+      '@loomwork/app':
         specifier: link:../../../loom/packages/app
         version: link:../../../loom/packages/app
-      '@loom/blueprint-runtime':
+      '@loomwork/blueprint-runtime':
         specifier: link:../../../loom/packages/blueprint-runtime
         version: link:../../../loom/packages/blueprint-runtime
-      '@loom/capability':
+      '@loomwork/capability':
         specifier: link:../../../loom/packages/capability
         version: link:../../../loom/packages/capability
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/dispatcher':
+      '@loomwork/dispatcher':
         specifier: link:../../../loom/packages/dispatcher
         version: link:../../../loom/packages/dispatcher
-      '@loom/effect-runtime':
+      '@loomwork/effect-runtime':
         specifier: link:../../../loom/packages/effect-runtime
         version: link:../../../loom/packages/effect-runtime
-      '@loom/event-runtime':
+      '@loomwork/event-runtime':
         specifier: link:../../../loom/packages/event-runtime
         version: link:../../../loom/packages/event-runtime
-      '@loom/intent':
+      '@loomwork/intent':
         specifier: link:../../../loom/packages/intent
         version: link:../../../loom/packages/intent
-      '@loom/llm':
+      '@loomwork/llm':
         specifier: link:../../../loom/packages/llm
         version: link:../../../loom/packages/llm
-      '@loom/planner':
+      '@loomwork/planner':
         specifier: link:../../../loom/packages/planner
         version: link:../../../loom/packages/planner
-      '@loom/plugin-a2a':
+      '@loomwork/plugin-a2a':
         specifier: link:../../../loom/plugins/a2a
         version: link:../../../loom/plugins/a2a
-      '@loom/projection-runtime':
+      '@loomwork/projection-runtime':
         specifier: link:../../../loom/packages/projection-runtime
         version: link:../../../loom/packages/projection-runtime
-      '@loom/registry':
+      '@loomwork/registry':
         specifier: link:../../../loom/packages/registry
         version: link:../../../loom/packages/registry
-      '@loom/sdk':
+      '@loomwork/sdk':
         specifier: link:../../../loom/packages/sdk
         version: link:../../../loom/packages/sdk
-      '@loom/snapshot-runtime':
+      '@loomwork/snapshot-runtime':
         specifier: link:../../../loom/packages/snapshot-runtime
         version: link:../../../loom/packages/snapshot-runtime
-      '@loom/worker-runtime-local':
+      '@loomwork/worker-runtime-local':
         specifier: link:../../../loom/packages/worker-runtime-local
         version: link:../../../loom/packages/worker-runtime-local
-      '@loom/workflow-runtime':
+      '@loomwork/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime
       zod:
         specifier: 'catalog:'
         version: 3.25.76
     devDependencies:
-      '@loom/testing':
+      '@loomwork/testing':
         specifier: link:../../../loom/tools/testing
         version: link:../../../loom/tools/testing
       '@types/node':
@@ -1028,55 +1028,55 @@ importers:
 
   examples/db-observability:
     dependencies:
-      '@loom/blueprint-runtime':
+      '@loomwork/blueprint-runtime':
         specifier: link:../../../loom/packages/blueprint-runtime
         version: link:../../../loom/packages/blueprint-runtime
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/effect-runtime':
+      '@loomwork/effect-runtime':
         specifier: link:../../../loom/packages/effect-runtime
         version: link:../../../loom/packages/effect-runtime
-      '@loom/event-runtime':
+      '@loomwork/event-runtime':
         specifier: link:../../../loom/packages/event-runtime
         version: link:../../../loom/packages/event-runtime
-      '@loom/learning':
+      '@loomwork/learning':
         specifier: link:../../../loom/packages/learning
         version: link:../../../loom/packages/learning
-      '@loom/llm':
+      '@loomwork/llm':
         specifier: link:../../../loom/packages/llm
         version: link:../../../loom/packages/llm
-      '@loom/orchestration':
+      '@loomwork/orchestration':
         specifier: link:../../../loom/packages/orchestration
         version: link:../../../loom/packages/orchestration
-      '@loom/plugin-content':
+      '@loomwork/plugin-content':
         specifier: link:../../../loom/plugins/content
         version: link:../../../loom/plugins/content
-      '@loom/plugin-durable-state':
+      '@loomwork/plugin-durable-state':
         specifier: link:../../../loom/plugins/durable-state
         version: link:../../../loom/plugins/durable-state
-      '@loom/plugin-mcp':
+      '@loomwork/plugin-mcp':
         specifier: link:../../../loom/plugins/mcp
         version: link:../../../loom/plugins/mcp
-      '@loom/plugin-read-model':
+      '@loomwork/plugin-read-model':
         specifier: link:../../../loom/plugins/read-model
         version: link:../../../loom/plugins/read-model
-      '@loom/plugin-renderer-react':
+      '@loomwork/plugin-renderer-react':
         specifier: link:../../../loom/plugins/renderer-react
         version: link:../../../loom/plugins/renderer-react
-      '@loom/plugin-renderer-terminal':
+      '@loomwork/plugin-renderer-terminal':
         specifier: link:../../../loom/plugins/renderer-terminal
         version: link:../../../loom/plugins/renderer-terminal
-      '@loom/plugin-sandbox':
+      '@loomwork/plugin-sandbox':
         specifier: link:../../../loom/plugins/sandbox
         version: link:../../../loom/plugins/sandbox
-      '@loom/projection-runtime':
+      '@loomwork/projection-runtime':
         specifier: link:../../../loom/packages/projection-runtime
         version: link:../../../loom/packages/projection-runtime
-      '@loom/snapshot-runtime':
+      '@loomwork/snapshot-runtime':
         specifier: link:../../../loom/packages/snapshot-runtime
         version: link:../../../loom/packages/snapshot-runtime
-      '@loom/workflow-runtime':
+      '@loomwork/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime
       react:
@@ -1119,47 +1119,47 @@ importers:
 
   examples/db-sentinel:
     dependencies:
-      '@loom/classify':
+      '@loomwork/classify':
         specifier: link:../../../loom/packages/classify
         version: link:../../../loom/packages/classify
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/effect-runtime':
+      '@loomwork/effect-runtime':
         specifier: link:../../../loom/packages/effect-runtime
         version: link:../../../loom/packages/effect-runtime
-      '@loom/event-runtime':
+      '@loomwork/event-runtime':
         specifier: link:../../../loom/packages/event-runtime
         version: link:../../../loom/packages/event-runtime
-      '@loom/knowledge':
+      '@loomwork/knowledge':
         specifier: link:../../../loom/packages/knowledge
         version: link:../../../loom/packages/knowledge
-      '@loom/memory':
+      '@loomwork/memory':
         specifier: link:../../../loom/packages/memory
         version: link:../../../loom/packages/memory
-      '@loom/middleware':
+      '@loomwork/middleware':
         specifier: link:../../../loom/packages/middleware
         version: link:../../../loom/packages/middleware
-      '@loom/plugin-content':
+      '@loomwork/plugin-content':
         specifier: link:../../../loom/plugins/content
         version: link:../../../loom/plugins/content
-      '@loom/plugin-durable-state':
+      '@loomwork/plugin-durable-state':
         specifier: link:../../../loom/plugins/durable-state
         version: link:../../../loom/plugins/durable-state
-      '@loom/replay-vm':
+      '@loomwork/replay-vm':
         specifier: link:../../../loom/packages/replay-vm
         version: link:../../../loom/packages/replay-vm
-      '@loom/snapshot-runtime':
+      '@loomwork/snapshot-runtime':
         specifier: link:../../../loom/packages/snapshot-runtime
         version: link:../../../loom/packages/snapshot-runtime
-      '@loom/workflow-runtime':
+      '@loomwork/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime
       zod:
         specifier: 'catalog:'
         version: 3.25.76
     devDependencies:
-      '@loom/dst':
+      '@loomwork/dst':
         specifier: link:../../../loom/tools/dst
         version: link:../../../loom/tools/dst
       '@types/node':
@@ -1177,13 +1177,13 @@ importers:
 
   examples/experience-board-edit:
     dependencies:
-      '@loom-ui/core':
+      '@loomwork/ui-core':
         specifier: link:../../../loom-ui/packages/core
         version: link:../../../loom-ui/packages/core
-      '@loom-ui/hydration':
+      '@loomwork/ui-hydration':
         specifier: link:../../../loom-ui/packages/hydration
         version: link:../../../loom-ui/packages/hydration
-      '@loom-ui/planner':
+      '@loomwork/ui-planner':
         specifier: link:../../../loom-ui/packages/planner
         version: link:../../../loom-ui/packages/planner
     devDependencies:
@@ -1199,27 +1199,27 @@ importers:
 
   examples/experience-broadcast:
     dependencies:
-      '@loom-ui/core':
-        specifier: link:../../../loom-ui/packages/core
-        version: link:../../../loom-ui/packages/core
-      '@loom-ui/hydration':
-        specifier: link:../../../loom-ui/packages/hydration
-        version: link:../../../loom-ui/packages/hydration
-      '@loom-ui/renderer-lit':
-        specifier: link:../../../loom-ui/packages/renderer-lit
-        version: link:../../../loom-ui/packages/renderer-lit
-      '@loom-ui/renderer-terminal':
-        specifier: link:../../../loom-ui/packages/renderer-terminal
-        version: link:../../../loom-ui/packages/renderer-terminal
-      '@loom/blueprint-runtime':
+      '@loomwork/blueprint-runtime':
         specifier: link:../../../loom/packages/blueprint-runtime
         version: link:../../../loom/packages/blueprint-runtime
-      '@loom/plugin-mcp':
+      '@loomwork/plugin-mcp':
         specifier: link:../../../loom/plugins/mcp
         version: link:../../../loom/plugins/mcp
-      '@loom/projection-runtime':
+      '@loomwork/projection-runtime':
         specifier: link:../../../loom/packages/projection-runtime
         version: link:../../../loom/packages/projection-runtime
+      '@loomwork/ui-core':
+        specifier: link:../../../loom-ui/packages/core
+        version: link:../../../loom-ui/packages/core
+      '@loomwork/ui-hydration':
+        specifier: link:../../../loom-ui/packages/hydration
+        version: link:../../../loom-ui/packages/hydration
+      '@loomwork/ui-renderer-lit':
+        specifier: link:../../../loom-ui/packages/renderer-lit
+        version: link:../../../loom-ui/packages/renderer-lit
+      '@loomwork/ui-renderer-terminal':
+        specifier: link:../../../loom-ui/packages/renderer-terminal
+        version: link:../../../loom-ui/packages/renderer-terminal
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -1233,24 +1233,24 @@ importers:
 
   examples/experience-kinds:
     dependencies:
-      '@loom-ui/core':
-        specifier: link:../../../loom-ui/packages/core
-        version: link:../../../loom-ui/packages/core
-      '@loom-ui/hydration':
-        specifier: link:../../../loom-ui/packages/hydration
-        version: link:../../../loom-ui/packages/hydration
-      '@loom-ui/renderer-lit':
-        specifier: link:../../../loom-ui/packages/renderer-lit
-        version: link:../../../loom-ui/packages/renderer-lit
-      '@loom-ui/renderer-terminal':
-        specifier: link:../../../loom-ui/packages/renderer-terminal
-        version: link:../../../loom-ui/packages/renderer-terminal
-      '@loom/blueprint-runtime':
+      '@loomwork/blueprint-runtime':
         specifier: link:../../../loom/packages/blueprint-runtime
         version: link:../../../loom/packages/blueprint-runtime
-      '@loom/projection-runtime':
+      '@loomwork/projection-runtime':
         specifier: link:../../../loom/packages/projection-runtime
         version: link:../../../loom/packages/projection-runtime
+      '@loomwork/ui-core':
+        specifier: link:../../../loom-ui/packages/core
+        version: link:../../../loom-ui/packages/core
+      '@loomwork/ui-hydration':
+        specifier: link:../../../loom-ui/packages/hydration
+        version: link:../../../loom-ui/packages/hydration
+      '@loomwork/ui-renderer-lit':
+        specifier: link:../../../loom-ui/packages/renderer-lit
+        version: link:../../../loom-ui/packages/renderer-lit
+      '@loomwork/ui-renderer-terminal':
+        specifier: link:../../../loom-ui/packages/renderer-terminal
+        version: link:../../../loom-ui/packages/renderer-terminal
       lit:
         specifier: 'catalog:'
         version: 3.3.3
@@ -1270,24 +1270,24 @@ importers:
 
   examples/experience-layout:
     dependencies:
-      '@loom-ui/core':
-        specifier: link:../../../loom-ui/packages/core
-        version: link:../../../loom-ui/packages/core
-      '@loom-ui/hydration':
-        specifier: link:../../../loom-ui/packages/hydration
-        version: link:../../../loom-ui/packages/hydration
-      '@loom-ui/renderer-lit':
-        specifier: link:../../../loom-ui/packages/renderer-lit
-        version: link:../../../loom-ui/packages/renderer-lit
-      '@loom-ui/renderer-terminal':
-        specifier: link:../../../loom-ui/packages/renderer-terminal
-        version: link:../../../loom-ui/packages/renderer-terminal
-      '@loom/blueprint-runtime':
+      '@loomwork/blueprint-runtime':
         specifier: link:../../../loom/packages/blueprint-runtime
         version: link:../../../loom/packages/blueprint-runtime
-      '@loom/projection-runtime':
+      '@loomwork/projection-runtime':
         specifier: link:../../../loom/packages/projection-runtime
         version: link:../../../loom/packages/projection-runtime
+      '@loomwork/ui-core':
+        specifier: link:../../../loom-ui/packages/core
+        version: link:../../../loom-ui/packages/core
+      '@loomwork/ui-hydration':
+        specifier: link:../../../loom-ui/packages/hydration
+        version: link:../../../loom-ui/packages/hydration
+      '@loomwork/ui-renderer-lit':
+        specifier: link:../../../loom-ui/packages/renderer-lit
+        version: link:../../../loom-ui/packages/renderer-lit
+      '@loomwork/ui-renderer-terminal':
+        specifier: link:../../../loom-ui/packages/renderer-terminal
+        version: link:../../../loom-ui/packages/renderer-terminal
       lit:
         specifier: 'catalog:'
         version: 3.3.3
@@ -1307,7 +1307,7 @@ importers:
 
   examples/experience-merge:
     dependencies:
-      '@loom-ui/core':
+      '@loomwork/ui-core':
         specifier: link:../../../loom-ui/packages/core
         version: link:../../../loom-ui/packages/core
     devDependencies:
@@ -1323,24 +1323,24 @@ importers:
 
   examples/experience-recompose:
     dependencies:
-      '@loom-ui/core':
-        specifier: link:../../../loom-ui/packages/core
-        version: link:../../../loom-ui/packages/core
-      '@loom-ui/hydration':
-        specifier: link:../../../loom-ui/packages/hydration
-        version: link:../../../loom-ui/packages/hydration
-      '@loom-ui/planner':
-        specifier: link:../../../loom-ui/packages/planner
-        version: link:../../../loom-ui/packages/planner
-      '@loom-ui/renderer-lit':
-        specifier: link:../../../loom-ui/packages/renderer-lit
-        version: link:../../../loom-ui/packages/renderer-lit
-      '@loom/blueprint-runtime':
+      '@loomwork/blueprint-runtime':
         specifier: link:../../../loom/packages/blueprint-runtime
         version: link:../../../loom/packages/blueprint-runtime
-      '@loom/projection-runtime':
+      '@loomwork/projection-runtime':
         specifier: link:../../../loom/packages/projection-runtime
         version: link:../../../loom/packages/projection-runtime
+      '@loomwork/ui-core':
+        specifier: link:../../../loom-ui/packages/core
+        version: link:../../../loom-ui/packages/core
+      '@loomwork/ui-hydration':
+        specifier: link:../../../loom-ui/packages/hydration
+        version: link:../../../loom-ui/packages/hydration
+      '@loomwork/ui-planner':
+        specifier: link:../../../loom-ui/packages/planner
+        version: link:../../../loom-ui/packages/planner
+      '@loomwork/ui-renderer-lit':
+        specifier: link:../../../loom-ui/packages/renderer-lit
+        version: link:../../../loom-ui/packages/renderer-lit
       lit:
         specifier: 'catalog:'
         version: 3.3.3
@@ -1360,24 +1360,24 @@ importers:
 
   examples/experience-stepped:
     dependencies:
-      '@loom-ui/core':
-        specifier: link:../../../loom-ui/packages/core
-        version: link:../../../loom-ui/packages/core
-      '@loom-ui/hydration':
-        specifier: link:../../../loom-ui/packages/hydration
-        version: link:../../../loom-ui/packages/hydration
-      '@loom-ui/renderer-lit':
-        specifier: link:../../../loom-ui/packages/renderer-lit
-        version: link:../../../loom-ui/packages/renderer-lit
-      '@loom-ui/renderer-terminal':
-        specifier: link:../../../loom-ui/packages/renderer-terminal
-        version: link:../../../loom-ui/packages/renderer-terminal
-      '@loom/blueprint-runtime':
+      '@loomwork/blueprint-runtime':
         specifier: link:../../../loom/packages/blueprint-runtime
         version: link:../../../loom/packages/blueprint-runtime
-      '@loom/projection-runtime':
+      '@loomwork/projection-runtime':
         specifier: link:../../../loom/packages/projection-runtime
         version: link:../../../loom/packages/projection-runtime
+      '@loomwork/ui-core':
+        specifier: link:../../../loom-ui/packages/core
+        version: link:../../../loom-ui/packages/core
+      '@loomwork/ui-hydration':
+        specifier: link:../../../loom-ui/packages/hydration
+        version: link:../../../loom-ui/packages/hydration
+      '@loomwork/ui-renderer-lit':
+        specifier: link:../../../loom-ui/packages/renderer-lit
+        version: link:../../../loom-ui/packages/renderer-lit
+      '@loomwork/ui-renderer-terminal':
+        specifier: link:../../../loom-ui/packages/renderer-terminal
+        version: link:../../../loom-ui/packages/renderer-terminal
       lit:
         specifier: 'catalog:'
         version: 3.3.3
@@ -1397,33 +1397,33 @@ importers:
 
   examples/experience-tabs-planner:
     dependencies:
-      '@loom-ui/core':
-        specifier: link:../../../loom-ui/packages/core
-        version: link:../../../loom-ui/packages/core
-      '@loom-ui/hydration':
-        specifier: link:../../../loom-ui/packages/hydration
-        version: link:../../../loom-ui/packages/hydration
-      '@loom-ui/lineage':
-        specifier: link:../../../loom-ui/packages/lineage
-        version: link:../../../loom-ui/packages/lineage
-      '@loom-ui/planner':
-        specifier: link:../../../loom-ui/packages/planner
-        version: link:../../../loom-ui/packages/planner
-      '@loom-ui/renderer-lit':
-        specifier: link:../../../loom-ui/packages/renderer-lit
-        version: link:../../../loom-ui/packages/renderer-lit
-      '@loom-ui/renderer-terminal':
-        specifier: link:../../../loom-ui/packages/renderer-terminal
-        version: link:../../../loom-ui/packages/renderer-terminal
-      '@loom/blueprint-runtime':
+      '@loomwork/blueprint-runtime':
         specifier: link:../../../loom/packages/blueprint-runtime
         version: link:../../../loom/packages/blueprint-runtime
-      '@loom/plugin-content':
+      '@loomwork/plugin-content':
         specifier: link:../../../loom/plugins/content
         version: link:../../../loom/plugins/content
-      '@loom/projection-runtime':
+      '@loomwork/projection-runtime':
         specifier: link:../../../loom/packages/projection-runtime
         version: link:../../../loom/packages/projection-runtime
+      '@loomwork/ui-core':
+        specifier: link:../../../loom-ui/packages/core
+        version: link:../../../loom-ui/packages/core
+      '@loomwork/ui-hydration':
+        specifier: link:../../../loom-ui/packages/hydration
+        version: link:../../../loom-ui/packages/hydration
+      '@loomwork/ui-lineage':
+        specifier: link:../../../loom-ui/packages/lineage
+        version: link:../../../loom-ui/packages/lineage
+      '@loomwork/ui-planner':
+        specifier: link:../../../loom-ui/packages/planner
+        version: link:../../../loom-ui/packages/planner
+      '@loomwork/ui-renderer-lit':
+        specifier: link:../../../loom-ui/packages/renderer-lit
+        version: link:../../../loom-ui/packages/renderer-lit
+      '@loomwork/ui-renderer-terminal':
+        specifier: link:../../../loom-ui/packages/renderer-terminal
+        version: link:../../../loom-ui/packages/renderer-terminal
       lit:
         specifier: 'catalog:'
         version: 3.3.3
@@ -1446,34 +1446,34 @@ importers:
 
   examples/incident-shared-chat:
     dependencies:
-      '@loom-ui/core':
-        specifier: link:../../../loom-ui/packages/core
-        version: link:../../../loom-ui/packages/core
-      '@loom/agent':
+      '@loomwork/agent':
         specifier: link:../../../loom/packages/agent
         version: link:../../../loom/packages/agent
-      '@loom/conversation':
+      '@loomwork/conversation':
         specifier: link:../../../loom/packages/conversation
         version: link:../../../loom/packages/conversation
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/effect-runtime':
+      '@loomwork/effect-runtime':
         specifier: link:../../../loom/packages/effect-runtime
         version: link:../../../loom/packages/effect-runtime
-      '@loom/event-runtime':
+      '@loomwork/event-runtime':
         specifier: link:../../../loom/packages/event-runtime
         version: link:../../../loom/packages/event-runtime
-      '@loom/llm':
+      '@loomwork/llm':
         specifier: link:../../../loom/packages/llm
         version: link:../../../loom/packages/llm
-      '@loom/plugin-conversation-sse':
+      '@loomwork/plugin-conversation-sse':
         specifier: link:../../../loom/plugins/conversation-sse
         version: link:../../../loom/plugins/conversation-sse
-      '@loom/snapshot-runtime':
+      '@loomwork/snapshot-runtime':
         specifier: link:../../../loom/packages/snapshot-runtime
         version: link:../../../loom/packages/snapshot-runtime
-      '@loom/workflow-runtime':
+      '@loomwork/ui-core':
+        specifier: link:../../../loom-ui/packages/core
+        version: link:../../../loom-ui/packages/core
+      '@loomwork/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime
       zod:
@@ -1495,74 +1495,74 @@ importers:
 
   examples/incident-war-room:
     dependencies:
-      '@loom/agent':
+      '@loomwork/agent':
         specifier: link:../../../loom/packages/agent
         version: link:../../../loom/packages/agent
-      '@loom/agent-surface':
+      '@loomwork/agent-surface':
         specifier: link:../../../loom/packages/agent-surface
         version: link:../../../loom/packages/agent-surface
-      '@loom/app':
+      '@loomwork/app':
         specifier: link:../../../loom/packages/app
         version: link:../../../loom/packages/app
-      '@loom/blueprint-runtime':
+      '@loomwork/blueprint-runtime':
         specifier: link:../../../loom/packages/blueprint-runtime
         version: link:../../../loom/packages/blueprint-runtime
-      '@loom/capability':
+      '@loomwork/capability':
         specifier: link:../../../loom/packages/capability
         version: link:../../../loom/packages/capability
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/dispatcher':
+      '@loomwork/dispatcher':
         specifier: link:../../../loom/packages/dispatcher
         version: link:../../../loom/packages/dispatcher
-      '@loom/effect-runtime':
+      '@loomwork/effect-runtime':
         specifier: link:../../../loom/packages/effect-runtime
         version: link:../../../loom/packages/effect-runtime
-      '@loom/event-runtime':
+      '@loomwork/event-runtime':
         specifier: link:../../../loom/packages/event-runtime
         version: link:../../../loom/packages/event-runtime
-      '@loom/intent':
+      '@loomwork/intent':
         specifier: link:../../../loom/packages/intent
         version: link:../../../loom/packages/intent
-      '@loom/llm':
+      '@loomwork/llm':
         specifier: link:../../../loom/packages/llm
         version: link:../../../loom/packages/llm
-      '@loom/planner':
+      '@loomwork/planner':
         specifier: link:../../../loom/packages/planner
         version: link:../../../loom/packages/planner
-      '@loom/plugin-a2a':
+      '@loomwork/plugin-a2a':
         specifier: link:../../../loom/plugins/a2a
         version: link:../../../loom/plugins/a2a
-      '@loom/plugin-sqlite':
+      '@loomwork/plugin-sqlite':
         specifier: link:../../../loom/plugins/sqlite
         version: link:../../../loom/plugins/sqlite
-      '@loom/projection-runtime':
+      '@loomwork/projection-runtime':
         specifier: link:../../../loom/packages/projection-runtime
         version: link:../../../loom/packages/projection-runtime
-      '@loom/registry':
+      '@loomwork/registry':
         specifier: link:../../../loom/packages/registry
         version: link:../../../loom/packages/registry
-      '@loom/scheduler':
+      '@loomwork/scheduler':
         specifier: link:../../../loom/packages/scheduler
         version: link:../../../loom/packages/scheduler
-      '@loom/sdk':
+      '@loomwork/sdk':
         specifier: link:../../../loom/packages/sdk
         version: link:../../../loom/packages/sdk
-      '@loom/snapshot-runtime':
+      '@loomwork/snapshot-runtime':
         specifier: link:../../../loom/packages/snapshot-runtime
         version: link:../../../loom/packages/snapshot-runtime
-      '@loom/worker-runtime-local':
+      '@loomwork/worker-runtime-local':
         specifier: link:../../../loom/packages/worker-runtime-local
         version: link:../../../loom/packages/worker-runtime-local
-      '@loom/workflow-runtime':
+      '@loomwork/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime
       zod:
         specifier: 'catalog:'
         version: 3.25.76
     devDependencies:
-      '@loom/testing':
+      '@loomwork/testing':
         specifier: link:../../../loom/tools/testing
         version: link:../../../loom/tools/testing
       '@types/node':
@@ -1583,24 +1583,24 @@ importers:
 
   examples/learning-router:
     dependencies:
-      '@loom/analytics':
+      '@loomwork/analytics':
         specifier: link:../../../loom/packages/analytics
         version: link:../../../loom/packages/analytics
-      '@loom/app':
+      '@loomwork/app':
         specifier: link:../../../loom/packages/app
         version: link:../../../loom/packages/app
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/learning':
+      '@loomwork/learning':
         specifier: link:../../../loom/packages/learning
         version: link:../../../loom/packages/learning
-      '@loom/workflow-runtime':
-        specifier: link:../../../loom/packages/workflow-runtime
-        version: link:../../../loom/packages/workflow-runtime
-      loom-plugin-linucb:
+      '@loomwork/plugin-linucb':
         specifier: link:../../../loom-plugins/plugins/loom-plugin-linucb
         version: link:../../../loom-plugins/plugins/loom-plugin-linucb
+      '@loomwork/workflow-runtime':
+        specifier: link:../../../loom/packages/workflow-runtime
+        version: link:../../../loom/packages/workflow-runtime
       zod:
         specifier: 'catalog:'
         version: 3.25.76
@@ -1620,50 +1620,50 @@ importers:
 
   examples/loom-starter:
     dependencies:
-      '@loom/agent-surface':
+      '@loomwork/agent-surface':
         specifier: link:../../../loom/packages/agent-surface
         version: link:../../../loom/packages/agent-surface
-      '@loom/app':
+      '@loomwork/app':
         specifier: link:../../../loom/packages/app
         version: link:../../../loom/packages/app
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/dispatcher':
+      '@loomwork/dispatcher':
         specifier: link:../../../loom/packages/dispatcher
         version: link:../../../loom/packages/dispatcher
-      '@loom/effect-runtime':
+      '@loomwork/effect-runtime':
         specifier: link:../../../loom/packages/effect-runtime
         version: link:../../../loom/packages/effect-runtime
-      '@loom/event-runtime':
+      '@loomwork/event-runtime':
         specifier: link:../../../loom/packages/event-runtime
         version: link:../../../loom/packages/event-runtime
-      '@loom/middleware':
+      '@loomwork/middleware':
         specifier: link:../../../loom/packages/middleware
         version: link:../../../loom/packages/middleware
-      '@loom/plugin-sqlite':
+      '@loomwork/plugin-sqlite':
         specifier: link:../../../loom/plugins/sqlite
         version: link:../../../loom/plugins/sqlite
-      '@loom/projection-runtime':
+      '@loomwork/projection-runtime':
         specifier: link:../../../loom/packages/projection-runtime
         version: link:../../../loom/packages/projection-runtime
-      '@loom/snapshot-runtime':
+      '@loomwork/snapshot-runtime':
         specifier: link:../../../loom/packages/snapshot-runtime
         version: link:../../../loom/packages/snapshot-runtime
-      '@loom/worker-runtime-local':
+      '@loomwork/worker-runtime-local':
         specifier: link:../../../loom/packages/worker-runtime-local
         version: link:../../../loom/packages/worker-runtime-local
-      '@loom/workflow-runtime':
+      '@loomwork/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime
       zod:
         specifier: 'catalog:'
         version: 3.25.76
     devDependencies:
-      '@loom/cli':
+      '@loomwork/cli':
         specifier: link:../../../loom/tools/cli
         version: link:../../../loom/tools/cli
-      '@loom/testing':
+      '@loomwork/testing':
         specifier: link:../../../loom/tools/testing
         version: link:../../../loom/tools/testing
       '@types/node':
@@ -1681,34 +1681,34 @@ importers:
 
   examples/mcp-app-release-approval:
     dependencies:
-      '@loom/agent-surface':
+      '@loomwork/agent-surface':
         specifier: link:../../../loom/packages/agent-surface
         version: link:../../../loom/packages/agent-surface
-      '@loom/app':
+      '@loomwork/app':
         specifier: link:../../../loom/packages/app
         version: link:../../../loom/packages/app
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/event-runtime':
+      '@loomwork/event-runtime':
         specifier: link:../../../loom/packages/event-runtime
         version: link:../../../loom/packages/event-runtime
-      '@loom/plugin-a2ui':
+      '@loomwork/plugin-a2ui':
         specifier: link:../../../loom/plugins/a2ui
         version: link:../../../loom/plugins/a2ui
-      '@loom/plugin-audit-chain':
+      '@loomwork/plugin-audit-chain':
         specifier: link:../../../loom/plugins/audit-chain
         version: link:../../../loom/plugins/audit-chain
-      '@loom/plugin-mcp':
+      '@loomwork/plugin-mcp':
         specifier: link:../../../loom/plugins/mcp
         version: link:../../../loom/plugins/mcp
-      '@loom/plugin-mcp-app':
+      '@loomwork/plugin-mcp-app':
         specifier: link:../../../loom/plugins/mcp-app
         version: link:../../../loom/plugins/mcp-app
-      '@loom/snapshot-runtime':
+      '@loomwork/snapshot-runtime':
         specifier: link:../../../loom/packages/snapshot-runtime
         version: link:../../../loom/packages/snapshot-runtime
-      '@loom/workflow-runtime':
+      '@loomwork/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime
       zod:
@@ -1736,49 +1736,49 @@ importers:
 
   examples/media-gallery:
     dependencies:
-      '@loom-ui/core':
-        specifier: link:../../../loom-ui/packages/core
-        version: link:../../../loom-ui/packages/core
-      '@loom-ui/hydration':
-        specifier: link:../../../loom-ui/packages/hydration
-        version: link:../../../loom-ui/packages/hydration
-      '@loom-ui/planner':
-        specifier: link:../../../loom-ui/packages/planner
-        version: link:../../../loom-ui/packages/planner
-      '@loom-ui/renderer-terminal':
-        specifier: link:../../../loom-ui/packages/renderer-terminal
-        version: link:../../../loom-ui/packages/renderer-terminal
-      '@loom/agent':
+      '@loomwork/agent':
         specifier: link:../../../loom/packages/agent
         version: link:../../../loom/packages/agent
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/effect-runtime':
+      '@loomwork/effect-runtime':
         specifier: link:../../../loom/packages/effect-runtime
         version: link:../../../loom/packages/effect-runtime
-      '@loom/event-runtime':
+      '@loomwork/event-runtime':
         specifier: link:../../../loom/packages/event-runtime
         version: link:../../../loom/packages/event-runtime
-      '@loom/llm':
+      '@loomwork/llm':
         specifier: link:../../../loom/packages/llm
         version: link:../../../loom/packages/llm
-      '@loom/plugin-content':
+      '@loomwork/plugin-content':
         specifier: link:../../../loom/plugins/content
         version: link:../../../loom/plugins/content
-      '@loom/plugin-mcp':
+      '@loomwork/plugin-mcp':
         specifier: link:../../../loom/plugins/mcp
         version: link:../../../loom/plugins/mcp
-      '@loom/projection-runtime':
+      '@loomwork/projection-runtime':
         specifier: link:../../../loom/packages/projection-runtime
         version: link:../../../loom/packages/projection-runtime
-      '@loom/replay-vm':
+      '@loomwork/replay-vm':
         specifier: link:../../../loom/packages/replay-vm
         version: link:../../../loom/packages/replay-vm
-      '@loom/snapshot-runtime':
+      '@loomwork/snapshot-runtime':
         specifier: link:../../../loom/packages/snapshot-runtime
         version: link:../../../loom/packages/snapshot-runtime
-      '@loom/workflow-runtime':
+      '@loomwork/ui-core':
+        specifier: link:../../../loom-ui/packages/core
+        version: link:../../../loom-ui/packages/core
+      '@loomwork/ui-hydration':
+        specifier: link:../../../loom-ui/packages/hydration
+        version: link:../../../loom-ui/packages/hydration
+      '@loomwork/ui-planner':
+        specifier: link:../../../loom-ui/packages/planner
+        version: link:../../../loom-ui/packages/planner
+      '@loomwork/ui-renderer-terminal':
+        specifier: link:../../../loom-ui/packages/renderer-terminal
+        version: link:../../../loom-ui/packages/renderer-terminal
+      '@loomwork/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime
       zod:
@@ -1800,24 +1800,24 @@ importers:
 
   examples/order-lines:
     dependencies:
-      '@loom-ui/core':
-        specifier: link:../../../loom-ui/packages/core
-        version: link:../../../loom-ui/packages/core
-      '@loom-ui/hydration':
-        specifier: link:../../../loom-ui/packages/hydration
-        version: link:../../../loom-ui/packages/hydration
-      '@loom-ui/renderer-lit':
-        specifier: link:../../../loom-ui/packages/renderer-lit
-        version: link:../../../loom-ui/packages/renderer-lit
-      '@loom-ui/renderer-terminal':
-        specifier: link:../../../loom-ui/packages/renderer-terminal
-        version: link:../../../loom-ui/packages/renderer-terminal
-      '@loom/blueprint-runtime':
+      '@loomwork/blueprint-runtime':
         specifier: link:../../../loom/packages/blueprint-runtime
         version: link:../../../loom/packages/blueprint-runtime
-      '@loom/projection-runtime':
+      '@loomwork/projection-runtime':
         specifier: link:../../../loom/packages/projection-runtime
         version: link:../../../loom/packages/projection-runtime
+      '@loomwork/ui-core':
+        specifier: link:../../../loom-ui/packages/core
+        version: link:../../../loom-ui/packages/core
+      '@loomwork/ui-hydration':
+        specifier: link:../../../loom-ui/packages/hydration
+        version: link:../../../loom-ui/packages/hydration
+      '@loomwork/ui-renderer-lit':
+        specifier: link:../../../loom-ui/packages/renderer-lit
+        version: link:../../../loom-ui/packages/renderer-lit
+      '@loomwork/ui-renderer-terminal':
+        specifier: link:../../../loom-ui/packages/renderer-terminal
+        version: link:../../../loom-ui/packages/renderer-terminal
       lit:
         specifier: 'catalog:'
         version: 3.3.3
@@ -1837,37 +1837,37 @@ importers:
 
   examples/planner-decide-scope:
     dependencies:
-      '@loom-ui/core':
-        specifier: link:../../../loom-ui/packages/core
-        version: link:../../../loom-ui/packages/core
-      '@loom-ui/hydration':
-        specifier: link:../../../loom-ui/packages/hydration
-        version: link:../../../loom-ui/packages/hydration
-      '@loom-ui/planner':
-        specifier: link:../../../loom-ui/packages/planner
-        version: link:../../../loom-ui/packages/planner
-      '@loom/app':
+      '@loomwork/app':
         specifier: link:../../../loom/packages/app
         version: link:../../../loom/packages/app
-      '@loom/compiler':
+      '@loomwork/compiler':
         specifier: link:../../../loom/tools/compiler
         version: link:../../../loom/tools/compiler
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/effect-runtime':
+      '@loomwork/effect-runtime':
         specifier: link:../../../loom/packages/effect-runtime
         version: link:../../../loom/packages/effect-runtime
-      '@loom/event-runtime':
+      '@loomwork/event-runtime':
         specifier: link:../../../loom/packages/event-runtime
         version: link:../../../loom/packages/event-runtime
-      '@loom/snapshot-runtime':
+      '@loomwork/snapshot-runtime':
         specifier: link:../../../loom/packages/snapshot-runtime
         version: link:../../../loom/packages/snapshot-runtime
-      '@loom/verify':
+      '@loomwork/ui-core':
+        specifier: link:../../../loom-ui/packages/core
+        version: link:../../../loom-ui/packages/core
+      '@loomwork/ui-hydration':
+        specifier: link:../../../loom-ui/packages/hydration
+        version: link:../../../loom-ui/packages/hydration
+      '@loomwork/ui-planner':
+        specifier: link:../../../loom-ui/packages/planner
+        version: link:../../../loom-ui/packages/planner
+      '@loomwork/verify':
         specifier: link:../../../loom/packages/verify
         version: link:../../../loom/packages/verify
-      '@loom/workflow-runtime':
+      '@loomwork/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime
       typescript:
@@ -1889,40 +1889,40 @@ importers:
 
   examples/planner-learning:
     dependencies:
-      '@loom-ui/core':
-        specifier: link:../../../loom-ui/packages/core
-        version: link:../../../loom-ui/packages/core
-      '@loom-ui/learning':
-        specifier: link:../../../loom-ui/packages/learning
-        version: link:../../../loom-ui/packages/learning
-      '@loom-ui/lineage':
-        specifier: link:../../../loom-ui/packages/lineage
-        version: link:../../../loom-ui/packages/lineage
-      '@loom-ui/planner':
-        specifier: link:../../../loom-ui/packages/planner
-        version: link:../../../loom-ui/packages/planner
-      '@loom/analytics':
+      '@loomwork/analytics':
         specifier: link:../../../loom/packages/analytics
         version: link:../../../loom/packages/analytics
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/effect-runtime':
+      '@loomwork/effect-runtime':
         specifier: link:../../../loom/packages/effect-runtime
         version: link:../../../loom/packages/effect-runtime
-      '@loom/event-runtime':
+      '@loomwork/event-runtime':
         specifier: link:../../../loom/packages/event-runtime
         version: link:../../../loom/packages/event-runtime
-      '@loom/learning':
+      '@loomwork/learning':
         specifier: link:../../../loom/packages/learning
         version: link:../../../loom/packages/learning
-      '@loom/plugin-content':
+      '@loomwork/plugin-content':
         specifier: link:../../../loom/plugins/content
         version: link:../../../loom/plugins/content
-      '@loom/snapshot-runtime':
+      '@loomwork/snapshot-runtime':
         specifier: link:../../../loom/packages/snapshot-runtime
         version: link:../../../loom/packages/snapshot-runtime
-      '@loom/workflow-runtime':
+      '@loomwork/ui-core':
+        specifier: link:../../../loom-ui/packages/core
+        version: link:../../../loom-ui/packages/core
+      '@loomwork/ui-learning':
+        specifier: link:../../../loom-ui/packages/learning
+        version: link:../../../loom-ui/packages/learning
+      '@loomwork/ui-lineage':
+        specifier: link:../../../loom-ui/packages/lineage
+        version: link:../../../loom-ui/packages/lineage
+      '@loomwork/ui-planner':
+        specifier: link:../../../loom-ui/packages/planner
+        version: link:../../../loom-ui/packages/planner
+      '@loomwork/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime
       zod:
@@ -1944,27 +1944,27 @@ importers:
 
   examples/provenance-explain:
     dependencies:
-      '@loom-ui/core':
-        specifier: link:../../../loom-ui/packages/core
-        version: link:../../../loom-ui/packages/core
-      '@loom-ui/hydration':
-        specifier: link:../../../loom-ui/packages/hydration
-        version: link:../../../loom-ui/packages/hydration
-      '@loom-ui/lineage':
-        specifier: link:../../../loom-ui/packages/lineage
-        version: link:../../../loom-ui/packages/lineage
-      '@loom-ui/planner':
-        specifier: link:../../../loom-ui/packages/planner
-        version: link:../../../loom-ui/packages/planner
-      '@loom/event-runtime':
+      '@loomwork/event-runtime':
         specifier: link:../../../loom/packages/event-runtime
         version: link:../../../loom/packages/event-runtime
-      '@loom/plugin-content':
+      '@loomwork/plugin-content':
         specifier: link:../../../loom/plugins/content
         version: link:../../../loom/plugins/content
-      '@loom/projection-runtime':
+      '@loomwork/projection-runtime':
         specifier: link:../../../loom/packages/projection-runtime
         version: link:../../../loom/packages/projection-runtime
+      '@loomwork/ui-core':
+        specifier: link:../../../loom-ui/packages/core
+        version: link:../../../loom-ui/packages/core
+      '@loomwork/ui-hydration':
+        specifier: link:../../../loom-ui/packages/hydration
+        version: link:../../../loom-ui/packages/hydration
+      '@loomwork/ui-lineage':
+        specifier: link:../../../loom-ui/packages/lineage
+        version: link:../../../loom-ui/packages/lineage
+      '@loomwork/ui-planner':
+        specifier: link:../../../loom-ui/packages/planner
+        version: link:../../../loom-ui/packages/planner
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -1981,43 +1981,43 @@ importers:
 
   examples/reasoning-audit:
     dependencies:
-      '@loom/agent':
+      '@loomwork/agent':
         specifier: link:../../../loom/packages/agent
         version: link:../../../loom/packages/agent
-      '@loom/app':
+      '@loomwork/app':
         specifier: link:../../../loom/packages/app
         version: link:../../../loom/packages/app
-      '@loom/classify':
+      '@loomwork/classify':
         specifier: link:../../../loom/packages/classify
         version: link:../../../loom/packages/classify
-      '@loom/conversation':
+      '@loomwork/conversation':
         specifier: link:../../../loom/packages/conversation
         version: link:../../../loom/packages/conversation
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/effect-runtime':
+      '@loomwork/effect-runtime':
         specifier: link:../../../loom/packages/effect-runtime
         version: link:../../../loom/packages/effect-runtime
-      '@loom/event-runtime':
+      '@loomwork/event-runtime':
         specifier: link:../../../loom/packages/event-runtime
         version: link:../../../loom/packages/event-runtime
-      '@loom/llm':
+      '@loomwork/llm':
         specifier: link:../../../loom/packages/llm
         version: link:../../../loom/packages/llm
-      '@loom/plugin-content':
+      '@loomwork/plugin-content':
         specifier: link:../../../loom/plugins/content
         version: link:../../../loom/plugins/content
-      '@loom/reasoning':
+      '@loomwork/reasoning':
         specifier: link:../../../loom/packages/reasoning
         version: link:../../../loom/packages/reasoning
-      '@loom/replay-vm':
+      '@loomwork/replay-vm':
         specifier: link:../../../loom/packages/replay-vm
         version: link:../../../loom/packages/replay-vm
-      '@loom/snapshot-runtime':
+      '@loomwork/snapshot-runtime':
         specifier: link:../../../loom/packages/snapshot-runtime
         version: link:../../../loom/packages/snapshot-runtime
-      '@loom/workflow-runtime':
+      '@loomwork/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime
       zod:
@@ -2039,28 +2039,28 @@ importers:
 
   examples/retention-policy:
     dependencies:
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/effect-runtime':
+      '@loomwork/effect-runtime':
         specifier: link:../../../loom/packages/effect-runtime
         version: link:../../../loom/packages/effect-runtime
-      '@loom/event-runtime':
+      '@loomwork/event-runtime':
         specifier: link:../../../loom/packages/event-runtime
         version: link:../../../loom/packages/event-runtime
-      '@loom/middleware':
+      '@loomwork/middleware':
         specifier: link:../../../loom/packages/middleware
         version: link:../../../loom/packages/middleware
-      '@loom/plugin-content':
+      '@loomwork/plugin-content':
         specifier: link:../../../loom/plugins/content
         version: link:../../../loom/plugins/content
-      '@loom/plugin-sqlite':
+      '@loomwork/plugin-sqlite':
         specifier: link:../../../loom/plugins/sqlite
         version: link:../../../loom/plugins/sqlite
-      '@loom/snapshot-runtime':
+      '@loomwork/snapshot-runtime':
         specifier: link:../../../loom/packages/snapshot-runtime
         version: link:../../../loom/packages/snapshot-runtime
-      '@loom/workflow-runtime':
+      '@loomwork/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime
       zod:
@@ -2082,28 +2082,28 @@ importers:
 
   examples/runbook-recall:
     dependencies:
-      '@loom/app':
+      '@loomwork/app':
         specifier: link:../../../loom/packages/app
         version: link:../../../loom/packages/app
-      '@loom/classify':
+      '@loomwork/classify':
         specifier: link:../../../loom/packages/classify
         version: link:../../../loom/packages/classify
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/knowledge':
+      '@loomwork/knowledge':
         specifier: link:../../../loom/packages/knowledge
         version: link:../../../loom/packages/knowledge
-      '@loom/llm':
+      '@loomwork/llm':
         specifier: link:../../../loom/packages/llm
         version: link:../../../loom/packages/llm
-      '@loom/memory':
+      '@loomwork/memory':
         specifier: link:../../../loom/packages/memory
         version: link:../../../loom/packages/memory
-      '@loom/plugin-sqlite':
+      '@loomwork/plugin-sqlite':
         specifier: link:../../../loom/plugins/sqlite
         version: link:../../../loom/plugins/sqlite
-      '@loom/workflow-runtime':
+      '@loomwork/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime
       zod:
@@ -2125,25 +2125,25 @@ importers:
 
   examples/saved-views:
     dependencies:
-      '@loom/app':
+      '@loomwork/app':
         specifier: link:../../../loom/packages/app
         version: link:../../../loom/packages/app
-      '@loom/blueprint-runtime':
+      '@loomwork/blueprint-runtime':
         specifier: link:../../../loom/packages/blueprint-runtime
         version: link:../../../loom/packages/blueprint-runtime
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/middleware':
+      '@loomwork/middleware':
         specifier: link:../../../loom/packages/middleware
         version: link:../../../loom/packages/middleware
-      '@loom/plugin-content':
+      '@loomwork/plugin-content':
         specifier: link:../../../loom/plugins/content
         version: link:../../../loom/plugins/content
-      '@loom/projection-runtime':
+      '@loomwork/projection-runtime':
         specifier: link:../../../loom/packages/projection-runtime
         version: link:../../../loom/packages/projection-runtime
-      '@loom/workflow-runtime':
+      '@loomwork/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime
       zod:
@@ -2165,80 +2165,80 @@ importers:
 
   examples/schema-migration-planner:
     dependencies:
-      '@loom/agent':
+      '@loomwork/agent':
         specifier: link:../../../loom/packages/agent
         version: link:../../../loom/packages/agent
-      '@loom/agent-surface':
+      '@loomwork/agent-surface':
         specifier: link:../../../loom/packages/agent-surface
         version: link:../../../loom/packages/agent-surface
-      '@loom/app':
+      '@loomwork/app':
         specifier: link:../../../loom/packages/app
         version: link:../../../loom/packages/app
-      '@loom/blueprint-runtime':
+      '@loomwork/blueprint-runtime':
         specifier: link:../../../loom/packages/blueprint-runtime
         version: link:../../../loom/packages/blueprint-runtime
-      '@loom/capability':
+      '@loomwork/capability':
         specifier: link:../../../loom/packages/capability
         version: link:../../../loom/packages/capability
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/dispatcher':
+      '@loomwork/dispatcher':
         specifier: link:../../../loom/packages/dispatcher
         version: link:../../../loom/packages/dispatcher
-      '@loom/effect-runtime':
+      '@loomwork/effect-runtime':
         specifier: link:../../../loom/packages/effect-runtime
         version: link:../../../loom/packages/effect-runtime
-      '@loom/event-runtime':
+      '@loomwork/event-runtime':
         specifier: link:../../../loom/packages/event-runtime
         version: link:../../../loom/packages/event-runtime
-      '@loom/intent':
+      '@loomwork/intent':
         specifier: link:../../../loom/packages/intent
         version: link:../../../loom/packages/intent
-      '@loom/llm':
+      '@loomwork/llm':
         specifier: link:../../../loom/packages/llm
         version: link:../../../loom/packages/llm
-      '@loom/planner':
+      '@loomwork/planner':
         specifier: link:../../../loom/packages/planner
         version: link:../../../loom/packages/planner
-      '@loom/plugin-a2a':
+      '@loomwork/plugin-a2a':
         specifier: link:../../../loom/plugins/a2a
         version: link:../../../loom/plugins/a2a
-      '@loom/plugin-sqlite':
+      '@loomwork/plugin-sqlite':
         specifier: link:../../../loom/plugins/sqlite
         version: link:../../../loom/plugins/sqlite
-      '@loom/plugin-worker-remote':
+      '@loomwork/plugin-worker-remote':
         specifier: link:../../../loom/plugins/worker-remote
         version: link:../../../loom/plugins/worker-remote
-      '@loom/plugin-worker-server':
+      '@loomwork/plugin-worker-server':
         specifier: link:../../../loom/plugins/worker-server
         version: link:../../../loom/plugins/worker-server
-      '@loom/projection-runtime':
+      '@loomwork/projection-runtime':
         specifier: link:../../../loom/packages/projection-runtime
         version: link:../../../loom/packages/projection-runtime
-      '@loom/registry':
+      '@loomwork/registry':
         specifier: link:../../../loom/packages/registry
         version: link:../../../loom/packages/registry
-      '@loom/scheduler':
+      '@loomwork/scheduler':
         specifier: link:../../../loom/packages/scheduler
         version: link:../../../loom/packages/scheduler
-      '@loom/sdk':
+      '@loomwork/sdk':
         specifier: link:../../../loom/packages/sdk
         version: link:../../../loom/packages/sdk
-      '@loom/snapshot-runtime':
+      '@loomwork/snapshot-runtime':
         specifier: link:../../../loom/packages/snapshot-runtime
         version: link:../../../loom/packages/snapshot-runtime
-      '@loom/worker-runtime-local':
+      '@loomwork/worker-runtime-local':
         specifier: link:../../../loom/packages/worker-runtime-local
         version: link:../../../loom/packages/worker-runtime-local
-      '@loom/workflow-runtime':
+      '@loomwork/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime
       zod:
         specifier: 'catalog:'
         version: 3.25.76
     devDependencies:
-      '@loom/testing':
+      '@loomwork/testing':
         specifier: link:../../../loom/tools/testing
         version: link:../../../loom/tools/testing
       '@types/node':
@@ -2259,21 +2259,21 @@ importers:
 
   examples/split-hydration:
     dependencies:
-      '@loom-ui/core':
-        specifier: link:../../../loom-ui/packages/core
-        version: link:../../../loom-ui/packages/core
-      '@loom-ui/hydration':
-        specifier: link:../../../loom-ui/packages/hydration
-        version: link:../../../loom-ui/packages/hydration
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/plugin-mcp':
+      '@loomwork/plugin-mcp':
         specifier: link:../../../loom/plugins/mcp
         version: link:../../../loom/plugins/mcp
-      '@loom/projection-runtime':
+      '@loomwork/projection-runtime':
         specifier: link:../../../loom/packages/projection-runtime
         version: link:../../../loom/packages/projection-runtime
+      '@loomwork/ui-core':
+        specifier: link:../../../loom-ui/packages/core
+        version: link:../../../loom-ui/packages/core
+      '@loomwork/ui-hydration':
+        specifier: link:../../../loom-ui/packages/hydration
+        version: link:../../../loom-ui/packages/hydration
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -2290,34 +2290,34 @@ importers:
 
   examples/tool-search-mcp-menu:
     dependencies:
-      '@loom/agent':
+      '@loomwork/agent':
         specifier: link:../../../loom/packages/agent
         version: link:../../../loom/packages/agent
-      '@loom/classify':
+      '@loomwork/classify':
         specifier: link:../../../loom/packages/classify
         version: link:../../../loom/packages/classify
-      '@loom/core':
+      '@loomwork/core':
         specifier: link:../../../loom/packages/core
         version: link:../../../loom/packages/core
-      '@loom/effect-runtime':
+      '@loomwork/effect-runtime':
         specifier: link:../../../loom/packages/effect-runtime
         version: link:../../../loom/packages/effect-runtime
-      '@loom/event-runtime':
+      '@loomwork/event-runtime':
         specifier: link:../../../loom/packages/event-runtime
         version: link:../../../loom/packages/event-runtime
-      '@loom/llm':
+      '@loomwork/llm':
         specifier: link:../../../loom/packages/llm
         version: link:../../../loom/packages/llm
-      '@loom/plugin-mcp':
+      '@loomwork/plugin-mcp':
         specifier: link:../../../loom/plugins/mcp
         version: link:../../../loom/plugins/mcp
-      '@loom/replay-vm':
+      '@loomwork/replay-vm':
         specifier: link:../../../loom/packages/replay-vm
         version: link:../../../loom/packages/replay-vm
-      '@loom/snapshot-runtime':
+      '@loomwork/snapshot-runtime':
         specifier: link:../../../loom/packages/snapshot-runtime
         version: link:../../../loom/packages/snapshot-runtime
-      '@loom/workflow-runtime':
+      '@loomwork/workflow-runtime':
         specifier: link:../../../loom/packages/workflow-runtime
         version: link:../../../loom/packages/workflow-runtime
       zod:
