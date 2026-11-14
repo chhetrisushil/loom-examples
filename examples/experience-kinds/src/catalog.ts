@@ -1,9 +1,9 @@
-import { type KindContract, type SemanticCatalog, defineSemanticCatalog } from "@loom-ui/core";
+import { type KindContract, type SemanticCatalog, defineSemanticCatalog } from "@loomwork/ui-core";
 
 // The warehouse's semantic vocabulary. Every type resolves to one of loom-ui's FRAMEWORK kinds
 // (Kpi, Table, StatusCard, Note, TimeSeries), which sit outside loom's built-in catalogue — so
 // each resolution declares the kind's loom contract (ADR 0088 D2: props AND binding). These are
-// exactly `frameworkKindContracts` from `@loom-ui/renderer-lit/dom`; they are spelled out here so
+// exactly `frameworkKindContracts` from `@loomwork/ui-renderer-lit/dom`; they are spelled out here so
 // this module (and a terminal-only consumer of it) never loads a DOM renderer, and
 // `test/kinds.test.ts` pins them to that list so they cannot drift.
 
@@ -12,7 +12,7 @@ export const KIND_CONTRACTS = {
   Table: { kind: "Table", props: [], binding: "required" },
   StatusCard: { kind: "StatusCard", props: [], binding: "required" },
   Note: { kind: "Note", props: ["text"], binding: "none" },
-  TimeSeries: { kind: "TimeSeries", props: ["unit", "format"], binding: "required" },
+  TimeSeries: { kind: "TimeSeries", props: ["unit", "format", "timeFormat"], binding: "required" },
 } as const satisfies Record<string, KindContract>;
 
 /** The same kind on both surfaces: the web draws it with Lit, the terminal prints it. */
