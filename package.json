@@ -74,6 +74,7 @@
       "@loomwork/scheduler": "link:../loom/packages/scheduler",
       "@loomwork/sdk": "link:../loom/packages/sdk",
       "@loomwork/snapshot-runtime": "link:../loom/packages/snapshot-runtime",
+      "@loomwork/task-authority": "link:../loom/packages/task-authority",
       "@loomwork/telemetry": "link:../loom/packages/telemetry",
       "@loomwork/testing": "link:../loom/tools/testing",
       "@loomwork/verify": "link:../loom/packages/verify",
