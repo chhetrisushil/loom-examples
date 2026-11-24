@@ -1,0 +1,32 @@
+{
+  "name": "@loomwork/task-authority-digest",
+  "version": "0.0.1",
+  "description": "Task-scoped authority (ADR 0150 slices 1+2, ADR 0152) end to end: a nightly incident-digest agent whose grant is derived from its reach, leases and signed reads, denial feedback to the model, cross-lineage provenance (directedBy), and a scheduled agent approved once with a grant per tick. Offline, scripted model.",
+  "private": true,
+  "scripts": {
+    "build": "tsc --build",
+    "start": "tsx src/main.ts",
+    "test": "vitest run",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@loomwork/agent": "*",
+    "@loomwork/app": "*",
+    "@loomwork/core": "*",
+    "@loomwork/effect-runtime": "*",
+    "@loomwork/event-runtime": "*",
+    "@loomwork/llm": "*",
+    "@loomwork/memory": "*",
+    "@loomwork/snapshot-runtime": "*",
+    "@loomwork/task-authority": "*",
+    "@loomwork/verify": "*",
+    "@loomwork/workflow-runtime": "*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "^5.6.3",
+    "vitest": "catalog:"
+  }
+}

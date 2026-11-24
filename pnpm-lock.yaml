@@ -82,6 +82,7 @@ overrides:
   '@loomwork/scheduler': link:../loom/packages/scheduler
   '@loomwork/sdk': link:../loom/packages/sdk
   '@loomwork/snapshot-runtime': link:../loom/packages/snapshot-runtime
+  '@loomwork/task-authority': link:../loom/packages/task-authority
   '@loomwork/telemetry': link:../loom/packages/telemetry
   '@loomwork/testing': link:../loom/tools/testing
   '@loomwork/verify': link:../loom/packages/verify
@@ -2281,6 +2282,58 @@ importers:
       esbuild:
         specifier: 0.21.5
         version: 0.21.5
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 2.1.9(@types/node@22.20.1)(happy-dom@20.14.5)(jsdom@25.0.1)(sass@1.90.0)
+
+  examples/task-authority-digest:
+    dependencies:
+      '@loomwork/agent':
+        specifier: link:../../../loom/packages/agent
+        version: link:../../../loom/packages/agent
+      '@loomwork/app':
+        specifier: link:../../../loom/packages/app
+        version: link:../../../loom/packages/app
+      '@loomwork/core':
+        specifier: link:../../../loom/packages/core
+        version: link:../../../loom/packages/core
+      '@loomwork/effect-runtime':
+        specifier: link:../../../loom/packages/effect-runtime
+        version: link:../../../loom/packages/effect-runtime
+      '@loomwork/event-runtime':
+        specifier: link:../../../loom/packages/event-runtime
+        version: link:../../../loom/packages/event-runtime
+      '@loomwork/llm':
+        specifier: link:../../../loom/packages/llm
+        version: link:../../../loom/packages/llm
+      '@loomwork/memory':
+        specifier: link:../../../loom/packages/memory
+        version: link:../../../loom/packages/memory
+      '@loomwork/snapshot-runtime':
+        specifier: link:../../../loom/packages/snapshot-runtime
+        version: link:../../../loom/packages/snapshot-runtime
+      '@loomwork/task-authority':
+        specifier: link:../../../loom/packages/task-authority
+        version: link:../../../loom/packages/task-authority
+      '@loomwork/verify':
+        specifier: link:../../../loom/packages/verify
+        version: link:../../../loom/packages/verify
+      '@loomwork/workflow-runtime':
+        specifier: link:../../../loom/packages/workflow-runtime
+        version: link:../../../loom/packages/workflow-runtime
+      zod:
+        specifier: 'catalog:'
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.1
+      tsx:
+        specifier: 'catalog:'
+        version: 4.23.1
       typescript:
         specifier: ^5.6.3
         version: 5.9.3
