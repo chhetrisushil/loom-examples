@@ -8,14 +8,16 @@ import {
 import { agent$, flow$, tool$ } from "@loomwork/core";
 import type { EventEnvelope, FlowDefinition } from "@loomwork/core";
 import { EffectRuntime, ToolEffect } from "@loomwork/effect-runtime";
-import { InMemoryAsyncEventStore } from "@loomwork/event-runtime";
+import { InMemoryAsyncEventStore, InMemoryTimerStore } from "@loomwork/event-runtime";
 import type { LlmRequest } from "@loomwork/llm";
 import { InMemoryMemoryStore, TieredMemory } from "@loomwork/memory";
 import { InMemoryAsyncSnapshotStore } from "@loomwork/snapshot-runtime";
 import {
   InMemoryGrantBroker,
   type MintRequest,
+  type TaskGrant,
   TaskGrantAuthorizer,
+  directedBy,
   installTaskAuthority,
   lineageOrigin,
   taskLeaseMiddleware,
@@ -25,7 +27,9 @@ import { z } from "zod";
 import { EMAIL, INCIDENTS, MODEL, PAGER, RECALL, WRITE, digestScript } from "./model";
 
 export const SECRET = "digest-demo-secret"; // signs grants and binds the holder; one per deployment
-export const T0 = 1_700_000_000_000;
+export const MINUTE = 60_000;
+/** Mid-minute, so the first cron occurrence is the next whole minute. */
+export const T0 = Math.floor(1_700_000_000_000 / MINUTE) * MINUTE + MINUTE / 2;
 
 const mk = (id: string) =>
   tool$({
@@ -38,7 +42,19 @@ const mk = (id: string) =>
   });
 export const TOOLS = [mk(INCIDENTS), mk(EMAIL), mk(PAGER)];
 
+export interface WorldOptions {
+  /** Install `directedBy` (park) and turn on the kernel's seen-origins tracking. */
+  provenance?: boolean;
+  /** Give the runtime a timer store (a `TimerService` needs one). */
+  timers?: boolean;
+  /** Which cross-lineage parks the broker may approve (default: none). */
+  approveCrossLineage?: ConstructorParameters<typeof InMemoryGrantBroker>[0]["approveCrossLineage"];
+}
+
 export interface AgentFlowOptions {
+  /** No memory, recall or write-back: just the model and its tools (a scheduled tick). */
+  bare?: boolean;
+  onExhausted?: "fail" | "park";
   /** The memory scope this run recalls from (and writes back to). */
   scope?: string;
   onDenied?: "fail" | "opaque" | "reason";
@@ -56,13 +72,21 @@ export class World {
     tiers: { working: { maxEntries: 100 } },
   });
   readonly calls: Record<string, number> = {};
+  /** The task id of the grant each `email.send` ran under, in order (what `ctx.principal` carried). */
+  readonly senders: string[] = [];
+  readonly timerStore = new InMemoryTimerStore();
   readonly requests: LlmRequest[] = [];
   readonly configs: Record<string, AgentLoopConfig> = {};
-  readonly broker = new InMemoryGrantBroker({ secret: SECRET, now: () => this.clock.t });
+  readonly broker: InMemoryGrantBroker;
   readonly effects: EffectRuntime;
   readonly runtime: WorkflowRuntime;
 
-  constructor() {
+  constructor(o: WorldOptions = {}) {
+    this.broker = new InMemoryGrantBroker({
+      secret: SECRET,
+      now: () => this.clock.t,
+      ...(o.approveCrossLineage !== undefined && { approveCrossLineage: o.approveCrossLineage }),
+    });
     // The lease middleware counts leased effects durably, before they run; the authorizer denies anything
     // outside the grant. `base` is the host's own policy (here: allow), consulted after the grant.
     const effects: EffectRuntime = new EffectRuntime(
@@ -73,6 +97,10 @@ export class World {
           now: () => this.clock.t,
           effects: () => effects,
         }),
+        // Placed AFTER the lease middleware. Only the governed write is checked for who directed it.
+        ...(o.provenance === true
+          ? [directedBy({ secret: SECRET, action: "park", appliesTo: [EMAIL] })]
+          : []),
       ],
       {
         authorizer: new TaskGrantAuthorizer({
@@ -95,8 +123,12 @@ export class World {
     for (const id of [INCIDENTS, EMAIL, PAGER])
       effects.register(
         id,
-        new ToolEffect(async () => {
+        new ToolEffect(async (_input, ctx) => {
           this.calls[id] = (this.calls[id] ?? 0) + 1;
+          if (id === EMAIL)
+            this.senders.push(
+              (ctx.principal?.taskGrant as TaskGrant | undefined)?.taskId ?? "anonymous"
+            );
           return { ok: true };
         })
       );
@@ -115,6 +147,8 @@ export class World {
         verify: () => ({ status: "verified", actor: "ops", verifiedBy: "demo" }),
       },
       onWarn: () => {},
+      ...(o.timers === true && { timerStore: this.timerStore }),
+      ...(o.provenance === true && { seenOriginsEnabled: true }), // the kernel tracks who directed each run (ADR 0152)
     });
     installTaskAuthority(this.runtime, {
       source: this.broker,
@@ -129,11 +163,18 @@ export class World {
       definition: agent$({ id: `${id}-agent`, name: id, tools: TOOLS }),
       modelToolId: MODEL,
       maxIterations: 5,
-      memory: this.memory,
-      memoryScope: o.scope ?? "team:alpha",
-      recall: { toolId: RECALL },
-      writeBack: { toolId: WRITE },
-      ...(o.onDenied !== undefined && { authority: { onDenied: o.onDenied } }),
+      ...(o.bare !== true && {
+        memory: this.memory,
+        memoryScope: o.scope ?? "team:alpha",
+        recall: { toolId: RECALL },
+        writeBack: { toolId: WRITE },
+      }),
+      ...((o.onDenied !== undefined || o.onExhausted !== undefined) && {
+        authority: {
+          ...(o.onDenied !== undefined && { onDenied: o.onDenied }),
+          ...(o.onExhausted !== undefined && { onExhausted: o.onExhausted }),
+        },
+      }),
     };
     this.configs[id] = config;
     const definition = flow$({
