@@ -9,6 +9,9 @@ export const PAGER = "pager.page";
 export const RECALL = "memory.recall";
 export const WRITE = "memory.write";
 
+/** A scheduled tick sends the digest without looking anything up (its grant is only the model and the email). */
+export const P_TICK = "Nightly tick: send the digest.";
+
 /** The prompts select the scripted behaviour. */
 export const P_DIGEST = "Send tonight's incident digest.";
 export const P_PAGE = "Send tonight's digest, and page the on-call if anything is red.";
